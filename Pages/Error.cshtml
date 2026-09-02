@@ -1,0 +1,69 @@
+﻿@page
+@model ErrorModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Error_PageTitle"];
+}
+
+@section Styles {
+    <style>
+        .errorCon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .errorImg {
+            width: 600px;
+            height: auto;
+            padding: 0px;
+            margin: 20px;
+        }
+
+        .backHome {
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-dark, #1a1a1a);
+        }
+
+        .backHome:hover {
+            transition: .3s ease;
+            transform: translateY(-5px);
+            text-decoration: underline solid var(--accent, #d32f2f);
+        }
+
+        /* Задължително с ДВЕ кльомби тук, за да не се бърка с C# код */
+        @@media (max-width: 992px) {
+            .errorImg {
+                width: 100%;
+                max-width: 400px;
+                height: auto;
+                padding: 0px;
+                margin: 10px;
+            }
+        }
+    </style>
+}
+
+<main>
+    <div class="errorCon">
+        <img src="~/images/logos/Error 404.png" alt="Error" class="errorImg">
+
+        <p class="section-label" style="margin-top: 20px; font-weight: bold; letter-spacing: 2px;">@Localizer["Error_Subtitle"]</p>
+        <h2 style="font-size: 36px; margin-bottom: 20px;">@Localizer["Error_Title"]</h2>
+
+        <a class="backHome" href="/">@Localizer["Error_BackBtn"]</a>
+
+        @if (Model.ShowRequestId)
+        {
+            <p style="margin-top: 40px; color: #888; font-size: 12px;">
+                <strong>Request ID:</strong> <code>@Model.RequestId</code>
+            </p>
+        }
+    </div>
+</main>

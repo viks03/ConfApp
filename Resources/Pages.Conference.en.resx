@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Nav_Conference" xml:space="preserve"><value>Conference</value></data>
+  <data name="Conf_SofiaLabel" xml:space="preserve"><value>Sofia 2026</value></data>
+  <data name="Conf_AboutTitle" xml:space="preserve"><value>About the Conference</value></data>
+  <data name="Conf_AboutPara1" xml:space="preserve"><value>The rapid evolution of blockchain technologies and the cryptoeconomy has outpaced academic frameworks and inter-university coordination across Europe. Educational programs remain fragmented, varying in depth and lacking common quality criteria.</value></data>
+  <data name="Conf_AboutPara2" xml:space="preserve"><value>This international conference, organized by the Institute of Cryptoeconomics, Blockchain and Innovation (ICBI) at UNWE in partnership with the National Association for Blockchain and Innovation, creates a platform for systematic dialogue. Our goal is to unite academia, regulators, and industry in a shared space with a focus on quality education, research, and innovation.</value></data>
+  <data name="Conf_GoalsLabel" xml:space="preserve"><value>GOALS</value></data>
+  <data name="Conf_GoalsTitle" xml:space="preserve"><value>What We Set Out to Achieve</value></data>
+  <data name="Conf_Goal1_Title" xml:space="preserve"><value>Establishing Academic Standards</value></data>
+  <data name="Conf_Goal1_Desc" xml:space="preserve"><value>Discussion and adoption of the "Sofia Declaration on Academic Standards in Cryptoeconomics and Blockchain Education" — a binding framework for European universities.</value></data>
+  <data name="Conf_Goal2_Title" xml:space="preserve"><value>Synchronise Curricula</value></data>
+  <data name="Conf_Goal2_Desc" xml:space="preserve"><value>Modernising university models based on global trends and best practices from the EU, USA, and Asia — creating coherent, comparable educational pathways.</value></data>
+  <data name="Conf_Goal3_Title" xml:space="preserve"><value>Adapt to Regulatory Frameworks</value></data>
+  <data name="Conf_Goal3_Desc" xml:space="preserve"><value>In-depth analysis of European regulations (MiCA) and their direct influence on academic training infrastructure and program content.</value></data>
+  <data name="Conf_Goal4_Title" xml:space="preserve"><value>Build Academy–Industry Collaboration</value></data>
+  <data name="Conf_Goal4_Desc" xml:space="preserve"><value>Establishing a sustainable international academic network and launching joint projects between higher education institutions and Web3 businesses.</value></data>
+  <data name="Conf_OutcomesLabel" xml:space="preserve"><value>Expected Outcomes</value></data>
+  <data name="Conf_DeliverablesTitle" xml:space="preserve"><value>Concrete Deliverables</value></data>
+  <data name="Conf_Deliv1_Title" xml:space="preserve"><value>Sofia Declaration</value></data>
+  <data name="Conf_Deliv1_Desc" xml:space="preserve"><value>Formal adoption of a landmark document defining shared academic standards for cryptoeconomics and blockchain education across Europe.</value></data>
+  <data name="Conf_Deliv2_Title" xml:space="preserve"><value>International Network</value></data>
+  <data name="Conf_Deliv2_Desc" xml:space="preserve"><value>Establishing a sustainable, cross-border consortium of universities for ongoing research, faculty exchange, and joint European projects.</value></data>
+  <data name="Conf_Deliv3_Title" xml:space="preserve"><value>Curriculum Frameworks</value></data>
+  <data name="Conf_Deliv3_Desc" xml:space="preserve"><value>Delivering concrete models for modern university programs, integrating CHAISE and Erasmus+ frameworks, and establishing dedicated blockchain academic labs.</value></data>
+  <data name="Conf_Deliv4_Title" xml:space="preserve"><value>Knowledge Transfer</value></data>
+  <data name="Conf_Deliv4_Desc" xml:space="preserve"><value>Laying the groundwork for strategic technology transfer and funded joint initiatives between higher education institutions and the Web3 sector.</value></data>
+  <data name="Conf_ThemesLabel" xml:space="preserve"><value>THEMES</value></data>
+  <data name="Conf_ThemesTitle" xml:space="preserve"><value>Thematic Areas</value></data>
+  <data name="Conf_Theme1_Title" xml:space="preserve"><value>Education &amp; Academic Standards</value></data>
+  <data name="Conf_Theme2_Title" xml:space="preserve"><value>Regulatory Policies &amp; Law (MiCA)</value></data>
+  <data name="Conf_Theme3_Title" xml:space="preserve"><value>Web3 Technologies &amp; Tokenomics</value></data>
+  <data name="Conf_Theme4_Title" xml:space="preserve"><value>Research &amp; Business Synergy</value></data>
+  <data name="Conf_StructureLabel" xml:space="preserve"><value>STRUCTURE</value></data>
+  <data name="Conf_StructureTitle" xml:space="preserve"><value>Three-Day Program</value></data>
+  <data name="Conf_Day1" xml:space="preserve"><value>DAY 1</value></data>
+  <data name="Conf_Day1_Title" xml:space="preserve"><value>EDUCATION &amp; REGULATION</value></data>
+  <data name="Conf_Day1_List" xml:space="preserve"><value>&lt;p&gt;→ Global Trends in Education&lt;br&gt;→ Curriculum Models &amp;amp; Skills&lt;br&gt;→ MiCA &amp;amp; Academic Impact&lt;br&gt;→ Cryptoeconomics Workshops&lt;br&gt;→ Networking &amp;amp; Reception&lt;/p&gt;</value></data>
+  <data name="Conf_Day2" xml:space="preserve"><value>DAY 2</value></data>
+  <data name="Conf_Day2_Title" xml:space="preserve"><value>TECHNOLOGY &amp; RESEARCH</value></data>
+  <data name="Conf_Day2_List" xml:space="preserve"><value>&lt;p&gt;→ Web3 Innovations Keynote&lt;br&gt;→ DeFi &amp;amp; Tokenomics Panels&lt;br&gt;→ RWA Tokenization Focus&lt;br&gt;→ Blockchain Research Session&lt;br&gt;→ Industry-University Synergy&lt;/p&gt;</value></data>
+  <data name="Conf_Day3" xml:space="preserve"><value>DAY 3</value></data>
+  <data name="Conf_Day3_Title" xml:space="preserve"><value>DECLARATION &amp; CLOSING</value></data>
+  <data name="Conf_Day3_List" xml:space="preserve"><value>&lt;p&gt;→ Future Collaboration Strategy&lt;br&gt;→ Global Academic Networking&lt;br&gt;→ Sofia Declaration Adoption&lt;br&gt;→ Official Closing Remarks&lt;br&gt;→ Farewell Networking Lunch&lt;/p&gt;</value></data>
+  <data name="Conf_ResourcesLabel" xml:space="preserve"><value>AUTHOR RESOURCES</value></data>
+  <data name="Conf_ResourcesTitle" xml:space="preserve"><value>Important Documents &amp; Templates</value></data>
+  <data name="Conf_Doc1_Title" xml:space="preserve"><value>Official Paper Template</value></data>
+  <data name="Conf_Doc1_Desc" xml:space="preserve"><value>Download the &lt;br&gt; formatting template (DOCX)</value></data>
+  <data name="Conf_Doc2_Title" xml:space="preserve"><value>Authorship Declaration</value></data>
+  <data name="Conf_Doc2_Desc" xml:space="preserve"><value>Download declaration &lt;br&gt; for all submissions (DOCX)</value></data>
+  <data name="Conf_Doc3_Title" xml:space="preserve"><value>CEEOL Copyright Agreement</value></data>
+  <data name="Conf_Doc3_Desc" xml:space="preserve"><value>Download the licensing agreement for indexing in the CEEOL database.</value></data>
+  <data name="Conf_LeadershipLabel" xml:space="preserve"><value>LEADERSHIP</value></data>
+  <data name="Conf_OrgCommittee" xml:space="preserve"><value>Organizing Committee</value></data>
+  <data name="Conf_ReviewLabel" xml:space="preserve"><value>ACADEMIC REVIEW</value></data>
+  <data name="Conf_ProgCommittee" xml:space="preserve"><value>Program Committee</value></data>
+  <data name="Conf_StuCommittee" xml:space="preserve"><value>Student Committee</value></data>
+  <data name="Conf_PartnersLabel" xml:space="preserve"><value>PARTNERS</value></data>
+  <data name="Conf_PartnersTitle" xml:space="preserve"><value>Our Partners</value></data>
+  <data name="Conf_InstPartners" xml:space="preserve"><value>INSTITUTIONAL PARTNERS</value></data>
+  <data name="Conf_BusPartners" xml:space="preserve"><value>BUSINESS PARTNERS</value></data>
+  <data name="Conf_MediaPartners" xml:space="preserve"><value>MEDIA PARTNERS</value></data>
+</root>

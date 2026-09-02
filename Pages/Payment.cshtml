@@ -1,0 +1,652 @@
+@page "/Payment/{slug}"
+@model ConferenceApp.Pages.PaymentModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Pay_PageTitle"].Value ?? "Payment";
+
+    // Форматираната сума се ползва на четири места (лентата със сумата, бутона,
+    // IBAN таблицата и общата сума) — изчислява се веднъж тук.
+    var amountEur = "€" + Model.TierPriceEUR.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+    var ibanAmount = Model.TierHasPromo ? Model.TierPromoPrice : Model.TierRegularPrice;
+    var showOldPrice = Model.TierHasPromo && Model.TierPromoPrice != Model.TierRegularPrice;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/paymentStyle.css" asp-append-version="true" />
+}
+
+@* _PaymentsDisabled разчита на pay-page/pay-wrap/pay-brand/pay-title/... —
+   те идват от paymentStyle.css, затова тази проверка стои СЛЕД @section
+   Styles по-горе, не преди него: секция, регистрирана след `return;`,
+   никога не се изпълнява и страницата излиза без стил. *@
+@if (!Model.PaymentsEnabled)
+{
+    <partial name="_PaymentsDisabled" />
+    return;
+}
+
+<main class="pay-page">
+    <div class="pay-split">
+
+        @* ══ Лява колона — методите на плащане ══════════════════════ *@
+        <div class="pay-col">
+            <div class="pay-wrap">
+
+                <div class="pay-head">
+                    <div class="pay-brand">
+                        <img src="~/images/logos/mainLogo.png" alt="">
+                        <span class="pay-brand-rule"></span>
+                        <span class="pay-eyebrow">@Localizer["Pay_HeaderLabel"]</span>
+                    </div>
+                    <h1 class="pay-title">@Localizer["Pay_HeaderTitle"]</h1>
+                    <span class="pay-rule"></span>
+                    <p class="pay-sub">@Localizer["Pay_HeaderSub"]</p>
+                </div>
+
+                @* ── Табове ─────────────────────────────────────────
+                   switchTab() от scriptPayment.js разчита на .m-tab / .pay-panel
+                   и на id="panel-<name>" — имената не се променят.
+
+                   Payment Control (Admin панел) може да изключи отделни методи —
+                   тогава съответният таб/панел изобщо не се рендира. "active" се
+                   слага на първия останал включен метод, не безусловно на картата,
+                   защото тя може да е точно изключената. *@
+                @{
+                    var cardOn   = Model.IsMethodEnabled("card");
+                    var cryptoOn = Model.IsMethodEnabled("crypto");
+                    var ibanOn   = Model.IsMethodEnabled("iban");
+                    var firstMethod = cardOn ? "card" : cryptoOn ? "crypto" : ibanOn ? "iban" : null;
+                }
+                <div class="method-tabs" role="tablist" aria-label="@Localizer["Pay_TabsAriaLabel"]">
+
+                    @if (cardOn)
+                    {
+                        <button class="m-tab @(firstMethod == "card" ? "active" : "")" type="button" role="tab"
+                                aria-selected="@(firstMethod == "card" ? "true" : "false")"
+                                aria-controls="panel-card" id="tab-card" onclick="switchTab('card',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true">
+                                <rect x="2" y="5" width="20" height="14"></rect>
+                                <path d="M2 10h20"></path>
+                                <path d="M6 15h4"></path>
+                            </svg>
+                            <span class="m-tab-label">@Localizer["Pay_Tab_Card"]</span>
+                        </button>
+                    }
+
+                    @if (cryptoOn)
+                    {
+                        <button class="m-tab @(firstMethod == "crypto" ? "active" : "")" type="button" role="tab"
+                                aria-selected="@(firstMethod == "crypto" ? "true" : "false")"
+                                aria-controls="panel-crypto" id="tab-crypto" onclick="switchTab('crypto',this)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <path d="M9 8h4.5a2 2 0 0 1 0 4H9m0 0h5a2 2 0 0 1 0 4H9M9 8v8m3-10v2m0 8v2"></path>
+                            </svg>
+                            <span class="m-tab-label">@Localizer["Pay_Tab_Crypto"]</span>
+                        </button>
+                    }
+
+                    @if (ibanOn)
+                    {
+                    <button class="m-tab @(firstMethod == "iban" ? "active" : "")" type="button" role="tab"
+                            aria-selected="@(firstMethod == "iban" ? "true" : "false")"
+                            aria-controls="panel-iban" id="tab-iban" onclick="switchTab('iban',this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" aria-hidden="true">
+                            <path d="M3 10h18"></path>
+                            <path d="M5 10v9h14v-9"></path>
+                            <path d="M3 10 12 4l9 6"></path>
+                            <path d="M9 19v-5h6v5"></path>
+                        </svg>
+                        <span class="m-tab-label">@Localizer["Pay_Tab_Iban"]</span>
+                    </button>
+                    }
+
+                    @if (firstMethod == null)
+                    {
+                        <p class="info-box" role="status">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 8v4"></path>
+                                <path d="M12 16h.01"></path>
+                            </svg>
+                            <span>@Localizer["Pay_Closed_Sub"]</span>
+                        </p>
+                    }
+
+                </div>
+
+                @* ── Панел: карта (Stripe Checkout) ───────────────── *@
+                @if (cardOn)
+                {
+                <div class="pay-panel @(firstMethod == "card" ? "active" : "")" id="panel-card" role="tabpanel" aria-labelledby="tab-card">
+                    <div class="panel-inner">
+
+                        <p class="info-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 8v4"></path>
+                                <path d="M12 16h.01"></path>
+                            </svg>
+                            <span>@Html.Raw(Localizer["Pay_Card_InfoText"].Value)</span>
+                        </p>
+
+                        <div class="stripe-methods-strip">
+                            <span class="stripe-method-badge">
+                                <svg class="icon-stroke" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="square" aria-hidden="true">
+                                    <rect x="2" y="5" width="20" height="14"></rect>
+                                    <path d="M2 10h20"></path>
+                                </svg>
+                                @Localizer["Pay_Card_Method_CreditDebit"]
+                            </span>
+                            <span class="stripe-method-badge">
+                                <svg class="icon-apple" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.32.07 2.24.74 3.01.8.86-.17 1.69-.87 3.01-.93 1.82.09 3.17 1 3.96 2.47-3.52 2.1-2.94 6.8.48 8.1-.55 1.08-1.27 2.16-2.46 2.44zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"></path>
+                                </svg>
+                                Apple Pay
+                            </span>
+                            <span class="stripe-method-badge">
+                                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+                                </svg>
+                                Google Pay
+                            </span>
+                        </div>
+
+                        <div class="stripe-summary-row">
+                            <div class="stripe-summary-item">
+                                <span class="stripe-summary-label">@Localizer["Pay_Card_AmountLabel"]</span>
+                                <span class="stripe-summary-val is-amount">@amountEur</span>
+                            </div>
+                            <div class="stripe-summary-item">
+                                <span class="stripe-summary-label">@Localizer["Pay_Card_CurrencyLabel"]</span>
+                                <span class="stripe-summary-val">EUR</span>
+                            </div>
+                            <div class="stripe-summary-item">
+                                <span class="stripe-summary-label">@Localizer["Pay_Card_ProcessorLabel"]</span>
+                                <span class="stripe-summary-val">Stripe</span>
+                            </div>
+                        </div>
+
+                        <form method="post" asp-page-handler="CreateStripeSession" asp-antiforgery="true" id="stripe-checkout-form">
+                            <button type="submit" class="btn-pay" id="btn-pay-card">
+                                <span class="btn-pay-text">@Localizer["Pay_Card_PayBtnPrefix"] @amountEur</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m12 5 7 7-7 7"></path>
+                                </svg>
+                            </button>
+                        </form>
+
+                        <p class="secure-note">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="3" y="11" width="18" height="11"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <span>@Localizer["Pay_Card_SecureNote"]</span>
+                        </p>
+
+                    </div>
+                </div>
+                }
+
+                @* ── Панел: криптовалута ──────────────────────────── *@
+                @if (cryptoOn)
+                {
+                <div class="pay-panel @(firstMethod == "crypto" ? "active" : "")" id="panel-crypto" role="tabpanel" aria-labelledby="tab-crypto">
+                    <div class="panel-inner">
+
+                        <p class="info-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 8v4"></path>
+                                <path d="M12 16h.01"></path>
+                            </svg>
+                            <span>@Html.Raw(Localizer["Pay_Crypto_InfoText"].Value)</span>
+                        </p>
+
+                        @* Стринговете с валутата в onclick се четат от
+                           loadActiveCryptoOrder() — не сменяйте формата им. *@
+                        <div class="crypto-grid" role="group" aria-label="@Localizer["Pay_Crypto_GridAriaLabel"]">
+                            @if (Model.IsCurrencySupported("BTC", "BTC"))
+                            {
+                                <button class="crypto-item" type="button" onclick="selectCrypto(this,'BTC','BTC','Bitcoin')">
+                                    <span class="crypto-symbol">BTC</span>
+                                    <span class="crypto-name">Bitcoin</span>
+                                </button>
+                            }
+                            @if (Model.IsCurrencySupported("ETH", "ETH"))
+                            {
+                                <button class="crypto-item" type="button" onclick="selectCrypto(this,'ETH','ETH','Ethereum')">
+                                    <span class="crypto-symbol">ETH</span>
+                                    <span class="crypto-name">Ethereum</span>
+                                </button>
+                            }
+                            @if (Model.IsCurrencySupported("EURC", "ETH"))
+                            {
+                                <button class="crypto-item" type="button" onclick="selectCrypto(this,'EURC','ETH','@Localizer["Pay_Crypto_EurcName"]')">
+                                    <span class="crypto-symbol">EURC</span>
+                                    <span class="crypto-name">@Localizer["Pay_Crypto_EurcName"]</span>
+                                </button>
+                            }
+                            @if (Model.IsCurrencySupported("USDC", "ETH"))
+                            {
+                                <button class="crypto-item" type="button" onclick="selectCrypto(this,'USDC','ETH','@Localizer["Pay_Crypto_UsdcName"]')">
+                                    <span class="crypto-symbol">USDC</span>
+                                    <span class="crypto-name">@Localizer["Pay_Crypto_UsdcName"]</span>
+                                </button>
+                            }
+                        </div>
+
+                        <p class="crypto-select-prompt" id="crypto-select-prompt">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <path d="M9 8h4.5a2 2 0 0 1 0 4H9m0 0h5a2 2 0 0 1 0 4H9M9 8v8m3-10v2m0 8v2"></path>
+                            </svg>
+                            <span>@Localizer["Pay_Crypto_SelectPrompt"]</span>
+                        </p>
+
+                        @* display се управлява от скрипта (none → grid). *@
+                        <div class="crypto-details-grid" id="crypto-details-grid" style="display:none;">
+
+                            <div class="wallet-box">
+                                <div class="wallet-coin-header">
+                                    <span class="crypto-symbol" id="cryptoCoinName"></span>
+                                    <span class="wallet-network-badge" id="cryptoNetwork"></span>
+                                </div>
+
+                                <div class="wallet-amount-row">
+                                    <span class="wallet-amount-label">@Localizer["Pay_Crypto_AmountLabel"]</span>
+                                    <span class="wallet-amount-val" id="cryptoAmount"></span>
+                                </div>
+
+                                <p class="wallet-addr-label">@Localizer["Pay_Crypto_AddressLabel"]</p>
+                                <p class="wallet-addr-text" id="walletAddr"></p>
+
+                                <button class="btn-copy" type="button" id="copyWalletBtn" onclick="copyWallet()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="9" y="9" width="13" height="13"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    <span id="copyWalletTxt">@Localizer["Pay_Crypto_CopyAddress"]</span>
+                                </button>
+                            </div>
+
+                            <div class="qr-box">
+                                <span class="qr-label">@Localizer["Pay_Crypto_QrLabel"]</span>
+                                <span class="qr-frame">
+                                    <img id="cryptoQR" src="" alt="QR" class="qr-img"
+                                         onerror="this.style.display='none'; document.getElementById('qr-fallback').style.display='flex'">
+                                    <span id="qr-fallback" class="qr-fallback">@Localizer["Pay_Crypto_QrUnavailable"]</span>
+                                </span>
+                                <span class="qr-hint">@Localizer["Pay_Crypto_QrHint"]</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                }
+
+                @* ── Панел: банков превод ─────────────────────────── *@
+                @if (ibanOn)
+                {
+                <div class="pay-panel @(firstMethod == "iban" ? "active" : "")" id="panel-iban" role="tabpanel" aria-labelledby="tab-iban">
+                    <div class="panel-inner">
+
+                        <p class="info-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 8v4"></path>
+                                <path d="M12 16h.01"></path>
+                            </svg>
+                            <span>@Html.Raw(Localizer["Pay_Iban_InfoText"].Value)</span>
+                        </p>
+
+                        <p class="iban-invoice-notice">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 9v4"></path>
+                                <path d="M12 17h.01"></path>
+                                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            </svg>
+                            <span>@Html.Raw(Localizer["Pay_Iban_ImportantNote"].Value)</span>
+                        </p>
+
+                        <div class="iban-table">
+                            <div class="iban-row">
+                                <span class="iban-key">@Localizer["Pay_Iban_Beneficiary"]</span>
+                                <span class="iban-val-row">
+                                    <span class="iban-val">UNWE — Blockchain Education 2026</span>
+                                    <button class="icon-copy-btn" type="button"
+                                            onclick="copyText('UNWE — Blockchain Education 2026', this)"
+                                            aria-label="@Localizer["Pay_Iban_CopyBeneficiary"]">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="9" y="9" width="13" height="13"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                    </button>
+                                </span>
+                            </div>
+
+                            <div class="iban-row">
+                                <span class="iban-key">IBAN</span>
+                                <span class="iban-val-row">
+                                    <span class="iban-val mono">BG03 BNBG 9661 3100 1746 01</span>
+                                    <button class="icon-copy-btn" type="button"
+                                            onclick="copyText('BG03BNBG96613100174601', this)"
+                                            aria-label="@Localizer["Pay_Iban_CopyIban"]">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="9" y="9" width="13" height="13"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                    </button>
+                                </span>
+                            </div>
+
+                            <div class="iban-row">
+                                <span class="iban-key">BIC / SWIFT</span>
+                                <span class="iban-val-row">
+                                    <span class="iban-val mono">BNBGBGSD</span>
+                                    <button class="icon-copy-btn" type="button"
+                                            onclick="copyText('BNBGBGSD', this)"
+                                            aria-label="@Localizer["Pay_Iban_CopyBic"]">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="9" y="9" width="13" height="13"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                    </button>
+                                </span>
+                            </div>
+
+                            <div class="iban-row">
+                                <span class="iban-key">@Localizer["Pay_Iban_Bank"]</span>
+                                <span class="iban-val">@Localizer["Pay_Iban_BankName"]</span>
+                            </div>
+
+                            <div class="iban-row">
+                                <span class="iban-key">@Localizer["Pay_Iban_Amount"]</span>
+                                <span class="iban-val iban-total" id="iban-amount-display">@ibanAmount</span>
+                            </div>
+
+                            <div class="iban-row iban-row-highlight">
+                                <span class="iban-key">@Localizer["Pay_Iban_Reference"] <span class="req-star">*</span></span>
+                                <span class="iban-val-row">
+                                    <span class="iban-val mono iban-ref" id="ibanRef">@Model.ReferenceNumber</span>
+                                    <button class="icon-copy-btn" type="button"
+                                            onclick="copyText('@Model.ReferenceNumber', this)"
+                                            aria-label="@Localizer["Pay_Iban_CopyRef"]">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="9" y="9" width="13" height="13"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn-pay btn-pay-outline" id="btn-iban-done"
+                                onclick="handleIbanDone()"
+                                style="@(Model.IbanTransferSubmitted ? "display:none" : "")">
+                            <span class="btn-pay-text">@Localizer["Pay_Iban_DoneBtn"]</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M20 6 9 17l-5-5"></path>
+                            </svg>
+                        </button>
+
+                        @* Скриптът добавя .visible след успешен POST. *@
+                        <div class="iban-submitted-box @(Model.IbanTransferSubmitted ? "visible" : "")"
+                             id="iban-submitted-box"
+                             data-submitted="@Model.IbanTransferSubmitted.ToString().ToLower()">
+                            <div class="iban-submitted-head">
+                                <span class="iban-submitted-dot" aria-hidden="true"></span>
+                                <span class="iban-submitted-title">@Localizer["Pay_Iban_SubmittedTitle"]</span>
+                            </div>
+                            <p class="iban-submitted-text">
+                                @Html.Raw(string.Format(
+                                    Localizer["Pay_Iban_SubmittedText"].Value,
+                                    "<a href='/Profile'>" + Localizer["Pay_Iban_ProfileLink"].Value + "</a>",
+                                    "<a href='mailto:conference.education@unwe.bg'>conference.education@unwe.bg</a>",
+                                    "<strong>" + Model.ReferenceNumber + "</strong>"
+                                ))
+                            </p>
+                            <div class="iban-submitted-ref">
+                                <span class="iban-submitted-ref-label">@Localizer["Pay_Summary_RefLabel"]</span>
+                                <span class="iban-submitted-ref-val">@Model.ReferenceNumber</span>
+                            </div>
+                            <a href="/Profile" class="pay-link-btn">
+                                <span>@Localizer["Pay_Iban_TrackInProfile"]</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m12 5 7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+                }
+
+            </div>
+        </div>
+
+        @* ══ Дясна колона — детайли на плащането ════════════════════
+           На телефон обвивката става display:contents и двата блока се
+           пренареждат: горният над панелите, долният под тях. *@
+        <div class="pay-aside-col">
+
+            <aside class="pay-aside-top" aria-label="@Localizer["Pay_Summary_AriaLabel"]">
+                <div class="pay-aside-stack">
+
+                    <div class="pay-brand pay-brand--mobile">
+                        <img src="~/images/logos/mainLogo.png" alt="">
+                        <span class="pay-brand-rule"></span>
+                        <span class="pay-eyebrow">@Localizer["Pay_HeaderLabel"]</span>
+                    </div>
+
+                    <h2 class="summary-title">@Localizer["Pay_Summary_Title"]</h2>
+
+                    <div class="tier-card">
+                        <p class="tier-name">@Model.TierName</p>
+                        @if (!string.IsNullOrWhiteSpace(Model.TierDescription))
+                        {
+                            <p class="tier-desc">@Model.TierDescription</p>
+                        }
+                        @if (Model.TierPerks.Any())
+                        {
+                            <ul class="tier-perks">
+                                @foreach (var perk in Model.TierPerks)
+                                {
+                                    <li>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M20 6 9 17l-5-5"></path>
+                                        </svg>
+                                        <span>@perk</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+
+                    <div class="summary-rows">
+                        <div class="sum-row">
+                            <span class="sum-label">@Localizer["Pay_Summary_TypeLabel"]</span>
+                            <span class="sum-val">@Model.ParticipationType</span>
+                        </div>
+                        <div class="sum-row">
+                            <span class="sum-label">@Localizer["Pay_Summary_RefLabel"]</span>
+                            <span class="sum-val mono sum-ref-val">@Model.ReferenceNumber</span>
+                        </div>
+                    </div>
+
+                    <div class="sum-total">
+                        <span class="sum-total-label">@Localizer["Pay_Summary_TotalLabel"]</span>
+                        <span class="sum-total-price-group">
+                            @if (showOldPrice)
+                            {
+                                <span class="sum-price-old" id="sum-price-old">@Model.TierRegularPrice</span>
+                                <span class="sum-total-val" id="sum-total">@Model.TierPromoPrice</span>
+                            }
+                            else
+                            {
+                                <span class="sum-total-val" id="sum-total">@Model.TierRegularPrice</span>
+                            }
+                        </span>
+                    </div>
+
+                </div>
+            </aside>
+
+            <aside class="pay-aside-bottom">
+                <div class="pay-aside-stack">
+
+                    <div class="security-badges">
+                        <span class="badge">PCI DSS</span>
+                        <span class="badge">SSL / TLS</span>
+                        <span class="badge">GDPR</span>
+                        <span class="badge">ISO 27001</span>
+                    </div>
+
+                    <p class="summary-note">
+                        @Html.Raw(string.Format(
+                            Localizer["Pay_Summary_ContactNote"].Value,
+                            "<a href='mailto:conference.education@unwe.bg'>conference.education@unwe.bg</a>"
+                        ))
+                    </p>
+
+                </div>
+            </aside>
+
+        </div>
+
+    </div>
+
+    @* ══ Overlay при успешно плащане (?payment=success) ═════════════ *@
+    @if (Model.PaymentSuccess)
+    {
+        <div class="pay-success-overlay" id="payment-success-overlay" role="status">
+            <div class="pay-success-box">
+                <span class="pay-success-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                    </svg>
+                </span>
+
+                <p class="pay-success-label">@Localizer["Pay_Success_Label"]</p>
+                <h2 class="pay-success-title">@Localizer["Pay_Success_Title"]</h2>
+                <span class="pay-success-rule"></span>
+                <p class="pay-success-msg">@Localizer["Pay_Success_Msg"]</p>
+
+                @if (!string.IsNullOrEmpty(Model.ReferenceNumber))
+                {
+                    <div class="pay-success-ref">
+                        <span class="pay-success-ref-label">@Localizer["Pay_Summary_RefLabel"]</span>
+                        <span class="pay-success-ref-val">@Model.ReferenceNumber</span>
+                    </div>
+                }
+
+                <span class="pay-success-bar" aria-hidden="true"><span></span></span>
+                <p class="pay-success-countdown">
+                    @Localizer["Pay_Success_Redirect"] <strong id="success-countdown">10</strong>s
+                </p>
+
+                <a href="/Profile" class="pay-success-btn">
+                    <span>@Localizer["Pay_Success_ProfileBtn"]</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12h14"></path>
+                        <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    }
+
+</main>
+
+@section Scripts {
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <script>
+        // ── Tier данни от сървъра (чете се от scriptPayment.js) ──
+        window.TierData = {
+            priceEUR:        @Model.TierPriceEUR.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+            hasPromo:        @Model.TierHasPromo.ToString().ToLower(),
+            payBtnPrefix:    '@Html.Raw(Localizer["Pay_Card_PayBtnPrefix"].Value)',
+            stripePublicKey: '@Model.StripePublishableKey'
+        };
+
+        // ── JS преводи ──────────────────────────────────────────
+        window.PayTranslations = {
+            cryptoErr_NotSupported:   '@Html.Raw(Localizer["Pay_JS_CryptoErr_NotSupported"].Value)',
+            cryptoErr_LimitReached:   '@Html.Raw(Localizer["Pay_JS_CryptoErr_LimitReached"].Value)',
+            cryptoErr_MinAmount:      '@Html.Raw(Localizer["Pay_JS_CryptoErr_MinAmount"].Value)',
+            cryptoErr_Network:        '@Html.Raw(Localizer["Pay_JS_CryptoErr_Network"].Value)',
+            cryptoErr_Expired:        '@Html.Raw(Localizer["Pay_JS_CryptoErr_Expired"].Value)',
+            cryptoErr_Confirmed:      '@Html.Raw(Localizer["Pay_JS_CryptoErr_Confirmed"].Value)',
+            cryptoErr_Default:        '@Html.Raw(Localizer["Pay_JS_CryptoErr_Default"].Value)',
+            cryptoTitle_NotAvail:     '@Html.Raw(Localizer["Pay_JS_CryptoTitle_NotAvail"].Value)',
+            cryptoTitle_LimitReached: '@Html.Raw(Localizer["Pay_JS_CryptoTitle_LimitReached"].Value)',
+            cryptoTitle_MinAmount:    '@Html.Raw(Localizer["Pay_JS_CryptoTitle_MinAmount"].Value)',
+            cryptoTitle_ConnErr:      '@Html.Raw(Localizer["Pay_JS_CryptoTitle_ConnErr"].Value)',
+            cryptoTitle_Expired:      '@Html.Raw(Localizer["Pay_JS_CryptoTitle_Expired"].Value)',
+            cryptoTitle_Confirmed:    '@Html.Raw(Localizer["Pay_JS_CryptoTitle_Confirmed"].Value)',
+            cryptoTitle_PayErr:       '@Html.Raw(Localizer["Pay_JS_CryptoTitle_PayErr"].Value)',
+            cryptoHint_TryOther:      '@Html.Raw(Localizer["Pay_JS_CryptoHint_TryOther"].Value)',
+            cryptoHint_WaitExpiry:    '@Html.Raw(Localizer["Pay_JS_CryptoHint_WaitExpiry"].Value)',
+            cryptoHint_NewAddress:    '@Html.Raw(Localizer["Pay_JS_CryptoHint_NewAddress"].Value)',
+            cryptoHint_TryAgain:      '@Html.Raw(Localizer["Pay_JS_CryptoHint_TryAgain"].Value)',
+            cryptoHint_SelectAgain:   '@Html.Raw(Localizer["Pay_JS_CryptoHint_SelectAgain"].Value)',
+            cryptoLimitTitle:         '@Html.Raw(Localizer["Pay_JS_CryptoLimitTitle"].Value)',
+            cryptoLimitMsg:           '@Html.Raw(Localizer["Pay_JS_CryptoLimitMsg"].Value)',
+            cryptoUnlocksIn:          '@Html.Raw(Localizer["Pay_JS_CryptoUnlocksIn"].Value)',
+            cryptoCopyAddress:        '@Html.Raw(Localizer["Pay_Crypto_CopyAddress"].Value)',
+            cryptoCopied:             '@Html.Raw(Localizer["Pay_JS_CryptoCopied"].Value)',
+            confirmedTitle:           '@Html.Raw(Localizer["Pay_JS_ConfirmedTitle"].Value)',
+            confirmedSub:             '@Html.Raw(Localizer["Pay_JS_ConfirmedSub"].Value)',
+            confirmedRedirect:        '@Html.Raw(Localizer["Pay_JS_ConfirmedRedirect"].Value)',
+            cardErrName:              '@Html.Raw(Localizer["Pay_JS_CardErrName"].Value)',
+            stripe_processing:        '@Html.Raw(Localizer["Pay_JS_StripeProcessing"].Value)',
+            stripe_success:           '@Html.Raw(Localizer["Pay_JS_StripeSuccess"].Value)',
+            stripe_error:             '@Html.Raw(Localizer["Pay_JS_StripeError"].Value)',
+            digital_unavailable:      '@Html.Raw(Localizer["Pay_Digital_Unavailable"].Value)'
+        };
+    </script>
+
+    <script src="~/js/scriptPayment.js" asp-append-version="true"></script>
+
+    <script>
+        // Бутонът за Stripe Checkout: заключва се и сменя текста при submit.
+        (function () {
+            var form = document.getElementById('stripe-checkout-form');
+            if (!form) return;
+            form.addEventListener('submit', function () {
+                var btn = document.getElementById('btn-pay-card');
+                if (!btn) return;
+                btn.disabled = true;
+                btn.classList.add('btn-pay--loading');
+                var txt = btn.querySelector('.btn-pay-text');
+                if (txt) txt.textContent = '@Html.Raw(Localizer["Pay_Card_Redirecting"].Value)';
+            });
+        })();
+    </script>
+
+    @if (Model.PaymentSuccess)
+    {
+        <script>
+            // Отброяване за overlay-а след успешно плащане.
+            (function () {
+                var count = 10;
+                var el = document.getElementById('success-countdown');
+                var timer = setInterval(function () {
+                    count--;
+                    if (el) el.textContent = count;
+                    if (count <= 0) {
+                        clearInterval(timer);
+                        window.location.href = '/Profile';
+                    }
+                }, 1000);
+            })();
+        </script>
+    }
+}

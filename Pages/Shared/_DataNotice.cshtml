@@ -1,0 +1,131 @@
+@model ConferenceApp.Models.DataNoticeViewModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@* ═══════════════════════════════════════════════════════════════════════
+   Data-use notice (cookie banner) — content split cleanly by source:
+     - Admin-panel-managed (Model.*): NoticeHtml, category names/descriptions
+       — these come from the DB (CookieCategory + CookieNoticeContent),
+       editable from /Admin -> Cookie Notice.
+     - Everything else (button labels, aria-labels, tooltips, the empty-DB
+       fallback text) — plain static UI strings, NOT meant to be edited via
+       the admin panel, so they live in Resources/Pages.Shared._DataNotice.
+       en.resx / .bg.resx instead of being hardcoded here.
+
+   VISUAL/UI interactivity is still the only thing that works right now
+   (see dataNotice.js) — no real cookie is set yet, no script is gated
+   based on the choice. That's a deliberate, separate follow-up once this
+   is wired up end-to-end.
+
+   Deliberately named "DataNotice" / "dn-*" everywhere — NOT "cookie",
+   "consent", or "gdpr". Ad-blocker "Annoyances" filter lists hide banners
+   by matching exactly those common id/class/filename patterns, not by
+   reading page content — avoiding the trigger words is the most reliable
+   way for this to keep showing up even with an ad blocker turned on.
+
+   Rendered once from _Layout.cshtml, on every page, for every visitor.
+   ═══════════════════════════════════════════════════════════════════════ *@
+
+<div class="dn-banner@(Model.HasExistingConsent ? " is-hidden" : "")" id="dnBanner" role="dialog" aria-label="@Localizer["DataNotice_AriaBanner"]">
+    <div class="dn-banner-aurora" aria-hidden="true">
+        <span class="dn-aurora-blob dn-aurora-blob-1"></span>
+        <span class="dn-aurora-blob dn-aurora-blob-2"></span>
+    </div>
+    <div class="dn-banner-main">
+        <div class="dn-banner-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5Z"></path>
+                <circle cx="8.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"></circle>
+                <circle cx="15" cy="15.5" r="1" fill="currentColor" stroke="none"></circle>
+                <circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"></circle>
+                <circle cx="10" cy="16" r="0.9" fill="currentColor" stroke="none"></circle>
+                <circle cx="7" cy="13" r="0.8" fill="currentColor" stroke="none"></circle>
+            </svg>
+        </div>
+        <div class="dn-banner-text">
+            @if (string.IsNullOrWhiteSpace(Model.NoticeHtml))
+            {
+                @* Fallback if the DB row is somehow missing — banner should never render blank. *@
+                <h2>@Localizer["DataNotice_FallbackTitle"]</h2>
+                <p>@Html.Raw(Localizer["DataNotice_FallbackBody"].Value)</p>
+            }
+            else
+            {
+                @Html.Raw(Model.NoticeHtml)
+            }
+        </div>
+    </div>
+    <div class="dn-banner-actions">
+        <button type="button" class="dn-btn dn-btn-primary" id="dnAcceptBtn">@Localizer["DataNotice_AcceptAll"]</button>
+        <button type="button" class="dn-btn dn-btn-outline" id="dnRejectBtn">@Localizer["DataNotice_RejectAll"]</button>
+        <button type="button" class="dn-btn dn-btn-outline dn-manage-btn" id="dnManageBtn" aria-label="@Localizer["DataNotice_Preferences"]" title="@Localizer["DataNotice_Preferences"]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+            <span class="dn-manage-label">@Localizer["DataNotice_Preferences"]</span>
+        </button>
+    </div>
+</div>
+
+<button type="button" class="dn-relaunch@(Model.HasExistingConsent ? " is-visible" : "")" id="dnRelaunchBtn" aria-label="@Localizer["DataNotice_RelaunchAriaLabel"]" title="@Localizer["DataNotice_RelaunchAriaLabel"]">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5Z"></path>
+        <circle cx="8.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"></circle>
+        <circle cx="15" cy="15.5" r="1" fill="currentColor" stroke="none"></circle>
+        <circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"></circle>
+        <circle cx="10" cy="16" r="0.9" fill="currentColor" stroke="none"></circle>
+        <circle cx="7" cy="13" r="0.8" fill="currentColor" stroke="none"></circle>
+    </svg>
+</button>
+
+<div class="dn-modal-overlay" id="dnModalOverlay">
+    <div class="dn-modal" role="dialog" aria-label="@Localizer["DataNotice_ModalAriaLabel"]">
+        <div class="dn-banner-aurora" aria-hidden="true">
+            <span class="dn-aurora-blob dn-aurora-blob-1"></span>
+            <span class="dn-aurora-blob dn-aurora-blob-2"></span>
+        </div>
+        <div class="dn-modal-header">
+            <div class="dn-modal-header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 9.54 13.14 1 1 0 0 0-1.3-1.22 6 6 0 0 1-7.65-7.79A1 1 0 0 0 11.4 4.4 4 4 0 0 1 12 2z"></path></svg>
+            </div>
+            <div class="dn-modal-header-text">
+                <h3>@Localizer["DataNotice_ModalTitle"]</h3>
+                <p>@Localizer["DataNotice_ModalSubtitle"]</p>
+            </div>
+            <button type="button" class="dn-modal-close" id="dnModalCloseBtn" aria-label="@Localizer["DataNotice_ModalCloseAriaLabel"]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <div class="dn-modal-body">
+            @if (!Model.Categories.Any())
+            {
+                <p style="color:var(--muted);font-size:0.85rem;">@Localizer["DataNotice_NoCategories"]</p>
+            }
+            else
+            {
+                @foreach (var cat in Model.Categories)
+                {
+                    <div class="dn-category" data-key="@cat.Key">
+                        <div class="dn-category-row">
+                            <h4>@(Model.IsBg ? cat.NameBg : cat.NameEn)</h4>
+                            @if (!cat.IsToggleable)
+                            {
+                                <span class="dn-toggle @(cat.DefaultOn ? "is-on" : "") is-locked" aria-disabled="true" title="@Localizer["DataNotice_AlwaysActive"]"><span class="dn-toggle-knob"></span></span>
+                            }
+                            else
+                            {
+                                <button type="button" class="dn-toggle @(cat.DefaultOn ? "is-on" : "")" data-category="@cat.Key" role="switch" aria-checked="@(cat.DefaultOn ? "true" : "false")"><span class="dn-toggle-knob"></span></button>
+                            }
+                        </div>
+                        <div class="dn-category-desc">@Html.Raw(Model.IsBg ? cat.DescriptionBg : cat.DescriptionEn)</div>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="dn-modal-footer">
+            <div class="dn-modal-footer-row">
+                <button type="button" class="dn-btn dn-btn-ghost" id="dnModalSaveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>@Localizer["DataNotice_SavePreferences"]</button>
+                <button type="button" class="dn-btn dn-btn-outline" id="dnModalRejectBtn">@Localizer["DataNotice_RejectAll"]</button>
+                <button type="button" class="dn-btn dn-btn-primary" id="dnModalAcceptBtn">@Localizer["DataNotice_AcceptAll"]</button>
+            </div>
+        </div>
+    </div>
+</div>

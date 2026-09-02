@@ -1,0 +1,69 @@
+@page
+@model ConferenceApp.Pages.FAQModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Nav_FAQ"].Value ?? "FAQ";
+    
+    // Взимаме текущия език, за да знаем кои полета от базата да покажем
+    var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.Name;
+    bool isBg = currentCulture.StartsWith("bg");
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/stylesFAQ.css" asp-append-version="true" />
+}
+
+<main>
+    <section class="hero">
+      <div class="hero-overlay"></div>
+
+      <a href="#tickets-section" class="scroll-down-arrow" aria-label="Scroll down">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </a>
+    </section>
+
+    <section class="faq-section" id="tickets-section">
+      <div class="section-inner reveal">
+        <p class="section-label">@Localizer["FAQ_Label"]</p>
+        <h2>@Localizer["FAQ_Title"]</h2>
+        <div class="faq-list">
+
+          @if (Model.Faqs != null && Model.Faqs.Any())
+          {
+              // Първият или първите два елемента могат да бъдат отворени по подразбиране (както беше в стария код)
+              int index = 0;
+              foreach (var faq in Model.Faqs)
+              {
+                  bool isOpen = index < 2; // Първите 2 са отворени по подразбиране
+                  string isOpenClass = isOpen ? "is-open" : "";
+                  string ariaExpanded = isOpen.ToString().ToLower();
+                  
+                  // Избираме правилния превод от модела
+                  string question = isBg ? faq.QuestionBg : faq.QuestionEn;
+                  string answer = isBg ? faq.AnswerBg : faq.AnswerEn;
+
+                  <article class="faq-item @isOpenClass">
+                    <button class="faq-question" type="button" aria-expanded="@ariaExpanded">
+                      <span>@question</span>
+                      <span class="faq-icon"></span>
+                    </button>
+                    <div class="faq-answer">
+                      @* Използваме Html.Raw, защото в отговорите може да има <a> или <br> тагове *@
+                      <p>@Html.Raw(answer)</p>
+                    </div>
+                  </article>
+                  
+                  index++;
+              }
+          }
+          else
+          {
+              <p style="color: #fff;">No frequently asked questions available at the moment.</p>
+          }
+
+        </div>
+      </div>
+    </section>
+</main>

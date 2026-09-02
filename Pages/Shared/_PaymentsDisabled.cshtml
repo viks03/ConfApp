@@ -1,0 +1,159 @@
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@* ═══════════════════════════════════════════════════════════════════════
+   Състоянието „плащанията са спрени“ на /Payment.
+
+   Включва се вместо цялото съдържание на страницата, когато ключът
+   `all` е изключен в Payment Control:
+
+       @if (!Model.PaymentsEnabled)
+       {
+           <partial name="_PaymentsDisabled" />
+           return;
+       }
+
+   Класовете pay-page, pay-wrap, pay-brand, pay-brand-rule, pay-eyebrow,
+   pay-title, pay-rule, pay-sub и pay-link-btn вече съществуват в CSS-а на
+   страницата за плащане и не се пипат. Новите класове (.pay-closed*) са
+   само тук — блокът <style> по-долу е самостоятелен, за да можеш да
+   включиш файла без да пипаш paymentPage.css. Ако предпочиташ, изнеси го
+   там дословно.
+
+   Localizer тук е собствен (партиалите не наследяват @inject от
+   Payment.cshtml) — резолва се към Resources/Pages.Shared._PaymentsDisabled.
+   Pay_HeaderLabel и Pay_Summary_RefLabel са дублирани там със същите
+   стойности като в Resources/Pages.Payment.*.resx.
+   ═══════════════════════════════════════════════════════════════════════ *@
+
+<style>
+    /* Токените (--bg/--text/--muted/--pay-wait) идват от paymentStyle.css,
+       което вече е гарантирано заредено — виж бележката в Payment.cshtml
+       за реда на @@section Styles. Страницата е тъмна тема (виж .pay-page:
+       background: var(--bg, #050505)), затова цветовете тук са огледални
+       на .pay-success-mark / .pay-success-ref / .iban-submitted-ref, не
+       произволно нови — "спряно/чакащо" ползва същия кехлибарен акцент
+       (--pay-wait) като IBAN "изпратен превод, чакаме потвърждение". */
+
+    .pay-closed {
+        min-height: 62vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 20px 72px;
+    }
+
+    .pay-closed-inner {
+        width: 100%;
+        max-width: 560px;
+    }
+
+    .pay-closed-mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        margin-bottom: 28px;
+        background: rgba(217, 147, 43, 0.08);
+        border: 1px solid rgba(217, 147, 43, 0.45);
+    }
+
+    .pay-closed-mark svg {
+        width: 34px;
+        height: 34px;
+        stroke: var(--pay-wait, #d9932b);
+    }
+
+    .pay-closed-list {
+        margin: 26px 0 30px;
+        padding: 0;
+        list-style: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .pay-closed-list li {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.88rem;
+        line-height: 1.6;
+        color: #d8d5cf;
+        text-wrap: pretty;
+    }
+
+    .pay-closed-ref {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 14px 16px;
+        margin-bottom: 26px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .pay-closed-ref-label {
+        font-size: 0.68rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #8a8680;
+    }
+
+    .pay-closed-ref-val {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+        letter-spacing: 0.06em;
+        color: var(--text, #f4f2ec);
+    }
+
+    @@media (max-width: 640px) {
+        .pay-closed { min-height: 0; padding: 30px 16px 54px; }
+        .pay-closed-ref { flex-direction: column; align-items: flex-start; gap: 6px; }
+    }
+</style>
+
+<main class="pay-page">
+    <div class="pay-closed">
+        <div class="pay-closed-inner">
+
+            <div class="pay-brand">
+                <img src="~/images/logos/mainLogo.png" alt="">
+                <span class="pay-brand-rule"></span>
+                <span class="pay-eyebrow">@Localizer["Pay_HeaderLabel"]</span>
+            </div>
+
+            <span class="pay-closed-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 7.5v5"></path>
+                    <path d="M12 16h.01"></path>
+                </svg>
+            </span>
+
+            <h1 class="pay-title">@Localizer["Pay_Closed_Title"]</h1>
+            <span class="pay-rule"></span>
+            <p class="pay-sub">@Localizer["Pay_Closed_Sub"]</p>
+
+            <ul class="pay-closed-list">
+                <li>@Localizer["Pay_Closed_Point_Saved"]</li>
+                <li>@Localizer["Pay_Closed_Point_NoAction"]</li>
+                <li>@Localizer["Pay_Closed_Point_Email"]</li>
+            </ul>
+
+            @if (!string.IsNullOrEmpty(Model.ReferenceNumber))
+            {
+                <div class="pay-closed-ref">
+                    <span class="pay-closed-ref-label">@Localizer["Pay_Summary_RefLabel"]</span>
+                    <span class="pay-closed-ref-val">@Model.ReferenceNumber</span>
+                </div>
+            }
+
+            <a href="/Profile" class="pay-link-btn">
+                <span>@Localizer["Pay_Closed_BackToProfile"]</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14"></path>
+                    <path d="m12 5 7 7-7 7"></path>
+                </svg>
+            </a>
+
+        </div>
+    </div>
+</main>

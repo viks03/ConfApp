@@ -1,0 +1,424 @@
+/* verificationStyle.css — редизайн на /Verification по мокъп от Claude
+   Design (двуколонен "билет" layout: форма отляво, "талон" с таймер
+   отдясно). Отделен файл, не разширява loginStyle.css, защото последният
+   е споделен и с /Login — тези класове са специфични само за тук.
+   Цветовите токени идват от mainStyle.css (:root), зареден глобално
+   в _Layout.cshtml; няколко нюанса (#8d8981 и др.) са нарочно различни
+   от --muted, за да пасне точно на визуалната йерархия от мокъпа. */
+
+.verify-shell {
+    position: relative;
+    min-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 24px 72px;
+    overflow: hidden;
+    background: radial-gradient(circle at top left, rgba(255, 70, 59, .12), transparent 24%),
+                linear-gradient(180deg, #080808 0%, #030303 100%);
+}
+
+/* Финна, замаскирана мрежа на фона — декоративна, без съдържание. */
+.verify-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, .028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .028) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-position: center top;
+    mask-image: radial-gradient(ellipse 70% 55% at 50% 32%, #000 30%, transparent 78%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 32%, #000 30%, transparent 78%);
+    pointer-events: none;
+}
+
+/* Мек акцентен glow горе в средата. */
+.verify-shell::after {
+    content: '';
+    position: absolute;
+    top: -160px;
+    left: 50%;
+    width: 900px;
+    height: 520px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, rgba(255, 54, 54, .16), transparent 62%);
+    filter: blur(28px);
+    pointer-events: none;
+}
+
+.verify-shell-hairline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 54, 54, .5), transparent);
+    pointer-events: none;
+}
+
+.verify-inner {
+    position: relative;
+    width: min(1000px, 100%);
+}
+
+/* ── Стъпки (01/02/03) ─────────────────────────────────────────────── */
+.verify-steps {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 26px;
+}
+.verify-step {
+    font-size: .72rem;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #8d8981;
+}
+.verify-step.is-active {
+    font-weight: 600;
+    color: var(--accent);
+}
+.verify-step-sep {
+    flex: 0 0 26px;
+    height: 1px;
+    background: rgba(255, 255, 255, .12);
+}
+
+/* ── Картата ──────────────────────────────────────────────────────── */
+.verify-card {
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, .09);
+    background: var(--panel);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
+    overflow: hidden;
+}
+.verify-card-topbar {
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 62%, rgba(255, 54, 54, .25) 100%);
+}
+.verify-card-noise {
+    position: absolute;
+    inset: 2px 0 0 0;
+    background-image: radial-gradient(rgba(255, 255, 255, .05) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: linear-gradient(160deg, #000, transparent 55%);
+    -webkit-mask-image: linear-gradient(160deg, #000, transparent 55%);
+    pointer-events: none;
+}
+
+.verify-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.35fr .9fr;
+}
+
+/* ── Ляво: форма за въвеждане на кода ─────────────────────────────── */
+.verify-form {
+    padding: 46px 44px 40px;
+}
+.verify-kicker {
+    margin: 0 0 .7rem;
+    font-size: .78rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent-soft);
+}
+.verify-title {
+    margin: 0;
+    font-size: 3.1rem;
+    font-weight: 600;
+    line-height: 1.02;
+    text-transform: uppercase;
+    letter-spacing: -.01em;
+    font-family: "Oswald", Arial, sans-serif;
+    color: var(--text);
+}
+.verify-sentline {
+    margin: 22px 0 0;
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.65;
+    color: var(--muted);
+    max-width: 36ch;
+    text-wrap: pretty;
+}
+.verify-email {
+    margin: 6px 0 0;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--text);
+    word-break: break-all;
+}
+
+/* Банер за грешки/успех — замества старите ad-hoc inline-style div-ове;
+   лявата цветна лента (::before) е самият индикатор за тип съобщение. */
+.verify-banner {
+    position: relative;
+    margin-top: 26px;
+    padding: 13px 16px 13px 28px;
+    font-size: .92rem;
+    font-weight: 400;
+    line-height: 1.5;
+    border: 1px solid rgba(255, 54, 54, .35);
+    background: rgba(255, 54, 54, .08);
+    color: #ff6a5c;
+}
+.verify-banner::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--accent);
+}
+.verify-banner.is-success {
+    border-color: rgba(40, 167, 69, .4);
+    background: rgba(40, 167, 69, .1);
+    color: #5cd08a;
+}
+.verify-banner.is-success::before {
+    background: #28a745;
+}
+.verify-banner ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.verify-banner li {
+    margin: 0;
+}
+.verify-banner li + li {
+    margin-top: 4px;
+}
+
+.verify-code-label {
+    display: block;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #8d8981;
+    margin: 34px 0 14px;
+}
+.verify-code-row {
+    display: flex;
+    gap: 11px;
+}
+.verify-code-box {
+    width: 56px;
+    height: 66px;
+    padding: 0;
+    text-align: center;
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text);
+    background: #0d0d0d;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 0;
+    transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.verify-code-box:focus {
+    outline: none;
+    border-color: var(--accent) !important;
+    background: #151515 !important;
+    box-shadow: inset 0 -3px 0 var(--accent);
+}
+.verify-paste-hint {
+    margin: 14px 0 0;
+    font-size: .84rem;
+    font-weight: 300;
+    color: var(--muted);
+}
+
+.verify-submit {
+    margin-top: 30px;
+    width: 100%;
+    padding: 19px 30px;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 0;
+    background: transparent;
+    color: #6d6a64;
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    cursor: not-allowed;
+    transition: transform .25s ease, background .25s ease, box-shadow .25s ease, border-color .25s ease, color .25s ease;
+}
+.verify-submit.is-ready {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #ffffff;
+    box-shadow: 0 14px 34px rgba(255, 54, 54, .22);
+    cursor: pointer;
+}
+.verify-submit.is-ready:hover {
+    background: #ff4a4a;
+    transform: translateY(-2px);
+}
+
+.verify-login-line {
+    margin: 24px 0 0;
+    font-size: .92rem;
+    font-weight: 300;
+    color: var(--muted);
+}
+.verify-login-line a {
+    color: var(--accent);
+    font-weight: 500;
+    text-decoration: none;
+}
+.verify-login-line a:hover {
+    color: #ff6a5c;
+}
+
+/* ── Дясно: "талонът" с таймера ────────────────────────────────────── */
+.verify-stub {
+    padding: 46px 34px 40px;
+    border-left: 1px solid rgba(255, 255, 255, .08);
+    background: linear-gradient(180deg, rgba(255, 54, 54, .05), transparent 42%);
+    position: relative;
+}
+.verify-stub-kicker {
+    margin: 0 0 26px;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: #8d8981;
+}
+.verify-valid-label {
+    margin: 0;
+    font-size: .7rem;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+.verify-timer {
+    margin-top: 8px;
+    font-size: 3.4rem;
+    font-weight: 200;
+    line-height: 1;
+    letter-spacing: .02em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    transition: color .3s ease;
+}
+.verify-timer.is-warning { color: #ff6a5c; }
+.verify-timer.is-expired { color: #5f5c56; }
+
+.verify-timer-track {
+    margin-top: 16px;
+    height: 3px;
+    background: rgba(255, 255, 255, .07);
+}
+.verify-timer-fill {
+    height: 3px;
+    background: var(--accent);
+    width: 100%;
+    transition: width 1s linear, background .3s ease;
+}
+.verify-timer-fill.is-warning { background: #ff6a5c; }
+.verify-timer-fill.is-expired { background: #5f5c56; }
+
+.verify-stub-block {
+    margin-top: 26px;
+    padding-top: 26px;
+    border-top: 1px dashed rgba(255, 255, 255, .14);
+}
+.verify-stub-block-label {
+    margin: 0;
+    font-size: .7rem;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+.verify-digits-value {
+    margin: 7px 0 0;
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.verify-resend-btn {
+    width: 100%;
+    padding: 13px 16px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 0;
+    color: var(--text);
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: .82rem;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color .2s ease, border-color .2s ease;
+}
+.verify-resend-btn:hover:not(:disabled) {
+    color: #fff;
+    border-color: var(--accent);
+}
+.verify-resend-btn:disabled {
+    color: #5f5c56;
+    cursor: not-allowed;
+}
+
+/* ── Долна лента на картата (spam бележка) ────────────────────────── */
+.verify-cardfoot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 44px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    background: #080808;
+}
+.verify-cardfoot-dash {
+    flex: 0 0 18px;
+    height: 1px;
+    background: var(--accent);
+}
+.verify-cardfoot-text {
+    font-size: .84rem;
+    font-weight: 300;
+    color: var(--muted);
+}
+
+/* ── Responsive (breakpoints както в мокъпа — тук колоните колапсват
+   точно на 900px, различно от общите 1024/768 другаде в сайта, защото
+   grid-ът е 2-колонен само на тази страница) ─────────────────────── */
+@media (max-width: 900px) {
+    .verify-grid { grid-template-columns: 1fr; }
+    .verify-stub {
+        border-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, .08);
+    }
+    .verify-form, .verify-stub { padding: 34px 22px; }
+    .verify-title { font-size: 2.5rem; }
+    .verify-code-box { width: 46px; height: 58px; font-size: 1.5rem; }
+    .verify-code-row { gap: 8px; }
+    .verify-steps { gap: 9px; }
+    .verify-step-sep { flex: 0 0 14px; }
+    .verify-shell { padding: 34px 14px 44px; }
+    .verify-cardfoot { padding: 16px 22px; }
+    .verify-timer { font-size: 3rem; }
+}
+
+@media (max-width: 420px) {
+    .verify-code-box { width: 100%; height: 56px; font-size: 1.35rem; }
+    .verify-code-row { gap: 6px; }
+    .verify-title { font-size: 2.1rem; }
+    .verify-form, .verify-stub { padding: 28px 18px; }
+    .verify-cardfoot { padding: 14px 18px; }
+    .verify-steps { font-size: .66rem; }
+}

@@ -1,0 +1,85 @@
+/* doneStyle.css — /Done страница (завършена регистрация). Преизползва
+   структурните класове от verificationStyle.css (.verify-shell,
+   .verify-steps, .verify-card, .verify-form/.verify-stub, .verify-timer
+   и т.н.) — link-ва се заедно с него в Done.cshtml — за да е визуално
+   истинско продължение на /Verification, не отделно изглеждаща страница.
+   Тук са само нетно новите неща: checkmark badge, "completed" стъпки
+   с чекмарк, анимации при влизане, и анимираните точки на "Препращане…". */
+
+/* ── Влизаща анимация на картата (по мокъпа) ─────────────────────────
+   Работи заедно с View Transitions API (виж @view-transition в
+   mainStyle.css) за плавен преход ОТ Verification КЪМ тази страница —
+   но пуска се и самостоятелно (напр. ако браузърът не поддържа View
+   Transitions), затова картата винаги леко "се издига" при зареждане. */
+@keyframes doneRise {
+    from { transform: translateY(10px); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+}
+@keyframes doneRing {
+    from { transform: scale(.7); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+@keyframes doneDraw {
+    from { stroke-dashoffset: 64; }
+    to   { stroke-dashoffset: 0; }
+}
+
+.done-card-enter {
+    animation: doneRise .5s ease both;
+}
+
+/* ── Стъпки с чекмарк за завършените (01/Регистрация, 02/Потвърждение) ── */
+.done-step-complete {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.done-step-check {
+    flex: none;
+    color: #8d8981;
+}
+
+/* ── Checkmark badge (кръгче с чекмарк икона, до "Профилът е активен") ── */
+.done-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.done-badge-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba(255, 54, 54, .45);
+    background: rgba(255, 54, 54, .08);
+    animation: doneRing .45s cubic-bezier(.2, .9, .3, 1.3) both;
+}
+.done-badge-icon svg path {
+    animation: doneDraw .5s .35s ease both;
+}
+.done-badge-text {
+    margin: 0;
+    font-size: .78rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #ff6a5c;
+}
+
+/* ── Анимирани точки "Препращане към профила..." ──────────────────────
+   Текстът и точките се управляват изцяло от JS (виж @section Scripts
+   в Done.cshtml) — CSS не може да анимира `content`, затова точките са
+   истински текстов span, обновяван на интервал. */
+.done-dots {
+    display: inline-block;
+    min-width: 1.2em;
+}
+
+.done-count-value {
+    color: var(--text);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}

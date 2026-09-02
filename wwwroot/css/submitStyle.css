@@ -1,0 +1,1020 @@
+/* ══════════════════════════════════════════════════════════════════════
+   submitStyle.css — редизайн на /SubmitDocuments
+   Заменя стария submitStyle.css изцяло. Страницата вече НЕ зарежда
+   userPageStyle.css и няма нужда от inline <style> блок в .cshtml.
+
+   Палитрата и шрифтът идват от mainStyle.css през променливи
+   (--bg, --panel, --text, --muted, --line, --accent) — тук няма нов :root.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.sd-page {
+    --sd-top: 84px;
+    --sd-ok: #4ea86b;
+    --sd-wait: #d9932b;
+    background: var(--bg, #050505);
+    color: var(--text, #f4f2ec);
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 300;
+}
+
+.sd-page *,
+.sd-page *::before,
+.sd-page *::after { box-sizing: border-box; }
+
+.sd-page ::selection { background: rgba(255, 54, 54, 0.35); }
+
+.sd-page :is(button, a, input, select, summary, label):focus-visible {
+    outline: 2px solid var(--accent, #ff3636);
+    outline-offset: 2px;
+}
+
+.sd-page :is(input, select, button, .sd-tile, .sd-drop) { border-radius: 0; }
+
+/* ── Скелет ───────────────────────────────────────────────────────── */
+.sd-split {
+    display: grid;
+    grid-template-columns: 1fr 0.44fr;
+    grid-template-rows: auto;
+    align-content: start;
+}
+
+.sd-col {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    padding: 64px 5vw 96px;
+}
+
+.sd-wrap {
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    animation: sdIn 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sd-aside-col {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    min-width: 0;
+    background: var(--panel, #0b0b0b);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sd-aside-top {
+    min-width: 0;
+    padding: calc(var(--sd-top) - 20px) 36px 28px;
+}
+
+.sd-aside-bottom {
+    min-width: 0;
+    padding: 0 36px 48px;
+}
+
+.sd-aside-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+@keyframes sdIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes sdLine {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+
+@keyframes sdPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.3; transform: scale(0.65); }
+}
+
+/* ── Глава ────────────────────────────────────────────────────────── */
+.sd-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 44px;
+}
+
+.sd-brand img {
+    height: 28px;
+    width: auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.92;
+}
+
+.sd-brand-rule {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.sd-eyebrow {
+    font-size: 0.69rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.sd-title {
+    margin: 0 0 10px;
+    max-width: 20ch;
+    font-size: 3.1rem;
+    font-weight: 600;
+    line-height: 1.08;
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+.sd-rule {
+    display: block;
+    width: 56px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    margin-bottom: 14px;
+}
+
+.sd-desc {
+    margin: 0 0 36px;
+    max-width: 48ch;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--muted, #a7a39b);
+    text-wrap: pretty;
+}
+
+/* ── Статус лента над формата ────────────────────────────────────── */
+.sd-note {
+    display: flex;
+    gap: 13px;
+    padding: 16px;
+    margin-bottom: 32px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 3px solid var(--muted, #a7a39b);
+}
+
+.sd-note.is-alert {
+    background: rgba(255, 54, 54, 0.06);
+    border-color: rgba(255, 54, 54, 0.24);
+    border-left-color: var(--accent, #ff3636);
+}
+
+.sd-note.is-wait {
+    background: rgba(217, 147, 43, 0.07);
+    border-color: rgba(217, 147, 43, 0.28);
+    border-left-color: var(--sd-wait, #d9932b);
+}
+
+.sd-note.is-ok {
+    background: rgba(78, 168, 107, 0.07);
+    border-color: rgba(78, 168, 107, 0.3);
+    border-left-color: var(--sd-ok, #4ea86b);
+}
+
+.sd-note-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    margin-top: 6px;
+    background: var(--muted, #a7a39b);
+}
+
+.sd-note.is-alert .sd-note-dot { background: var(--accent, #ff3636); }
+.sd-note.is-wait  .sd-note-dot { background: var(--sd-wait, #d9932b); animation: sdPulse 2.4s ease-in-out infinite; }
+.sd-note.is-ok    .sd-note-dot { background: var(--sd-ok, #4ea86b); }
+
+.sd-note-body { min-width: 0; }
+
+.sd-note-label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.sd-note.is-alert .sd-note-label { color: var(--accent, #ff3636); }
+.sd-note.is-wait  .sd-note-label { color: var(--sd-wait, #d9932b); }
+.sd-note.is-ok    .sd-note-label { color: #8fd3a3; }
+
+.sd-note-text {
+    display: block;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: #d8d5cf;
+    text-wrap: pretty;
+}
+
+.sd-reason {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 11px 14px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sd-reason-label {
+    flex: none;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.sd-reason-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text, #f4f2ec);
+}
+
+/* ── Формата ──────────────────────────────────────────────────────── */
+.sd-form {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+}
+
+.sd-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.sd-section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sd-section-num {
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: var(--accent, #ff3636);
+}
+
+.sd-section-title {
+    flex: 1;
+    font-size: 0.76rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.sd-section-hint {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.sd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.sd-field { position: relative; }
+
+.sd-field--wide { grid-column: 1 / -1; }
+
+.sd-field::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    pointer-events: none;
+}
+
+/* Червената линия под полето се появява само докато е на фокус. Позицията
+   е спрямо .sd-field, затова полето с hint слага линията под input-а. */
+.sd-field:focus-within::after { animation: sdLine 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.sd-field:has(.sd-hint)::after,
+.sd-field:has(.err-msg:not(:empty))::after { display: none; }
+
+.sd-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.69rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.required,
+.req-star { color: var(--accent, #ff3636); }
+
+.sd-page input[type="text"],
+.sd-page input[type="url"] {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text, #f4f2ec);
+    font-family: inherit;
+    font-weight: 300;
+    font-size: 1rem;
+    caret-color: var(--accent, #ff3636);
+    transition: border-color 0.18s ease;
+}
+
+.sd-page input::placeholder { color: #8a8680; }
+
+.sd-page input[type="text"]:focus,
+.sd-page input[type="url"]:focus {
+    outline: none;
+    border-color: var(--accent, #ff3636);
+}
+
+.sd-page input:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.sd-hint {
+    display: block;
+    margin-top: 7px;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: #8a8680;
+}
+
+.err-msg {
+    display: block;
+    margin-top: 7px;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: #ff6b6b;
+}
+
+/* ── Текущ файл ───────────────────────────────────────────────────── */
+.sd-current {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 56px;
+    margin-bottom: 10px;
+    padding: 0 8px 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sd-current > svg {
+    width: 17px;
+    height: 17px;
+    flex: none;
+    stroke: var(--muted, #a7a39b);
+    fill: none;
+}
+
+.sd-current-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.sd-current-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.sd-current-name {
+    display: block;
+    font-size: 0.88rem;
+    color: var(--text, #f4f2ec);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sd-ghost-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    flex: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.18s ease;
+}
+
+.sd-ghost-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+}
+
+.sd-ghost-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+}
+
+/* ── Зона за качване ─────────────────────────────────────────────── */
+.sd-drop {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 108px;
+    padding: 18px 8px 18px 18px;
+    background: var(--panel, #0b0b0b);
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.sd-drop:hover { border-color: rgba(255, 255, 255, 0.32); }
+
+.sd-drop.is-drag {
+    background: rgba(255, 54, 54, 0.08);
+    border-color: var(--accent, #ff3636);
+}
+
+.sd-drop.is-locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sd-drop > svg {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    stroke: #8a8680;
+    fill: none;
+    transition: stroke 0.18s ease;
+}
+
+.sd-drop.is-drag > svg { stroke: var(--accent, #ff3636); }
+
+.sd-drop-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.sd-drop-title {
+    display: block;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: #d8d5cf;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sd-drop.is-filled .sd-drop-title { color: var(--text, #f4f2ec); }
+
+.sd-drop-sub {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: #8a8680;
+}
+
+.sd-drop-action {
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 15px;
+    flex: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+}
+
+/* Файловият input стои вътре в label-а и е скрит визуално, но остава
+   достъпен за клавиатура (не е display:none). */
+.sd-drop input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.sd-drop-wrap { position: relative; }
+
+/* ── Плочки за курс ──────────────────────────────────────────────── */
+.sd-tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.sd-tile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 50px;
+    padding: 0 13px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--muted, #a7a39b);
+    cursor: pointer;
+    font-size: 0.88rem;
+    line-height: 1.25;
+    transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.sd-tile--wide { grid-column: 1 / -1; }
+
+.sd-tile:hover { border-color: rgba(255, 255, 255, 0.3); }
+
+.sd-tile input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.sd-tile-dot {
+    width: 7px;
+    height: 7px;
+    flex: none;
+    background: rgba(255, 255, 255, 0.2);
+    transition: background 0.18s ease;
+}
+
+.sd-tile:has(input:checked) {
+    background: rgba(255, 54, 54, 0.1);
+    border-color: var(--accent, #ff3636);
+    color: var(--text, #f4f2ec);
+}
+
+.sd-tile:has(input:checked) .sd-tile-dot { background: var(--accent, #ff3636); }
+
+.sd-tile:has(input:focus-visible) {
+    outline: 2px solid var(--accent, #ff3636);
+    outline-offset: 2px;
+}
+
+.sd-tile:has(input:disabled) {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ── Бутон и заключена бележка ───────────────────────────────────── */
+.btn-submit {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 58px;
+    padding: 0 20px;
+    background: var(--accent, #ff3636);
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: left;
+    transition: background 0.18s ease;
+}
+
+.btn-submit:hover { background: #e02020; }
+
+.btn-submit svg {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+}
+
+.sd-locked-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 0.84rem;
+    line-height: 1.55;
+    color: #8a8680;
+    text-wrap: pretty;
+}
+
+.sd-locked-note svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    stroke: #8a8680;
+    fill: none;
+}
+
+/* ── Крайни състояния: одобрено / не е необходимо ───────────────── */
+.sd-final {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 3px solid var(--muted, #a7a39b);
+}
+
+.sd-final.is-ok {
+    background: rgba(78, 168, 107, 0.07);
+    border-color: rgba(78, 168, 107, 0.3);
+    border-left-color: var(--sd-ok, #4ea86b);
+}
+
+.sd-final-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sd-final.is-ok .sd-final-mark { border-color: rgba(78, 168, 107, 0.45); }
+
+.sd-final-mark svg {
+    width: 28px;
+    height: 28px;
+    stroke: var(--muted, #a7a39b);
+    fill: none;
+}
+
+.sd-final.is-ok .sd-final-mark svg { stroke: var(--sd-ok, #4ea86b); }
+
+.sd-final-title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+}
+
+.sd-final.is-ok .sd-final-title { color: #8fd3a3; }
+
+.sd-final-text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #cdc7bd;
+    text-wrap: pretty;
+}
+
+.sd-final-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.status-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 54px;
+    padding: 0 18px;
+    background: var(--accent, #ff3636);
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.18s ease;
+}
+
+.status-action-btn:hover {
+    background: #e02020;
+    color: #fff;
+    text-decoration: none;
+}
+
+.status-action-btn svg {
+    width: 17px;
+    height: 17px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+}
+
+.status-action-secondary {
+    justify-content: center;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text, #f4f2ec);
+}
+
+.status-action-secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text, #f4f2ec);
+}
+
+/* ── Дясна колона ─────────────────────────────────────────────────── */
+.sd-identity {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    overflow: hidden;
+}
+
+.sd-identity::before {
+    content: "";
+    position: absolute;
+    inset: -20px -20px 0 -20px;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px) 0 0 / 100% 28px,
+        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px) 0 0 / 28px 100%;
+    pointer-events: none;
+}
+
+.sd-identity-mark {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    flex: none;
+    background: var(--bg, #050505);
+    border: 1px solid rgba(255, 54, 54, 0.45);
+}
+
+.sd-identity-mark svg {
+    width: 26px;
+    height: 26px;
+    stroke: var(--accent, #ff3636);
+    fill: none;
+}
+
+.sd-identity-text {
+    position: relative;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sd-identity-role {
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--text, #f4f2ec);
+}
+
+.sd-identity-mail {
+    font-size: 0.84rem;
+    color: #8a8680;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sd-facts {
+    display: flex;
+    flex-direction: column;
+}
+
+.sd-fact {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sd-fact-key {
+    flex: none;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.sd-fact-val {
+    min-width: 0;
+    font-size: 0.88rem;
+    text-align: right;
+    color: var(--text, #f4f2ec);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sd-fact-val.is-ok    { color: var(--sd-ok, #4ea86b); }
+.sd-fact-val.is-wait  { color: var(--sd-wait, #d9932b); }
+.sd-fact-val.is-alert { color: var(--accent, #ff3636); }
+.sd-fact-val.is-empty { color: #8a8680; }
+
+.sd-rules-title {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 0.69rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.sd-rules {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.sd-rules li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    color: var(--muted, #a7a39b);
+}
+
+.sd-rules svg {
+    width: 13px;
+    height: 13px;
+    flex: none;
+    margin-top: 4px;
+    stroke: var(--accent, #ff3636);
+    fill: none;
+}
+
+.sd-back {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    color: #8a8680;
+    text-decoration: none;
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.sd-back:hover { color: var(--text, #f4f2ec); text-decoration: none; }
+
+.sd-back svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1100px) {
+    .sd-split { grid-template-columns: 1fr; }
+
+    .sd-col {
+        grid-row: 2;
+        padding: 40px 28px 64px;
+    }
+
+    .sd-aside-col {
+        grid-column: 1;
+        grid-row: 1;
+        position: static;
+        border-left: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .sd-aside-top { padding: 28px 28px 26px; }
+    .sd-aside-bottom { padding: 0 28px 30px; }
+
+    .sd-title { font-size: 2.6rem; }
+}
+
+/* Телефон: идентичността и статусът горе, формата в средата,
+   изискванията и връзката към профила долу. */
+@media (max-width: 820px) {
+    .sd-split { grid-template-rows: auto auto auto; }
+
+    .sd-aside-col {
+        display: contents;
+        background: transparent;
+    }
+
+    .sd-aside-top {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 22px 20px 26px;
+        background: var(--panel, #0b0b0b);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .sd-col {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 26px 20px 36px;
+    }
+
+    .sd-aside-bottom {
+        grid-column: 1;
+        grid-row: 3;
+        padding: 26px 20px 34px;
+        background: var(--bg, #050505);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Главата отляво се крие — горният блок носи логото и контекста. */
+    .sd-head { display: none; }
+    .sd-brand--mobile { display: flex; }
+
+    .sd-grid { grid-template-columns: 1fr; }
+    .sd-tiles { grid-template-columns: 1fr 1fr; }
+    .sd-final-actions { grid-template-columns: 1fr; }
+
+    .sd-back {
+        justify-content: center;
+        min-height: 52px;
+        padding: 0 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+}
+
+@media (min-width: 821px) {
+    .sd-brand--mobile { display: none; }
+}
+
+@media (max-width: 480px) {
+    .sd-col { padding: 24px 16px 32px; }
+    .sd-aside-top { padding: 20px 16px 24px; }
+    .sd-aside-bottom { padding: 24px 16px 30px; }
+
+    .sd-final { padding: 22px 18px; }
+
+    .sd-drop {
+        flex-wrap: wrap;
+        padding: 16px;
+    }
+
+    .sd-drop-action { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sd-page *,
+    .sd-page *::before,
+    .sd-page *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    .sd-field:focus-within::after { transform: scaleX(1); }
+}

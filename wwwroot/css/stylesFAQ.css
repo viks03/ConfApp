@@ -1,0 +1,231 @@
+/* Specific Hero Background for FAQ Page */
+.hero {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.52)),
+    url("../images/FAQ/banner.png") center center/cover no-repeat;
+}
+
+/* Уверяваме се, че банерът е позициониран правилно, за да държи стрелката */
+.hero.attend-hero {
+  position: relative;
+}
+
+/* Стилът на самата стрелка */
+.scroll-down-arrow {
+  position: absolute;
+  bottom: 40px; /* На 40px от долния ръб на банера */
+  left: 50%;
+  transform: translateX(-50%); /* Центрираме я перфектно */
+  width: 50px;
+  height: 50px;
+  color: #ffffff; /* Бял цвят */
+  z-index: 10;
+  transition: color 0.3s ease;
+  animation: bounce 2s infinite; /* Извикваме анимацията за подскачане */
+}
+
+/* Ефект при посочване с мишката */
+.scroll-down-arrow:hover {
+  color: #cc0000; /* Става в акцентното ви червено */
+}
+
+/* Анимацията (Keyframes) за подскачането */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  40% {
+    transform: translateX(-50%) translateY(-15px);
+  }
+  60% {
+    transform: translateX(-50%) translateY(-7px);
+  }
+}
+
+/* FAQ Section Styles */
+.faq-section h2 {
+  margin: 0;
+  font-family: "Oswald", Arial, sans-serif;
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: 0.01em;
+}
+
+.faq-section {
+  padding: 3.3rem 0 5rem;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.98), #050505);
+}
+
+.faq-section h2 {
+  font-size: clamp(2.3rem, 5vw, 3.6rem);
+  margin-bottom: 2rem;
+}
+
+.faq-list {
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  transition: background-color 220ms ease;
+}
+
+.faq-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.faq-question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.faq-question span:first-child {
+  font-size: 0.98rem;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  min-width: 0;
+}
+
+.faq-icon {
+  position: relative;
+  flex: 0 0 1rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+.faq-icon::before,
+.faq-icon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  transform: translate(-50%, -50%);
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.faq-icon::before {
+  width: 0.75rem;
+  height: 1px;
+}
+
+.faq-icon::after {
+  width: 1px;
+  height: 0.75rem;
+}
+
+.faq-item.is-open .faq-icon::after {
+  opacity: 0;
+  transform: translate(-50%, -50%) scaleY(0.2);
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    max-height 320ms ease,
+    opacity 220ms ease,
+    visibility 220ms ease;
+}
+
+.faq-answer p {
+  margin: 0;
+  padding: 0 0 1.2rem;
+  max-width: 58rem;
+  color: var(--muted);
+  line-height: 1.75;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+
+.faq-item.is-open .faq-answer {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Mobile Responsive (FAQ Only) */
+@media (max-width: 640px) {
+  .faq-section {
+    padding-top: 2.4rem;
+    padding-bottom: 3.8rem;
+  }
+
+  .faq-section h2 {
+    font-size: clamp(2rem, 10vw, 2.7rem);
+    margin-bottom: 1.4rem;
+  }
+
+  .faq-question {
+    padding: 1rem 0;
+    gap: 0.75rem;
+  }
+
+  .faq-question span:first-child {
+    font-size: 0.92rem;
+  }
+
+  .faq-answer p {
+    padding-bottom: 1rem;
+    font-size: 0.92rem;
+    line-height: 1.65;
+  }
+}
+
+@media (max-width: 425px) {
+  .faq-section h2 {
+    font-size: 1.9rem;
+  }
+
+  .faq-question span:first-child {
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .faq-section {
+    padding-top: 2rem;
+  }
+
+  .faq-section h2 {
+    font-size: 1.72rem;
+  }
+
+  .faq-question {
+    padding: 0.9rem 0;
+  }
+
+  .faq-question span:first-child {
+    font-size: 0.84rem;
+  }
+
+  .faq-answer p {
+    font-size: 0.86rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .faq-section h2 {
+    font-size: 1.52rem;
+  }
+
+  .faq-question span:first-child {
+    font-size: 0.8rem;
+  }
+
+  .faq-answer p {
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+}

@@ -1,0 +1,11 @@
+﻿@* БЪГ ФИКС: премахнати "@using ConferenceApp.Areas.Identity" и
+   "@using ConferenceApp.Areas.Identity.Pages" — реферираха namespace без
+   никакво реално съдържание никъде в проекта (Areas/Identity/Pages/ има
+   само тези 3 boilerplate файла, никакви реални Account страници;
+   приложението ползва собствени Pages/Login.cshtml, Pages/Register.cshtml
+   и т.н., не default ASP.NET Identity UI). AccessDeniedModel беше
+   единственото нещо, поддържащо тази namespace йерархия "жива" — след
+   като се премести в ConferenceApp.Pages (виж AccessDenied.cshtml.cs),
+   тези редове вече не сочат към нищо съществуващо. *@
+@using Microsoft.AspNetCore.Identity
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

@@ -1,0 +1,512 @@
+@page
+@model ConferenceApp.Pages.SubmitDocumentsModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.AspNetCore.Identity.UserManager<ConferenceApp.Models.ApplicationUser> UserManager
+@{
+    ViewData["Title"] = Localizer["SD_PageTitle"].Value;
+
+    var isStudent    = Model.PartForm == "2";
+    var isJournalist = Model.PartForm == "4";
+    var notEligible  = !(isStudent || isJournalist);
+
+    var status   = Model.VerificationStatus ?? "None";
+    var approved = !notEligible && status == "Approved";
+    @* "Pending" вече не стига дотук — SubmitDocumentsModel.OnGetAsync пренасочва
+       към /Profile, щом документите са подадени. Затова заключеното състояние
+       на формата е премахнато: полетата вече не носят disabled, а бутонът
+       "Изпрати" винаги е наличен, когато страницата изобщо се рендира. *@
+    var rejected = !notEligible && status == "Rejected";
+    var showForm = !notEligible && !approved;
+
+    var hasCurrentFile = !string.IsNullOrEmpty(Model.CurrentDocumentPath);
+    var currentFileName = hasCurrentFile
+        ? System.IO.Path.GetFileName(Model.CurrentDocumentPath)
+        : "";
+
+    var roleTitle = isStudent
+        ? Localizer["SD_Title_Student"].Value
+        : isJournalist ? Localizer["SD_Title_Journalist"].Value : Localizer["SD_NotEligible_Title"].Value;
+
+    var roleDesc = isStudent
+        ? Localizer["SD_Desc_Student"].Value
+        : isJournalist ? Localizer["SD_Desc_Journalist"].Value : Localizer["SD_NotEligible_Msg"].Value;
+
+    var docLabel = isStudent
+        ? Localizer["SD_Student_Doc1Label"].Value
+        : Localizer["SD_Journalist_Doc1Label"].Value;
+
+    // Тон и текст на статус лентата над формата.
+    string noteTone, noteLabel, noteText;
+    if (rejected)      { noteTone = "is-alert"; noteLabel = Localizer["SD_Status_Rejected_Title"].Value; noteText = Localizer["SD_Status_Rejected_Msg"].Value; }
+    else               { noteTone = "";         noteLabel = Localizer["SD_Status_None_Title"].Value;     noteText = Localizer["SD_InfoBox"].Value; }
+
+    // Кратък статус за справката отдясно.
+    string factStatus, factTone;
+    if (approved)      { factStatus = Localizer["SD_Fact_Approved"].Value; factTone = "is-ok"; }
+    else if (rejected) { factStatus = Localizer["SD_Fact_Rejected"].Value; factTone = "is-alert"; }
+    else               { factStatus = Localizer["SD_Fact_None"].Value;     factTone = "is-empty"; }
+
+    var studyYears = new (string Value, string Label, bool Wide)[]
+    {
+        ("PhD/Masters Degree", Localizer["SD_PhD_Masters"].Value, true),
+        ("1", "1. " + Localizer["SD_Year"].Value, false),
+        ("2", "2. " + Localizer["SD_Year"].Value, false),
+        ("3", "3. " + Localizer["SD_Year"].Value, false),
+        ("4", "4. " + Localizer["SD_Year"].Value, false),
+        ("5", "5. " + Localizer["SD_Year"].Value, false),
+        ("6", "6. " + Localizer["SD_Year"].Value, false)
+    };
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/submitStyle.css" asp-append-version="true" />
+}
+
+<main class="sd-page">
+    <div class="sd-split">
+
+        @* ══ Лява колона ═══════════════════════════════════════════ *@
+        <div class="sd-col">
+            <div class="sd-wrap">
+
+                @if (!notEligible)
+                {
+                    <div class="sd-head">
+                        <div class="sd-brand">
+                            <img src="~/images/logos/mainLogo.png" alt="">
+                            <span class="sd-brand-rule"></span>
+                            <span class="sd-eyebrow">@Localizer["SD_Subtitle"]</span>
+                        </div>
+                        <h1 class="sd-title">@roleTitle</h1>
+                        <span class="sd-rule"></span>
+                        <p class="sd-desc">@roleDesc</p>
+                    </div>
+                }
+
+                @* ── Случай 1: типът участие не изисква верификация ── *@
+                @if (notEligible)
+                {
+                    <div class="sd-final">
+                        <span class="sd-final-mark" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </span>
+                        <h1 class="sd-final-title">@Localizer["SD_NotEligible_Title"]</h1>
+                        <p class="sd-final-text">@Localizer["SD_NotEligible_Msg"]</p>
+                        <div class="sd-final-actions">
+                            <a href="/Profile" class="status-action-btn">
+                                <span>@Localizer["SD_BackToProfile"]</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m12 5 7 7-7 7"></path>
+                                </svg>
+                            </a>
+                            <a href="/Attend" class="status-action-btn status-action-secondary">@Localizer["SD_SeeOptions"]</a>
+                        </div>
+                    </div>
+                }
+                @* ── Случай 2: одобрено — формата се скрива ────────── *@
+                else if (approved)
+                {
+                    <div class="sd-final is-ok">
+                        <span class="sd-final-mark" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 6 9 17l-5-5"></path>
+                            </svg>
+                        </span>
+                        <h2 class="sd-final-title">@Localizer["SD_Status_Approved_Title"]</h2>
+                        <p class="sd-final-text">@Localizer["SD_Status_Approved_Msg"]</p>
+                        <div class="sd-final-actions">
+                            <a href="/Profile" class="status-action-btn status-action-secondary">@Localizer["SD_BackToProfile"]</a>
+                        </div>
+                    </div>
+                }
+                @* ── Случай 3: None / Pending / Rejected — формата ─── *@
+                else
+                {
+                    @if (TempData["SdSubmitMessage"] != null)
+                    {
+                        <div class="sd-note is-ok">
+                            <span class="sd-note-dot" aria-hidden="true"></span>
+                            <span class="sd-note-body">
+                                <span class="sd-note-label">@Localizer["SD_Status_Pending_Title"]</span>
+                                <span class="sd-note-text">@TempData["SdSubmitMessage"]</span>
+                            </span>
+                        </div>
+                    }
+
+                    <div class="sd-note @noteTone">
+                        <span class="sd-note-dot" aria-hidden="true"></span>
+                        <span class="sd-note-body">
+                            <span class="sd-note-label">@noteLabel</span>
+                            <span class="sd-note-text">@Html.Raw(noteText)</span>
+
+                            @if (rejected && !string.IsNullOrEmpty(Model.RejectionReason))
+                            {
+                                <span class="sd-reason">
+                                    <span class="sd-reason-label">@Localizer["SD_Reason"]</span>
+                                    <span class="sd-reason-text">@Model.RejectionReason</span>
+                                </span>
+                            }
+                        </span>
+                    </div>
+
+                    <div asp-validation-summary="ModelOnly" class="err-msg"></div>
+
+                    <form method="post" enctype="multipart/form-data" novalidate asp-antiforgery="true" class="sd-form">
+
+                        @* ── 01 Файл за проверка ──────────────────── *@
+                        <div class="sd-section">
+                            <div class="sd-section-head">
+                                <span class="sd-section-num">01</span>
+                                <span class="sd-section-title">@Localizer["SD_Section_Docs"]</span>
+                                <span class="sd-section-hint">@Localizer["SD_FileHint"]</span>
+                            </div>
+
+                            <div>
+                                <label class="sd-label">@docLabel <span class="required">*</span></label>
+
+                                @if (hasCurrentFile)
+                                {
+                                    <div class="sd-current">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+                                            <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+                                        </svg>
+                                        <span class="sd-current-text">
+                                            <span class="sd-current-label">@Localizer["SD_CurrentFile"]</span>
+                                            <span class="sd-current-name">@currentFileName</span>
+                                        </span>
+                                        <a class="sd-ghost-btn" target="_blank" rel="noopener"
+                                           href="/Admin/Index?handler=DownloadVerifDoc&userId=@UserManager.GetUserId(User)">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M12 15V3"></path>
+                                                <path d="m7 10 5 5 5-5"></path>
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            </svg>
+                                            @Localizer["SD_View"]
+                                        </a>
+                                    </div>
+                                }
+
+                                @* Зоната е <label> — клик отваря избора на файл без JS.
+                                   Скриптът долу добавя drag & drop и името на файла. *@
+                                <div class="sd-drop-wrap">
+                                    <label class="sd-drop" data-sd-drop>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <path d="M14 2v6h6"></path>
+                                            <path d="M12 18v-6"></path>
+                                            <path d="M9 15h6"></path>
+                                        </svg>
+                                        <span class="sd-drop-text">
+                                            <span class="sd-drop-title" data-sd-drop-title
+                                                  data-idle="@Localizer["SD_ClickToUpload"]"
+                                                  data-active="@Localizer["SD_DropActive"]">@Localizer["SD_ClickToUpload"]</span>
+                                            <span class="sd-drop-sub">@Localizer["SD_FileHint"]</span>
+                                        </span>
+                                        <span class="sd-drop-action">@Localizer["SD_Choose"]</span>
+
+                                        @if (isStudent)
+                                        {
+                                            <input type="file" id="student-doc1" name="StudentInput.StudentCard"
+                                                   accept=".jpg,.jpeg,.png">
+                                        }
+                                        else
+                                        {
+                                            <input type="file" id="journ-doc1" name="JournalistInput.PressCard"
+                                                   accept=".jpg,.jpeg,.png">
+                                        }
+                                    </label>
+                                </div>
+
+                                @if (isStudent)
+                                {
+                                    <span asp-validation-for="StudentInput.StudentCard" class="err-msg"></span>
+                                }
+                                else
+                                {
+                                    <span asp-validation-for="JournalistInput.PressCard" class="err-msg"></span>
+                                }
+                            </div>
+                        </div>
+
+                        @* ── 02 Допълнителна информация ───────────── *@
+                        <div class="sd-section">
+                            <div class="sd-section-head">
+                                <span class="sd-section-num">02</span>
+                                <span class="sd-section-title">@Localizer["SD_Section_Info"]</span>
+                            </div>
+
+                            @if (isStudent)
+                            {
+                                <div class="sd-grid">
+                                    <div class="sd-field">
+                                        <label class="sd-label" asp-for="StudentInput.University">@Localizer["SD_Student_University"] <span class="required">*</span></label>
+                                        <input asp-for="StudentInput.University" type="text"
+                                               placeholder="@Localizer["SD_Student_UniversityPlaceholder"]"
+                                               required>
+                                        <span asp-validation-for="StudentInput.University" class="err-msg"></span>
+                                    </div>
+
+                                    <div class="sd-field">
+                                        <label class="sd-label" asp-for="StudentInput.Specialty">@Localizer["SD_Student_Specialty"] <span class="required">*</span></label>
+                                        <input asp-for="StudentInput.Specialty" type="text"
+                                               placeholder="@Localizer["SD_Student_SpecialtyPlaceholder"]"
+                                               required>
+                                        <span asp-validation-for="StudentInput.Specialty" class="err-msg"></span>
+                                    </div>
+
+                                    <div class="sd-field sd-field--wide">
+                                        <label class="sd-label" asp-for="StudentInput.StudentId">@Localizer["SD_Student_FacultyNumber"] <span class="required">*</span></label>
+                                        <input asp-for="StudentInput.StudentId" type="text"
+                                               placeholder="@Localizer["SD_Student_FacultyNumberPlaceholder"]"
+                                               required>
+                                        <span class="sd-hint">@Localizer["SD_Student_FacultyNumberHint"]</span>
+                                        <span asp-validation-for="StudentInput.StudentId" class="err-msg"></span>
+                                    </div>
+                                </div>
+
+                                @* Курсът е плочки от radio входове — същото име за
+                                   binding, без JS и без select. *@
+                                <div>
+                                    <label class="sd-label">@Localizer["SD_Student_Year"] <span class="required">*</span></label>
+                                    <div class="sd-tiles">
+                                        @foreach (var year in studyYears)
+                                        {
+                                            <label class="sd-tile @(year.Wide ? "sd-tile--wide" : "")">
+                                                <input type="radio" name="StudentInput.StudyYear" value="@year.Value"
+                                                       checked="@(Model.StudentInput != null && Model.StudentInput.StudyYear == year.Value)"
+                                                       required>
+                                                <span class="sd-tile-dot" aria-hidden="true"></span>
+                                                <span>@year.Label</span>
+                                            </label>
+                                        }
+                                    </div>
+                                    <span asp-validation-for="StudentInput.StudyYear" class="err-msg"></span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="sd-grid">
+                                    <div class="sd-field">
+                                        <label class="sd-label" asp-for="JournalistInput.MediaOutlet">@Localizer["SD_Journalist_Media"] <span class="required">*</span></label>
+                                        <input asp-for="JournalistInput.MediaOutlet" type="text"
+                                               placeholder="@Localizer["SD_Journalist_MediaPlaceholder"]"
+                                               required>
+                                        <span asp-validation-for="JournalistInput.MediaOutlet" class="err-msg"></span>
+                                    </div>
+
+                                    <div class="sd-field">
+                                        <label class="sd-label" asp-for="JournalistInput.Position">@Localizer["SD_Journalist_Position"] <span class="required">*</span></label>
+                                        <input asp-for="JournalistInput.Position" type="text"
+                                               placeholder="@Localizer["SD_Journalist_PositionPlaceholder"]"
+                                               required>
+                                        <span asp-validation-for="JournalistInput.Position" class="err-msg"></span>
+                                    </div>
+
+                                    <div class="sd-field sd-field--wide">
+                                        <label class="sd-label" asp-for="JournalistInput.MediaWebsite">@Localizer["SD_Journalist_Website"]</label>
+                                        <input asp-for="JournalistInput.MediaWebsite" type="url"
+                                               placeholder="https://example.com"
+                                              >
+                                        <span class="sd-hint">@Localizer["SD_Journalist_WebsiteHint"]</span>
+                                        <span asp-validation-for="JournalistInput.MediaWebsite" class="err-msg"></span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @* Бутонът винаги е тук — заключеното състояние отпадна
+                           заедно с Pending, който вече не стига до тази страница. *@
+                        <button type="submit" class="btn-submit">
+                            <span>@Localizer["SD_SubmitBtn"]</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M5 12h14"></path>
+                                <path d="m12 5 7 7-7 7"></path>
+                            </svg>
+                        </button>
+
+                    </form>
+                }
+
+            </div>
+        </div>
+
+        @* ══ Дясна колона ══════════════════════════════════════════ *@
+        <div class="sd-aside-col">
+
+            <aside class="sd-aside-top">
+                <div class="sd-aside-stack">
+
+                    <div class="sd-brand sd-brand--mobile">
+                        <img src="~/images/logos/mainLogo.png" alt="">
+                        <span class="sd-brand-rule"></span>
+                        <span class="sd-eyebrow">@Localizer["SD_Subtitle"]</span>
+                    </div>
+
+                    <div class="sd-identity">
+                        <span class="sd-identity-mark" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                <path d="m9 12 2 2 4-4"></path>
+                            </svg>
+                        </span>
+                        <span class="sd-identity-text">
+                            <span class="sd-identity-role">@roleTitle</span>
+                            <span class="sd-identity-mail">@User.Identity?.Name</span>
+                        </span>
+                    </div>
+
+                    @if (!notEligible)
+                    {
+                        <div class="sd-note @noteTone">
+                            <span class="sd-note-dot" aria-hidden="true"></span>
+                            <span class="sd-note-body">
+                                <span class="sd-note-label">@(approved ? Localizer["SD_Status_Approved_Title"].Value : noteLabel)</span>
+                                <span class="sd-note-text">@Html.Raw(approved ? Localizer["SD_Status_Approved_Msg"].Value : noteText)</span>
+                            </span>
+                        </div>
+                    }
+
+                    <div class="sd-facts">
+                        <div class="sd-fact">
+                            <span class="sd-fact-key">@Localizer["SD_Fact_Role"]</span>
+                            <span class="sd-fact-val">@roleTitle</span>
+                        </div>
+                        @if (!notEligible)
+                        {
+                            <div class="sd-fact">
+                                <span class="sd-fact-key">@Localizer["SD_Fact_Status"]</span>
+                                <span class="sd-fact-val @factTone">@factStatus</span>
+                            </div>
+                            <div class="sd-fact">
+                                <span class="sd-fact-key">@Localizer["SD_Fact_File"]</span>
+                                <span class="sd-fact-val @(hasCurrentFile ? "" : "is-empty")">
+                                    @(hasCurrentFile ? currentFileName : Localizer["SD_Fact_NoFile"].Value)
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </aside>
+
+            <aside class="sd-aside-bottom">
+                <div class="sd-aside-stack">
+
+                    @if (!notEligible)
+                    {
+                        <div>
+                            <span class="sd-rules-title">@Localizer["SD_RulesTitle"]</span>
+                            <ul class="sd-rules">
+                                <li>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                                    <span>@Localizer["SD_Rule_Legible"]</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                                    <span>@Localizer["SD_Rule_Format"]</span>
+                                </li>
+                                <li>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                                    <span>@Localizer["SD_Rule_Valid"]</span>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+
+                    <a href="/Profile" class="sd-back">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="m12 19-7-7 7-7"></path>
+                            <path d="M19 12H5"></path>
+                        </svg>
+                        @Localizer["SD_BackToProfile"]
+                    </a>
+
+                </div>
+            </aside>
+
+        </div>
+
+    </div>
+</main>
+
+@section Scripts {
+    @* Виж коментара в Register.cshtml — JSON, не ръчни кавички. *@
+    @{
+        var vMessages = new Dictionary<string, string>
+        {
+            ["university_required"] = Localizer["v_university_required"].Value,
+            ["specialty_required"]  = Localizer["v_specialty_required"].Value,
+            ["studentid_required"]  = Localizer["v_studentid_required"].Value,
+            ["year_required"]       = Localizer["v_year_required"].Value,
+            ["media_required"]      = Localizer["v_media_required"].Value,
+            ["position_required"]   = Localizer["v_position_required"].Value,
+            ["url_invalid"]         = Localizer["v_url_invalid"].Value,
+            ["proof_required"]      = Localizer["v_proof_required"].Value,
+            ["file_type"]           = Localizer["SD_Err_FileType"].Value,
+            ["file_too_large"]      = Localizer["SD_Err_FileSize"].Value
+        };
+    }
+    <script>
+        window.ValidationMessages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(vMessages));
+    </script>
+
+    <script>
+        // Drag & drop + име на избрания файл. Зоната е <label>, така че
+        // клик и клавиатура работят без JS — това е само добавка.
+        (function () {
+            document.querySelectorAll('[data-sd-drop]').forEach(function (drop) {
+                var input = drop.querySelector('input[type="file"]');
+                var title = drop.querySelector('[data-sd-drop-title]');
+                if (!input || !title) return;
+
+                var idle = title.getAttribute('data-idle') || '';
+                var active = title.getAttribute('data-active') || idle;
+
+                function show(name) {
+                    if (name) {
+                        title.textContent = name;
+                        drop.classList.add('is-filled');
+                    } else {
+                        title.textContent = idle;
+                        drop.classList.remove('is-filled');
+                    }
+                }
+
+                input.addEventListener('change', function () {
+                    show(input.files && input.files[0] ? input.files[0].name : '');
+                });
+
+                ['dragenter', 'dragover'].forEach(function (evt) {
+                    drop.addEventListener(evt, function (e) {
+                        if (input.disabled) return;
+                        e.preventDefault();
+                        drop.classList.add('is-drag');
+                        title.textContent = active;
+                    });
+                });
+
+                ['dragleave', 'dragend'].forEach(function (evt) {
+                    drop.addEventListener(evt, function () {
+                        drop.classList.remove('is-drag');
+                        show(input.files && input.files[0] ? input.files[0].name : '');
+                    });
+                });
+
+                drop.addEventListener('drop', function (e) {
+                    if (input.disabled) return;
+                    e.preventDefault();
+                    drop.classList.remove('is-drag');
+                    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                        input.files = e.dataTransfer.files;
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            });
+        })();
+    </script>
+    <script src="~/js/validation.js" asp-append-version="true"></script>
+}

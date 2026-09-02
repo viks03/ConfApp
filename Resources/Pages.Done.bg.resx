@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="done_step_register" xml:space="preserve"><value>Регистрация</value></data>
+  <data name="done_step_verify" xml:space="preserve"><value>Потвърждение</value></data>
+  <data name="done_step_done" xml:space="preserve"><value>Готово</value></data>
+  <data name="done_badge" xml:space="preserve"><value>Профилът е активен</value></data>
+  <data name="done_title" xml:space="preserve"><value>Готово</value></data>
+  <data name="done_description" xml:space="preserve"><value>Имейлът е потвърден и вече сте в профила си.</value></data>
+  <data name="done_continue_btn" xml:space="preserve"><value>Продължи сега</value></data>
+  <data name="done_redirect_before" xml:space="preserve"><value>Автоматично препращане към профила след</value></data>
+  <data name="done_redirect_active" xml:space="preserve"><value>Препращане към профила</value></data>
+  <data name="done_seconds_suffix" xml:space="preserve"><value>сек.</value></data>
+  <data name="done_stub_kicker" xml:space="preserve"><value>Талон</value></data>
+  <data name="done_redirect_after_label" xml:space="preserve"><value>Препращане след</value></data>
+  <data name="done_status_label" xml:space="preserve"><value>Статус</value></data>
+  <data name="done_status_value" xml:space="preserve"><value>Потвърден</value></data>
+  <data name="done_date_label" xml:space="preserve"><value>Дата</value></data>
+</root>

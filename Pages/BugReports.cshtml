@@ -1,0 +1,539 @@
+@page "/Admin/BugReports"
+@model ConferenceApp.Pages.BugReportsModel
+@{
+    Layout = "/Pages/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Bug Reports";
+}
+
+@functions {
+    static string StatusLabel(string status) => status switch
+    {
+        "InProgress" => "In Progress",
+        "WontFix" => "Won't Fix",
+        _ => status
+    };
+
+    static string TrimUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return "—";
+        try
+        {
+            var uri = new Uri(url);
+            var path = uri.PathAndQuery;
+            return path.Length > 40 ? path.Substring(0, 40) + "…" : (path == "/" ? "/ (home)" : path);
+        }
+        catch
+        {
+            return url.Length > 40 ? url.Substring(0, 40) + "…" : url;
+        }
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/adminPanel.css" asp-append-version="true">
+    <style>
+        /* Only what adminPanel.css doesn't already have — 4 extra status colors
+           (Open/InProgress/Resolved/WontFix don't map 1:1 onto the existing
+           status-* modifiers) and the small custom status-change dropdown.
+           Everything else on this page (.admin-wrapper, .stat-card, .admin-table,
+           .modal-overlay, .action-btn, showToast()...) is the real, shared system —
+           not a look-alike. */
+        .status-open       { background: var(--c-red-light);   color: var(--c-red);   border-color: var(--c-red-border); }
+        .status-inprogress { background: var(--c-blue-light);  color: var(--c-blue);  border-color: var(--c-blue-border); }
+        .status-resolved   { background: var(--c-green-light); color: var(--c-green); border-color: var(--c-green-border); }
+        .status-wontfix     { background: #f9fafb; color: #6b7280; border-color: #e5e7eb; }
+
+        /* Severity — the existing .method-badge variants (card/crypto/iban/manual/
+           subsidised) are for payment methods, not severity levels, so these 4 are new. */
+        .method-low      { background: #f1f5f9; color: #64748b; }
+        .method-medium    { background: var(--c-amber-light); color: var(--c-amber); }
+        .method-high      { background: #fff7ed; color: #c2410c; }
+        .method-critical  { background: var(--c-red-light); color: var(--c-red); }
+
+        .bug-back-link {
+            display: inline-flex; align-items: center; gap: 6px; color: var(--c-text-muted);
+            text-decoration: none; font-size: 13px; font-weight: 600; margin-bottom: 14px;
+            transition: color var(--transition), transform var(--transition);
+        }
+        .bug-back-link:hover { color: var(--c-text-primary); transform: translateX(-2px); }
+        .bug-back-link .icon-inline { width: 15px; height: 15px; }
+
+        .dashboard-stats.cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+        .bug-filter-row { display: flex; gap: 8px; padding: 14px 22px; flex-wrap: wrap; border-bottom: 1px solid var(--c-border-soft); background: var(--c-surface-2); }
+        .bug-filter-btn {
+            background: var(--c-surface); border: 1px solid var(--c-border); color: var(--c-text-secondary);
+            font-size: 12px; font-weight: 700; padding: 6px 13px; border-radius: 999px; cursor: pointer;
+            font-family: var(--font-sans); transition: all var(--transition);
+        }
+        .bug-filter-btn:hover { background: var(--c-border-soft); }
+        .bug-filter-btn.active { background: var(--c-slate); border-color: var(--c-slate); color: #fff; }
+
+        /* Status pill becomes the control itself — click it to change status,
+           instead of a separate native <select> sitting next to a read-only badge.
+           FIX: the menu used to be position:absolute nested inside the table cell,
+           but .table-scroll (overflow-x:auto) and .admin-panel-card (overflow:hidden)
+           both clip anything that pops outside their box — the menu was rendering,
+           just invisible/clipped. It's now ONE shared element appended once, positioned
+           with position:fixed from real on-screen coordinates computed in JS, so it's
+           never inside any scrolling/clipping ancestor. */
+        .status-badge.bug-status-trigger { cursor: pointer; user-select: none; }
+        .status-badge.bug-status-trigger:hover { filter: brightness(0.97); }
+        .bug-status-caret { width: 10px; height: 10px; margin-left: 1px; opacity: 0.7; }
+        .bug-status-menu {
+            display: none; position: fixed; z-index: 9980; min-width: 150px;
+            background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg); padding: 6px;
+        }
+        .bug-status-menu.is-open { display: block; animation: dropIn 0.14s ease both; }
+        .bug-status-menu button {
+            width: 100%; display: flex; align-items: center; gap: 8px; text-align: left;
+            padding: 7px 9px; font-size: 12px; font-weight: 600; color: var(--c-text-secondary);
+            background: none; border: none; border-radius: var(--radius-sm); cursor: pointer; font-family: var(--font-sans);
+            transition: background 0.12s;
+        }
+        .bug-status-menu button:hover { background: var(--c-surface-2); }
+        .bug-status-menu button .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+        .bug-status-menu button.opt-open .dot { color: var(--c-red); }
+        .bug-status-menu button.opt-inprogress .dot { color: var(--c-blue); }
+        .bug-status-menu button.opt-resolved .dot { color: var(--c-green); }
+        .bug-status-menu button.opt-wontfix .dot { color: #9ca3af; }
+
+        .bug-title { font-weight: 700; color: var(--c-text-primary); font-size: 13.5px; margin-bottom: 3px; }
+        .bug-desc { color: var(--c-text-secondary); font-size: 12px; line-height: 1.5; max-width: 320px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .bug-note { color: var(--c-text-muted); font-size: 11px; margin-top: 5px; }
+        .bug-meta-faint { color: var(--c-text-muted); font-size: 11px; margin-top: 2px; }
+        .bug-page-link { color: var(--c-text-secondary); font-size: 12px; text-decoration: none; border-bottom: 1px dotted var(--c-border); }
+        .bug-page-link:hover { color: var(--c-red); }
+
+        .admin-table tbody tr.is-removing { opacity: 0; transform: translateX(6px); transition: opacity 0.22s ease, transform 0.22s ease; }
+
+        @@media (max-width: 900px) {
+            .dashboard-stats.cols-5 { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+}
+
+<main>
+    <div class="admin-wrapper">
+        <div class="admin-container">
+
+            <a href="/Admin" class="bug-back-link">
+                <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Back to Admin Panel
+            </a>
+
+            <div class="admin-header">
+                <div class="admin-header-text">
+                    <h2>Bug Reports</h2>
+                    <p>Reports submitted through the floating widget, across the whole site.</p>
+                </div>
+                <div class="admin-header-meta">
+                    <div class="admin-header-badge"><span class="dot"></span><span id="brHeaderOpenCount">@Model.Reports.Count(r => r.Status == "Open")</span> Open</div>
+                </div>
+            </div>
+
+            @Html.AntiForgeryToken()
+
+            <div class="admin-panel-card">
+                <h3>
+                    <span>
+                        <span class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="9" width="8" height="10" rx="4"></rect><line x1="8" y1="13" x2="4" y2="11"></line><line x1="8" y1="16" x2="4" y2="17"></line><line x1="16" y1="13" x2="20" y2="11"></line><line x1="16" y1="16" x2="20" y2="17"></line><line x1="10" y1="9" x2="9" y2="5"></line><line x1="14" y1="9" x2="15" y2="5"></line></svg>
+                        </span>
+                        All Reports
+                    </span>
+                </h3>
+
+                <div class="dashboard-stats cols-5">
+                    <div class="stat-card s-slate">
+                        <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg></div>
+                        <div class="stat-info">
+                            <span class="stat-title">Total</span>
+                            <strong class="stat-value" id="brTotalNum">@Model.Reports.Count</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card s-red">
+                        <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>
+                        <div class="stat-info">
+                            <span class="stat-title">Open</span>
+                            <strong class="stat-value text-red" id="brOpenNum">@Model.Reports.Count(r => r.Status == "Open")</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card s-blue">
+                        <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                        <div class="stat-info">
+                            <span class="stat-title">In Progress</span>
+                            <strong class="stat-value text-blue" id="brProgressNum">@Model.Reports.Count(r => r.Status == "InProgress")</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card s-green">
+                        <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+                        <div class="stat-info">
+                            <span class="stat-title">Resolved</span>
+                            <strong class="stat-value text-green" id="brResolvedNum">@Model.Reports.Count(r => r.Status == "Resolved")</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card s-slate">
+                        <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg></div>
+                        <div class="stat-info">
+                            <span class="stat-title">Won't Fix</span>
+                            <strong class="stat-value" id="brWontFixNum">@Model.Reports.Count(r => r.Status == "WontFix")</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bug-filter-row" id="brFilterBtns">
+                    <button type="button" class="bug-filter-btn" data-filter="all">All</button>
+                    <button type="button" class="bug-filter-btn" data-filter="Open">Open</button>
+                    <button type="button" class="bug-filter-btn" data-filter="InProgress">In Progress</button>
+                    <button type="button" class="bug-filter-btn" data-filter="Resolved">Resolved</button>
+                    <button type="button" class="bug-filter-btn" data-filter="WontFix">Won't Fix</button>
+                </div>
+
+                <div class="card-body" style="padding:0;">
+                    @if (!Model.Reports.Any())
+                    {
+                        <div class="empty-state">
+                            <span class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg></span>
+                            <span>No bug reports on record — that's either great news, or nobody's found the button yet.</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-scroll">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Report</th>
+                                        <th>Category</th>
+                                        <th>Severity</th>
+                                        <th>Reported</th>
+                                        <th>Page</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="brTableBody">
+                                    @foreach (var r in Model.Reports)
+                                    {
+                                        <tr data-status="@r.Status" data-id="@r.Id">
+                                            <td>
+                                                <span class="status-badge status-@(r.Status.ToLower()) bug-status-trigger" data-id="@r.Id" id="brStatusTrigger-@r.Id">
+                                                    <span class="bug-status-label">@StatusLabel(r.Status)</span>
+                                                    <svg class="bug-status-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="bug-title">@r.Title</div>
+                                                <div class="bug-desc" title="@r.Description">@r.Description</div>
+                                                @if (!string.IsNullOrWhiteSpace(r.ResolutionNotes))
+                                                {
+                                                    <div class="bug-note">Note: @r.ResolutionNotes</div>
+                                                }
+                                            </td>
+                                            <td><span class="category-badge">@r.Category</span></td>
+                                            <td><span class="method-badge method-@(r.Severity.ToLower())">@r.Severity</span></td>
+                                            <td>
+                                                <div>@r.CreatedAt.ToString("dd MMM yyyy, HH:mm")</div>
+                                                <div class="bug-meta-faint" title="@r.IpAddress">@r.ReportedByEmail</div>
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrWhiteSpace(r.PageUrl))
+                                                {
+                                                    <a class="bug-page-link" href="@r.PageUrl" target="_blank" title="@r.PageUrl">@TrimUrl(r.PageUrl)</a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="bug-meta-faint">—</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <button type="button" class="action-btn btn-delete bug-delete-btn" data-id="@r.Id">
+                                                    <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<!-- ── Single shared status dropdown — repositioned via JS to whichever pill was
+     clicked, appended here (outside .table-scroll/.admin-panel-card) specifically
+     so no ancestor's overflow:hidden/auto can clip it. ── -->
+<div class="bug-status-menu" id="brStatusMenu">
+    <button type="button" class="opt-open" data-value="Open"><span class="dot"></span>Open</button>
+    <button type="button" class="opt-inprogress" data-value="InProgress"><span class="dot"></span>In Progress</button>
+    <button type="button" class="opt-resolved" data-value="Resolved"><span class="dot"></span>Resolved</button>
+    <button type="button" class="opt-wontfix" data-value="WontFix"><span class="dot"></span>Won't Fix</button>
+</div>
+
+<!-- ── Delete confirmation — same modal-overlay/.modal-box system as the rest
+     of the admin panel, just its own instance/id for this page ── -->
+<div class="modal-overlay" id="brDeleteModal">
+    <div class="modal-box" style="max-width:400px;text-align:center;">
+        <div class="modal-header" style="border:none;"><h3>Are you sure?</h3></div>
+        <div class="modal-body">
+            <p style="color:#666;margin-bottom:0;">You are about to permanently delete this bug report. This action cannot be undone.</p>
+        </div>
+        <div class="modal-actions" style="justify-content:center;">
+            <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+            <button type="button" class="btn-confirm-delete" id="brDeleteConfirmBtn">Yes, Delete It</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Resolution note — shown only when moving a report to Resolved/WontFix ── -->
+<div class="modal-overlay" id="brNoteModal">
+    <div class="modal-box" style="max-width:440px;">
+        <div class="modal-header"><h3 id="brNoteModalTitle">Mark as Resolved</h3></div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Resolution note <span style="color:#9ca3af;font-weight:400;">(optional)</span></label>
+                <textarea id="brNoteTextarea" placeholder="e.g. Fixed in the payment retry logic, deployed..."></textarea>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" id="brNoteSkipBtn">Skip</button>
+            <button type="button" class="btn-save" id="brNoteSaveBtn">Save</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+@section Scripts {
+    <script src="~/js/adminPanel.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            'use strict';
+
+            var FILTER_KEY = 'brBugReportFilter';
+            var filterBtns = document.querySelectorAll('.bug-filter-btn');
+            var tableBody  = document.getElementById('brTableBody');
+            var statusLabels = { Open: 'Open', InProgress: 'In Progress', Resolved: 'Resolved', WontFix: "Won't Fix" };
+
+            function antiforgeryToken() {
+                var el = document.querySelector('input[name="__RequestVerificationToken"]');
+                return el ? el.value : '';
+            }
+
+            // ── Filtering (persisted via localStorage) ───────────────────────
+            var activeFilter = 'all';
+            try {
+                var saved = localStorage.getItem(FILTER_KEY);
+                if (saved) activeFilter = saved;
+            } catch (e) { /* localStorage unavailable — keep default */ }
+
+            function applyFilter() {
+                if (!tableBody) return;
+                tableBody.querySelectorAll('tr').forEach(function (tr) {
+                    var show = activeFilter === 'all' || tr.getAttribute('data-status') === activeFilter;
+                    tr.style.display = show ? '' : 'none';
+                });
+                filterBtns.forEach(function (b) {
+                    b.classList.toggle('active', b.getAttribute('data-filter') === activeFilter);
+                });
+            }
+
+            filterBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    activeFilter = btn.getAttribute('data-filter');
+                    try { localStorage.setItem(FILTER_KEY, activeFilter); } catch (e) { /* ignore */ }
+                    applyFilter();
+                });
+            });
+
+            applyFilter();
+
+            function refreshSummaryCounts() {
+                if (!tableBody) return;
+                var rows = tableBody.querySelectorAll('tr');
+                var counts = { Open: 0, InProgress: 0, Resolved: 0, WontFix: 0 };
+                rows.forEach(function (tr) {
+                    var s = tr.getAttribute('data-status');
+                    if (counts[s] !== undefined) counts[s]++;
+                });
+                var setText = function (id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+                setText('brTotalNum', rows.length);
+                setText('brOpenNum', counts.Open);
+                setText('brProgressNum', counts.InProgress);
+                setText('brResolvedNum', counts.Resolved);
+                setText('brWontFixNum', counts.WontFix);
+                setText('brHeaderOpenCount', counts.Open);
+            }
+
+            // ── Status picker — ONE shared menu, repositioned to whichever pill
+            //    was clicked via real screen coordinates (position:fixed), so it
+            //    can never be clipped by the table's scroll/overflow container ──
+            var statusMenu = document.getElementById('brStatusMenu');
+            var currentStatusRowId = null;
+
+            function closeStatusMenu() {
+                statusMenu.classList.remove('is-open');
+                currentStatusRowId = null;
+            }
+
+            document.querySelectorAll('.bug-status-trigger').forEach(function (trigger) {
+                trigger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var id = trigger.getAttribute('data-id');
+
+                    if (statusMenu.classList.contains('is-open') && currentStatusRowId === id) {
+                        closeStatusMenu();
+                        return;
+                    }
+
+                    var rect = trigger.getBoundingClientRect();
+                    statusMenu.style.top = (rect.bottom + 6) + 'px';
+                    statusMenu.style.left = rect.left + 'px';
+                    currentStatusRowId = id;
+                    statusMenu.classList.add('is-open');
+                });
+            });
+
+            statusMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+            document.addEventListener('click', closeStatusMenu);
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeStatusMenu(); });
+            // A fixed-position menu doesn't track scrolling on its own — simplest
+            // correct behavior is to just close it if the page (or the table's own
+            // horizontal scroll) moves, rather than trying to keep it glued in place.
+            window.addEventListener('scroll', closeStatusMenu, true);
+            document.querySelector('.table-scroll')?.addEventListener('scroll', closeStatusMenu);
+
+            async function applyStatusUpdate(id, newStatus, resolutionNotes) {
+                var fd = new FormData();
+                fd.append('id', id);
+                fd.append('status', newStatus);
+                fd.append('resolutionNotes', resolutionNotes || '');
+                fd.append('__RequestVerificationToken', antiforgeryToken());
+
+                try {
+                    var res = await fetch('?handler=UpdateStatus', { method: 'POST', body: fd });
+                    var data = await res.json().catch(function () { return null; });
+                    if (res.ok && data && data.success) {
+                        var row = tableBody.querySelector('tr[data-id="' + id + '"]');
+                        if (row) {
+                            row.setAttribute('data-status', newStatus);
+                            var trigger = document.getElementById('brStatusTrigger-' + id);
+                            if (trigger) {
+                                trigger.className = 'status-badge status-' + newStatus.toLowerCase();
+                                trigger.innerHTML =
+                                    '<span class="bug-status-label">' + (statusLabels[newStatus] || newStatus) + '</span>' +
+                                    '<svg class="bug-status-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+                            }
+                        }
+                        applyFilter();
+                        refreshSummaryCounts();
+                        showToast('Status updated to ' + (statusLabels[newStatus] || newStatus) + '.', 'success');
+                    } else {
+                        showToast('Could not update status. Please try again.', 'error');
+                    }
+                } catch (err) {
+                    showToast('A server error occurred.', 'error');
+                }
+            }
+
+            var noteModal = document.getElementById('brNoteModal');
+            var noteTextarea = document.getElementById('brNoteTextarea');
+            var noteModalTitle = document.getElementById('brNoteModalTitle');
+            var pendingNote = null;
+
+            function openNoteModal(id, status) {
+                pendingNote = { id: id, status: status };
+                noteModalTitle.textContent = status === 'Resolved' ? 'Mark as Resolved' : "Mark as Won't Fix";
+                noteTextarea.value = '';
+                openModal('brNoteModal');
+                setTimeout(function () { noteTextarea.focus(); }, 60);
+            }
+
+            document.getElementById('brNoteSkipBtn').addEventListener('click', function () {
+                if (!pendingNote) return;
+                var p = pendingNote; pendingNote = null;
+                closeModal();
+                applyStatusUpdate(p.id, p.status, '');
+            });
+            document.getElementById('brNoteSaveBtn').addEventListener('click', function () {
+                if (!pendingNote) return;
+                var p = pendingNote; var notes = noteTextarea.value.trim(); pendingNote = null;
+                closeModal();
+                applyStatusUpdate(p.id, p.status, notes);
+            });
+
+            statusMenu.querySelectorAll('button').forEach(function (opt) {
+                opt.addEventListener('click', function () {
+                    var id = currentStatusRowId;
+                    var newStatus = opt.getAttribute('data-value');
+                    closeStatusMenu();
+                    if (!id) return;
+
+                    if (newStatus === 'Resolved' || newStatus === 'WontFix') {
+                        openNoteModal(id, newStatus);
+                    } else {
+                        applyStatusUpdate(id, newStatus, '');
+                    }
+                });
+            });
+
+            // ── Delete — reuses the shared openModal/closeModal + modal-overlay
+            //    system, own #brDeleteModal instance ─────────────────────────
+            var pendingDeleteId = null;
+            var pendingDeleteBtn = null;
+
+            document.querySelectorAll('.bug-delete-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    pendingDeleteId = btn.getAttribute('data-id');
+                    pendingDeleteBtn = btn;
+                    openModal('brDeleteModal');
+                });
+            });
+
+            document.getElementById('brDeleteConfirmBtn').addEventListener('click', async function () {
+                if (!pendingDeleteId) return;
+                var id = pendingDeleteId;
+                var rowBtn = pendingDeleteBtn;
+                var confirmBtn = this;
+                confirmBtn.disabled = true;
+                if (rowBtn) rowBtn.disabled = true;
+
+                var fd = new FormData();
+                fd.append('id', id);
+                fd.append('__RequestVerificationToken', antiforgeryToken());
+
+                try {
+                    var res = await fetch('?handler=Delete', { method: 'POST', body: fd });
+                    var data = await res.json().catch(function () { return null; });
+                    closeModal();
+                    if (res.ok && data && data.success) {
+                        var row = tableBody.querySelector('tr[data-id="' + id + '"]');
+                        if (row) {
+                            row.classList.add('is-removing');
+                            setTimeout(function () { row.remove(); refreshSummaryCounts(); }, 230);
+                        }
+                        showToast('Bug report deleted.', 'success');
+                    } else {
+                        showToast('Could not delete this report. Please try again.', 'error');
+                        if (rowBtn) rowBtn.disabled = false;
+                    }
+                } catch (err) {
+                    closeModal();
+                    showToast('A server error occurred.', 'error');
+                    if (rowBtn) rowBtn.disabled = false;
+                } finally {
+                    confirmBtn.disabled = false;
+                    pendingDeleteId = null;
+                    pendingDeleteBtn = null;
+                }
+            });
+        })();
+    </script>
+}

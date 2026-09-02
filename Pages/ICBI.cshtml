@@ -1,0 +1,134 @@
+@page
+@model ICBIModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Nav_ICBI"].Value ?? "About ICBI";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/icbiStyle.css" asp-append-version="true" />
+}
+
+<main>
+    
+    <section class="hero icbi-hero">
+      <div class="hero-overlay"></div>
+      
+      @* НОВАТА СТРЕЛКА ОТ icbi.html *@
+      <a href="#tickets-section" class="scroll-down-arrow" aria-label="Scroll down">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </a>
+    </section>
+    
+    @* ДОБАВЕНО id="tickets-section" *@
+    <section class="hero-section-icbi" id="tickets-section">
+        <div class="section-inner reveal center-section">
+            <div class="hero-content-narrow">
+                <p class="section-label">@Localizer["ICBI_EstLabel"]</p>
+                <h2>@Html.Raw(Localizer["ICBI_HeroTitle"].Value)</h2>
+                
+                <p class="hero-description">@Localizer["ICBI_HeroDesc"]</p>
+                
+                <blockquote class="hero-quote">
+                    "@Localizer["ICBI_HeroQuote"]"
+                </blockquote>
+            </div>
+        </div>
+    </section>
+
+    <section class="pillars-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["ICBI_PillarsLabel"]</p>
+            <h2>@Localizer["ICBI_PillarsTitle"]</h2>
+            
+            <div class="grid-4-col">
+                <div class="pillar-card">
+                    <div class="icon-box"><img src="~/images/icbi/education.png" alt=""></div>
+                    <h4>@Localizer["ICBI_Pillar1_Title"]</h4>
+                    <p>@Localizer["ICBI_Pillar1_Desc"]</p>
+                </div>
+                <div class="pillar-card">
+                    <div class="icon-box"><img src="~/images/icbi/research.png" alt=""></div>
+                    <h4>@Localizer["ICBI_Pillar2_Title"]</h4>
+                    <p>@Localizer["ICBI_Pillar2_Desc"]</p>
+                </div>
+                <div class="pillar-card">
+                    <div class="icon-box"><img src="~/images/icbi/partnership.png" alt=""></div>
+                    <h4>@Localizer["ICBI_Pillar3_Title"]</h4>
+                    <p>@Localizer["ICBI_Pillar3_Desc"]</p>
+                </div>
+                <div class="pillar-card">
+                    <div class="icon-box"><img src="~/images/icbi/policy.png" alt=""></div>
+                    <h4>@Localizer["ICBI_Pillar4_Title"]</h4>
+                    <p>@Localizer["ICBI_Pillar4_Desc"]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="venue-section" id="venue">
+        <div class="section-inner reveal">
+            <p class="section-label">@Localizer["ICBI_VenueLabel"]</p>
+            <h2>@Localizer["ICBI_VenueTitle"]</h2>
+            
+            <div class="venue-grid">
+                <div class="map-container">
+                    <div class="map-placeholder">
+                        <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2934.3486121404135!2d23.348604315465682!3d42.65399597916828!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40aa842188ab6cc9%3A0xcda8d7e00e3bd9c3!2sUniversity%20of%20National%20and%20World%20Economy!5e0!3m2!1sen!2sbg!4v1680000000000!5m2!1sen!2sbg" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </div>
+                <div class="venue-info">
+                    <div class="info-item">
+                        <div class="icon-box"><img src="~/images/logos/location.png" alt=""></div>
+                        <p><strong>@Localizer["ICBI_VenueConfTitle"]</strong><br>@Html.Raw(Localizer["ICBI_VenueConfDesc"].Value)</p>
+                    </div>
+                    <div class="info-item">
+                        <div class="icon-box"><img src="~/images/logos/time.png" alt=""></div>
+                        <p><strong>@Localizer["ICBI_VenueHoursTitle"]</strong><br>@Html.Raw(Localizer["ICBI_VenueHoursDesc"].Value)</p>
+                    </div>
+                    <div class="info-item">
+                        <div class="icon-box"><img src="~/images/logos/mail.png" alt=""></div>
+                        <p><strong>@Localizer["ICBI_VenueEmailTitle"]</strong><br>conference.education@unwe.bg</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ДИНАМИЧНА СЕКЦИЯ С ЕЗИКОВИ ПРОВЕРКИ ЗА СЪБИТИЯТА *@
+    @if (Model.Events != null && Model.Events.Any())
+    {
+        <section class="blog-section">
+            <div class="section-inner reveal center-section">
+                <div class="blog-header">
+                    <p class="section-label">@Localizer["ICBI_EventsLabel"]</p>
+                    <h2>@Localizer["ICBI_EventsTitle"]</h2>
+                </div>
+
+                <div class="blog-grid">
+                    @foreach (var ev in Model.Events)
+                    {
+                        var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                        
+                        var title = isBulgarian ? (string.IsNullOrWhiteSpace(ev.TitleBg) ? ev.TitleEn : ev.TitleBg) : ev.TitleEn;
+                        var location = isBulgarian ? (string.IsNullOrWhiteSpace(ev.LocationBg) ? ev.LocationEn : ev.LocationBg) : ev.LocationEn;
+                        
+                        var bgImage = string.IsNullOrEmpty(ev.ImagePath) ? "/images/lecturers/bannerMainLecturers.png" : ev.ImagePath;
+                        var linkUrl = string.IsNullOrEmpty(ev.EventUrl) ? "#" : ev.EventUrl;
+                        var targetAttr = string.IsNullOrEmpty(ev.EventUrl) ? "" : "target=\"_blank\"";
+
+                        <a href="@linkUrl" @Html.Raw(targetAttr) class="blog-item" style="background-image: url('@bgImage');">
+                            <div class="blog-overlay">
+                                <h4>@title</h4>
+                                <p>@location</p>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+
+</main>

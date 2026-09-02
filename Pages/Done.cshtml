@@ -1,0 +1,160 @@
+﻿@page
+@model ConferenceApp.Pages.DoneModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["done_title"].Value;
+}
+
+@* /Done — само за завършена РЕГИСТРАЦИЯ (виж редиректа в
+   Verification.cshtml.cs: purpose=="Registration" -> тук, "Login" -> направо
+   /Profile). Преизползва структурните класове от verificationStyle.css
+   (.verify-shell/.verify-card/.verify-steps/.verify-timer и т.н.), за да е
+   истинско визуално продължение на /Verification — doneStyle.css носи само
+   нетно новите неща (checkmark badge, влизаща анимация, анимирани точки).
+   Единствен шрифт навсякъде е Oswald (различни тегла) — "Barlow", който
+   други страници реферират, никога не е бил реално зареден в проекта
+   (няма нито @@font-face, нито Google Fonts линк за него — тихо пада на
+   Arial fallback навсякъде другаде), затова тук нарочно не го ползвам. *@
+@section Styles {
+    <link rel="stylesheet" href="~/css/verificationStyle.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/doneStyle.css" asp-append-version="true">
+}
+
+<main class="verify-shell">
+    <span class="verify-shell-hairline" aria-hidden="true"></span>
+
+    <div class="verify-inner">
+
+        <div class="verify-steps">
+            <span class="verify-step done-step-complete">
+                <svg class="done-step-check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><path d="M4 12.5 9.5 18 20 6"></path></svg>
+                01 / @Localizer["done_step_register"]
+            </span>
+            <span class="verify-step-sep" aria-hidden="true"></span>
+            <span class="verify-step done-step-complete">
+                <svg class="done-step-check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><path d="M4 12.5 9.5 18 20 6"></path></svg>
+                02 / @Localizer["done_step_verify"]
+            </span>
+            <span class="verify-step-sep" aria-hidden="true"></span>
+            <span class="verify-step is-active">03 / @Localizer["done_step_done"]</span>
+        </div>
+
+        <div class="verify-card done-card-enter">
+            <div class="verify-card-topbar"></div>
+            <span class="verify-card-noise" aria-hidden="true"></span>
+
+            <div class="verify-grid">
+
+                <!-- ЛЯВО -->
+                <div class="verify-form">
+                    <div class="done-badge-row">
+                        <span class="done-badge-icon" aria-hidden="true">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FF3636" stroke-width="2.2" stroke-linecap="square"><path d="M4 12.5 9.5 18 20 6" stroke-dasharray="64"></path></svg>
+                        </span>
+                        <p class="done-badge-text">@Localizer["done_badge"]</p>
+                    </div>
+
+                    <h1 class="verify-title" style="margin-top:22px;">@Localizer["done_title"]</h1>
+
+                    <p class="verify-sentline" style="margin-top:18px;">@Localizer["done_description"]</p>
+                    <p class="verify-email">@Model.DisplayEmail</p>
+
+                    <button type="button" class="verify-submit is-ready" id="doneContinueBtn" style="margin-top:32px;">@Localizer["done_continue_btn"]</button>
+
+                    <p class="verify-sentline" style="margin-top:20px; max-width:none;">
+                        <span id="doneRedirectText">@Localizer["done_redirect_before"]</span>
+                        <span id="doneCountSuffix"> <span class="done-count-value" id="doneCountValue">@Model.CountdownSeconds</span> @Localizer["done_seconds_suffix"]</span><span class="done-dots" id="doneDots" hidden></span>
+                    </p>
+                </div>
+
+                <!-- ДЯСНО: талон -->
+                <div class="verify-stub">
+                    <p class="verify-stub-kicker">@Localizer["done_stub_kicker"]</p>
+
+                    <p class="verify-valid-label">@Localizer["done_redirect_after_label"]</p>
+                    <div class="verify-timer" id="doneTimer">00:@Model.CountdownSeconds.ToString("D2")</div>
+                    <div class="verify-timer-track">
+                        <div class="verify-timer-fill" id="doneTimerFill"></div>
+                    </div>
+
+                    <div class="verify-stub-block">
+                        <p class="verify-stub-block-label">@Localizer["done_status_label"]</p>
+                        <p class="verify-digits-value">@Localizer["done_status_value"]</p>
+                    </div>
+
+                    <div class="verify-stub-block">
+                        <p class="verify-stub-block-label">@Localizer["done_date_label"]</p>
+                        <p class="verify-digits-value">@Model.FormattedDate</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let left = parseInt('@Model.CountdownSeconds', 10) || 5;
+            const total = left;
+
+            const timerEl = document.getElementById('doneTimer');
+            const fillEl = document.getElementById('doneTimerFill');
+            const textEl = document.getElementById('doneRedirectText');
+            const suffixEl = document.getElementById('doneCountSuffix');
+            const countValueEl = document.getElementById('doneCountValue');
+            const dotsEl = document.getElementById('doneDots');
+            const continueBtn = document.getElementById('doneContinueBtn');
+
+            function tick() {
+                timerEl.textContent = '00:' + String(Math.max(0, left)).padStart(2, '0');
+                fillEl.style.width = Math.max(0, (left / total) * 100) + '%';
+                countValueEl.textContent = left;
+            }
+            tick();
+
+            function goToProfile() {
+                window.location.href = '/Profile';
+            }
+
+            let dotsInterval = null;
+
+            function startRedirecting() {
+                textEl.textContent = '@Html.Raw(Localizer["done_redirect_active"].Value)';
+                suffixEl.hidden = true;
+                dotsEl.hidden = false;
+                timerEl.textContent = '00:00';
+                fillEl.style.width = '0%';
+
+                // НОВО: динамично броене на точките (. → .. → ... → повтаря),
+                // вместо статично "…" — усеща се като реален loading indicator,
+                // не като замръзнал текст.
+                let dotCount = 0;
+                dotsInterval = setInterval(() => {
+                    dotCount = (dotCount + 1) % 4;
+                    dotsEl.textContent = '.'.repeat(dotCount);
+                }, 400);
+
+                setTimeout(goToProfile, 900);
+            }
+
+            const countdown = setInterval(() => {
+                left--;
+                if (left <= 0) {
+                    clearInterval(countdown);
+                    startRedirecting();
+                    return;
+                }
+                tick();
+            }, 1000);
+
+            continueBtn.addEventListener('click', () => {
+                clearInterval(countdown);
+                if (dotsInterval) clearInterval(dotsInterval);
+                goToProfile();
+            });
+        });
+    </script>
+}

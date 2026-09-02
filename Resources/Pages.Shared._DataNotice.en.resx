@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="DataNotice_AriaBanner" xml:space="preserve"><value>Cookie Notice</value></data>
+  <data name="DataNotice_FallbackTitle" xml:space="preserve"><value>We value your privacy</value></data>
+  <data name="DataNotice_FallbackBody" xml:space="preserve"><value>We use cookies to ensure the site functions properly and enhance your experience. For more details, review our &lt;a href="/Cookies"&gt;Cookie Policy&lt;/a&gt;.</value></data>
+  <data name="DataNotice_RejectAll" xml:space="preserve"><value>Reject All</value></data>
+  <data name="DataNotice_AcceptAll" xml:space="preserve"><value>Accept All</value></data>
+  <data name="DataNotice_Preferences" xml:space="preserve"><value>Preferences</value></data>
+  <data name="DataNotice_RelaunchAriaLabel" xml:space="preserve"><value>Cookie Preferences</value></data>
+  <data name="DataNotice_ModalAriaLabel" xml:space="preserve"><value>Cookie Preferences</value></data>
+  <data name="DataNotice_ModalTitle" xml:space="preserve"><value>Cookie Preferences</value></data>
+  <data name="DataNotice_ModalSubtitle" xml:space="preserve"><value>Choose your cookie preferences below. Strictly necessary cookies are required for the website to function and cannot be disabled.</value></data>
+  <data name="DataNotice_ModalCloseAriaLabel" xml:space="preserve"><value>Close</value></data>
+  <data name="DataNotice_NoCategories" xml:space="preserve"><value>No categories configured.</value></data>
+  <data name="DataNotice_AlwaysActive" xml:space="preserve"><value>Always Active</value></data>
+  <data name="DataNotice_SavePreferences" xml:space="preserve"><value>Save Preferences</value></data>
+</root>

@@ -1,0 +1,1013 @@
+/* ══════════════════════════════════════════════════════════════════════
+   profileStyle.css — редизайн на /Profile
+   Заменя userPageStyle.css за тази страница.
+
+   Палитрата и шрифтът идват от mainStyle.css през променливи
+   (--bg, --panel, --text, --muted, --line, --accent) — тук няма нов :root.
+   Страницата се рендира в <main> между sticky топбара и футъра, затова
+   никъде няма чист 100vh: работим с --pf-top.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.pf-page {
+    --pf-top: 84px;
+    background: var(--bg, #050505);
+    color: var(--text, #f4f2ec);
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 300;
+}
+
+.pf-page *,
+.pf-page *::before,
+.pf-page *::after { box-sizing: border-box; }
+
+.pf-page ::selection { background: rgba(255, 54, 54, 0.35); }
+
+.pf-page :is(button, a, input, select, summary):focus-visible {
+    outline: 2px solid var(--accent, #ff3636);
+    outline-offset: 2px;
+}
+
+/* Радиус: 0 навсякъде. */
+.pf-page :is(input, select, button, .pf-tile, .pf-drop, .status-panel) { border-radius: 0; }
+
+/* ── Скелет ───────────────────────────────────────────────────────── */
+.pf-split {
+    display: grid;
+    grid-template-columns: 1fr 0.44fr;
+    grid-template-rows: auto;
+    align-content: start;
+}
+
+.pf-col {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    padding: 64px 5vw 96px;
+}
+
+.pf-form-wrap {
+    width: 100%;
+    max-width: 620px;
+    margin: 0 auto;
+    animation: pfIn 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Дясната колона е една обвивка с два блока. На телефон обвивката става
+   display: contents и двата блока стават самостоятелни редове около формата. */
+.pf-aside-col {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: var(--pf-top);
+    align-self: start;
+    min-width: 0;
+    background: var(--panel, #0b0b0b);
+    border-left: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.pf-aside-top    { padding: 64px 36px 28px; min-width: 0; }
+.pf-aside-bottom { padding: 0 36px 48px; min-width: 0; }
+
+.pf-aside-top > *,
+.pf-aside-bottom > * { min-width: 0; }
+
+.pf-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ── Глава ────────────────────────────────────────────────────────── */
+.pf-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 44px;
+}
+
+.pf-brand img {
+    height: 28px;
+    width: auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.92;
+}
+
+.pf-brand-rule {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.pf-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.pf-title {
+    margin: 0 0 10px;
+    max-width: 18ch;
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 600;
+    font-size: clamp(34px, 4.4vw, 54px);
+    line-height: 1.1;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+.pf-title-rule {
+    display: block;
+    width: 56px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    margin-bottom: 14px;
+}
+
+.pf-desc {
+    margin: 0 0 32px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--muted, #a7a39b);
+}
+
+/* Мобилната глава живее в горния блок — там вече има име и имейл. */
+.pf-brand--mobile { display: none; margin-bottom: 0; }
+
+/* ── Съобщения ────────────────────────────────────────────────────── */
+.pf-saved,
+.pf-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    margin: 0 0 24px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.pf-saved {
+    border: 1px solid rgba(78, 168, 107, 0.3);
+    border-left: 3px solid #4ea86b;
+    background: rgba(78, 168, 107, 0.07);
+    color: #8fd3a3;
+}
+
+.pf-alert {
+    border: 1px solid rgba(255, 54, 54, 0.35);
+    border-left: 3px solid var(--accent, #ff3636);
+    background: rgba(255, 54, 54, 0.08);
+    color: #ff8f8f;
+}
+
+.pf-saved svg,
+.pf-alert svg { flex: none; }
+.pf-alert:empty { display: none; }
+.pf-alert ul { list-style: none; margin: 0; padding: 0; }
+
+/* ── Форма ────────────────────────────────────────────────────────── */
+.pf-form {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+}
+
+.pf-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.pf-section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.pf-section-head b {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: var(--accent, #ff3636);
+}
+
+.pf-section-head span {
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.pf-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.pf-field { position: relative; min-width: 0; }
+
+.pf-field > label,
+.pf-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.pf-field > :is(input[type="text"], input[type="tel"], input[type="number"], input[type="email"], select) {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text, #f4f2ec);
+    font-family: inherit;
+    font-weight: 300;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    caret-color: var(--accent, #ff3636);
+    appearance: none;
+    transition: border-color 0.2s ease;
+}
+
+.pf-field input::placeholder { color: #8a8680; }
+
+.pf-field :is(input, select):focus {
+    outline: none;
+    border-color: var(--accent, #ff3636);
+}
+
+.pf-field select {
+    padding-right: 40px;
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--muted, #a7a39b) 50%),
+        linear-gradient(135deg, var(--muted, #a7a39b) 50%, transparent 50%);
+    background-position: calc(100% - 20px) 22px, calc(100% - 14px) 22px;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.pf-field select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    color: var(--muted, #a7a39b);
+}
+
+.pf-page select option { background: var(--panel, #0b0b0b); color: var(--text, #f4f2ec); }
+
+/* Полето, което получава фокус, изтегля червена линия по долния си ръб. */
+.pf-field::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    pointer-events: none;
+}
+
+.pf-field:focus-within::after {
+    animation: pfFieldLine 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* При съобщение за грешка линията би застанала под него. */
+.pf-field:has(.field-error:not(:empty))::after,
+.pf-field:has(.pf-note)::after,
+.pf-field:has(.pf-choice)::after,
+.pf-field:has(.locked-field-note)::after { display: none; }
+
+.field-error {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #ff8f8f;
+}
+
+.pf-note {
+    margin: 10px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #8a8680;
+}
+
+/* Форма на участие — плочки вместо dropdown.
+   Същият език като .auth-choice на регистрацията. */
+.pf-choice {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.pf-choice-item {
+    position: relative;
+    letter-spacing: normal;
+    text-transform: none;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 15px;
+    line-height: 1.3;
+    color: var(--text, #f4f2ec);
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.pf-choice-item::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    flex: none;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.pf-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
+
+.pf-choice-item:hover { border-color: rgba(255, 255, 255, 0.28); }
+
+.pf-choice-item:has(input:checked),
+.pf-choice-item.is-selected {
+    background: rgba(255, 54, 54, 0.1);
+    border-color: var(--accent, #ff3636);
+}
+
+.pf-choice-item:has(input:checked)::before,
+.pf-choice-item.is-selected::before {
+    background: var(--accent, #ff3636);
+    border-color: var(--accent, #ff3636);
+}
+
+.pf-choice-item:has(input:focus-visible) {
+    outline: 2px solid var(--accent, #ff3636);
+    outline-offset: 2px;
+}
+
+/* Заключено: избраната плочка остава четима, останалите заглъхват. */
+/* Заключените плочки трябва ЯСНО да казват, че не се кликат — `default`
+   изглежда просто като неинтерактивен текст, `not-allowed` е недвусмислено. */
+.pf-choice.is-locked .pf-choice-item,
+.pf-choice.is-locked .pf-choice-item * {
+    cursor: not-allowed;
+}
+
+/* Самите radio входове са disabled — някои браузъри пак показват pointer. */
+.pf-choice-item input[type="radio"]:disabled,
+.pf-choice-item input[type="radio"]:disabled + * {
+    cursor: not-allowed;
+}
+.pf-choice.is-locked .pf-choice-item:hover { border-color: rgba(255, 255, 255, 0.12); }
+.pf-choice-item.is-off { opacity: 0.4; }
+
+/* Заключен тип участие */
+.locked-field-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #4ea86b;
+}
+
+.locked-field-note svg { width: 13px; height: 13px; flex: none; }
+.locked-field-note.locked-warning { color: #d9932b; }
+
+/* Ограден ред с checkbox — „Чуждестранен участник“ */
+.pf-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 56px;
+    padding: 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.pf-toggle-row svg { width: 18px; height: 18px; flex: none; stroke: #8a8680; transition: stroke 0.2s ease; }
+.pf-toggle-row span { flex: 1; font-size: 15px; line-height: 1.4; }
+
+.pf-toggle-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    flex: none;
+    accent-color: var(--accent, #ff3636);
+    cursor: pointer;
+}
+
+.pf-toggle-row:has(input:checked) { border-color: rgba(255, 54, 54, 0.5); }
+.pf-toggle-row:has(input:checked) svg { stroke: var(--accent, #ff3636); }
+
+/* Обикновено съгласие */
+.pf-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 15px;
+    line-height: 1.45;
+    cursor: pointer;
+}
+
+.pf-consent input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 1px 0 0;
+    flex: none;
+    accent-color: var(--accent, #ff3636);
+}
+
+/* ── Доклад ───────────────────────────────────────────────────────── */
+.pf-file {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 56px;
+    padding: 0 8px 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pf-file > svg { width: 17px; height: 17px; flex: none; stroke: var(--muted, #a7a39b); }
+
+.pf-file-name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pf-file-name b {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.pf-file-name span {
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pf-file-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    flex: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.pf-file-action svg { width: 14px; height: 14px; }
+.pf-file-action:hover { border-color: var(--accent, #ff3636); color: var(--accent, #ff3636); }
+
+.pf-drop-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.pf-drop-head .pf-label { margin-bottom: 0; }
+.pf-drop-head span { font-size: 12px; color: #8a8680; }
+
+.pf-drop {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 0 8px 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.pf-drop > svg { width: 17px; height: 17px; flex: none; stroke: #8a8680; transition: stroke 0.18s ease; }
+
+.pf-drop-label {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    line-height: 1.3;
+    color: #8a8680;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pf-drop.is-dragging {
+    border-color: var(--accent, #ff3636);
+    background: rgba(255, 54, 54, 0.08);
+}
+
+.pf-drop.is-dragging > svg { stroke: #ffb3b3; }
+.pf-drop.is-dragging .pf-drop-label { color: #ffb3b3; }
+.pf-drop.has-file .pf-drop-label { color: var(--text, #f4f2ec); }
+.pf-drop.has-file > svg { stroke: var(--text, #f4f2ec); }
+
+/* Истинският input стои скрит вътре в label-а — id и class не са пипани,
+   за да продължат да работят validation.js и scriptProfile.js. */
+.pf-drop input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ── Запази ───────────────────────────────────────────────────────── */
+.pf-submit {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 56px;
+    padding: 0 20px;
+    background: var(--accent, #ff3636);
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.2s ease;
+}
+
+.pf-submit svg { width: 20px; height: 20px; flex: none; }
+.pf-submit:hover { background: #e02222; }
+.pf-submit:active { background: #c81c1c; }
+.pf-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Идентичност ──────────────────────────────────────────────────── */
+.pf-identity {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    overflow: hidden;
+}
+
+.pf-identity::before {
+    content: "";
+    position: absolute;
+    inset: -20px -20px 0 -20px;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px) 0 0 / 100% 28px,
+        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px) 0 0 / 28px 100%;
+    pointer-events: none;
+}
+
+.pf-avatar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    flex: none;
+    background: var(--bg, #050505);
+    border: 1px solid rgba(255, 54, 54, 0.45);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--accent, #ff3636);
+}
+
+.pf-identity-body {
+    position: relative;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pf-identity-name {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    background: linear-gradient(100deg, #a7a39b 0%, #f4f2ec 42%, #ffffff 50%, #f4f2ec 58%, #a7a39b 100%) 0 0 / 300% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: pfSheen 14s ease-in-out infinite;
+}
+
+.pf-identity-mail {
+    font-size: 13px;
+    color: #8a8680;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── Статус панел ─────────────────────────────────────────────────── */
+.status-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 3px solid var(--muted, #a7a39b);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.status-panel-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.status-panel-icon svg { width: 15px; height: 15px; flex: none; }
+
+.status-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.status-panel-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.status-panel-msg {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #d8d5cf;
+}
+
+.status-ref {
+    margin-top: 8px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--muted, #a7a39b);
+}
+
+.status-ref strong { color: var(--text, #f4f2ec); letter-spacing: 0.06em; }
+
+.status-panel-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.status-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 16px;
+    background: var(--accent, #ff3636);
+    color: #fff;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.2s ease;
+}
+
+.status-action-btn:hover { background: #e02222; color: #fff; text-decoration: none; }
+
+.status-action-btn.status-action-secondary {
+    justify-content: center;
+    min-height: 44px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text, #f4f2ec);
+}
+
+.status-action-btn.status-action-secondary:hover {
+    background: transparent;
+    border-color: var(--accent, #ff3636);
+    color: var(--accent, #ff3636);
+}
+
+/* Тонове по състояние: зелено потвърдено, оранжево в изчакване, червено за действие. */
+.status-panel.status-confirmed {
+    border-color: rgba(78, 168, 107, 0.3);
+    border-left-color: #4ea86b;
+    background: rgba(78, 168, 107, 0.07);
+}
+.status-panel.status-confirmed :is(.status-panel-icon, .status-panel-label) { color: #4ea86b; }
+
+.status-panel.status-pending,
+.status-panel.status-info {
+    border-color: rgba(217, 147, 43, 0.3);
+    border-left-color: #d9932b;
+    background: rgba(217, 147, 43, 0.07);
+}
+.status-panel.status-pending :is(.status-panel-icon, .status-panel-label) { color: #d9932b; }
+
+.status-panel.status-info {
+    border-color: rgba(255, 255, 255, 0.12);
+    border-left-color: var(--muted, #a7a39b);
+    background: rgba(255, 255, 255, 0.03);
+}
+.status-panel.status-info .status-panel-icon { color: var(--muted, #a7a39b); }
+.status-panel.status-info .status-panel-msg { font-size: 13px; line-height: 1.55; color: var(--muted, #a7a39b); }
+
+.status-panel.status-warning,
+.status-panel.status-rejected {
+    border-color: rgba(255, 54, 54, 0.28);
+    border-left-color: var(--accent, #ff3636);
+    background: rgba(255, 54, 54, 0.07);
+}
+.status-panel:is(.status-warning, .status-rejected) :is(.status-panel-icon, .status-panel-label) { color: var(--accent, #ff3636); }
+
+/* Пулсираща точка при състояние, което тече. */
+.status-panel-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    background: currentColor;
+}
+
+.status-panel:is(.status-pending, .status-iban) .status-panel-dot {
+    animation: pfPulse 2.4s ease-in-out infinite;
+}
+
+/* Причина за отхвърляне */
+.status-reason > summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.status-reason > summary::-webkit-details-marker { display: none; }
+.status-reason > summary svg { width: 12px; height: 12px; flex: none; transition: transform 0.25s ease; }
+.status-reason[open] > summary svg { transform: rotate(180deg); }
+
+.status-reason p {
+    margin: 10px 0 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #d8d5cf;
+}
+
+/* ── Справка ──────────────────────────────────────────────────────── */
+.pf-facts {
+    display: flex;
+    flex-direction: column;
+}
+
+.pf-facts div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 0;
+    border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.pf-facts dt,
+.pf-facts b {
+    flex: none;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.pf-facts span {
+    min-width: 0;
+    font-size: 14px;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pf-facts span.is-empty { color: #8a8680; }
+.pf-facts span.is-ref { letter-spacing: 0.06em; }
+.pf-facts span.is-ok { color: #4ea86b; }
+.pf-facts span.is-wait { color: #d9932b; }
+.pf-facts span.is-alert { color: var(--accent, #ff3636); }
+
+/* ── Изход ────────────────────────────────────────────────────────── */
+.pf-logout {
+    padding-top: 18px;
+    border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.pf-logout button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+    transition: color 0.2s ease;
+}
+
+.pf-logout button svg { width: 15px; height: 15px; flex: none; }
+.pf-logout button:hover { color: var(--accent, #ff3636); }
+
+/* ── Анимации ─────────────────────────────────────────────────────── */
+@keyframes pfIn        { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes pfFieldLine { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes pfPulse     { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.65); } }
+@keyframes pfSheen     { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .pf-choice-item { transition: none; }
+    .pf-form-wrap,
+    .pf-identity-name,
+    .status-panel-dot { animation: none !important; }
+    .pf-form-wrap { opacity: 1 !important; transform: none !important; }
+    .pf-field:focus-within::after { animation: none; transform: scaleX(1); }
+}
+
+/* ══ Респонсив ══════════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+    .pf-split { grid-template-columns: 1fr 0.5fr; }
+    .pf-col { padding: 48px 40px 80px; }
+    .pf-aside-top { padding: 48px 28px 24px; }
+    .pf-aside-bottom { padding: 0 28px 40px; }
+}
+
+/* Телефон: горе идентичност и статус, в средата формата, долу справка и изход. */
+@media (max-width: 820px) {
+    .pf-split {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+    }
+
+    /* Обвивката изчезва като кутия — двата блока стават редове на грида. */
+    .pf-aside-col {
+        display: contents;
+        position: static;
+        background: none;
+        border-left: 0;
+    }
+
+    .pf-aside-top {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 22px 22px 26px;
+        background: var(--panel, #0b0b0b);
+        border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    }
+
+    .pf-col {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 26px 22px 36px;
+    }
+
+    .pf-aside-bottom {
+        grid-column: 1;
+        grid-row: 3;
+        padding: 26px 22px 34px;
+        background: var(--bg, #050505);
+        border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    }
+
+    .pf-form-wrap { max-width: none; }
+
+    /* Логото стои в горния блок; заглавието с името не се повтаря. */
+    .pf-brand--desktop,
+    .pf-head { display: none; }
+    .pf-brand--mobile { display: flex; }
+
+    .pf-grid-2 { grid-template-columns: 1fr; }
+    .pf-choice { grid-template-columns: 1fr; gap: 10px; }
+    .pf-form { gap: 30px; }
+
+    /* Изходът на телефон е пълноширок ограден бутон в края на страницата. */
+    .pf-logout { padding-top: 0; border-top: 0; }
+    .pf-logout button {
+        justify-content: center;
+        min-height: 52px;
+        padding: 0 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--muted, #a7a39b);
+    }
+}
+
+@media (max-width: 400px) {
+    .pf-avatar { width: 52px; height: 52px; font-size: 19px; }
+    .pf-file-action span { display: none; }
+}
+
+/* ── Премахване на избран файл + inline бележки ─────────────────────── */
+.pf-drop-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 7px 12px;
+    min-height: 34px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 0;
+    color: var(--muted, #a7a39b);
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.pf-drop-clear svg { width: 13px; height: 13px; flex: none; }
+
+.pf-drop-clear:hover {
+    color: var(--accent, #ff3636);
+    border-color: var(--accent, #ff3636);
+}
+
+/* Бележка при смяна към платена форма — заменя нативния confirm диалог. */
+.pf-inline-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin: 12px 0 0;
+    padding: 11px 13px;
+    background: rgba(217, 147, 43, 0.07);
+    border: 1px solid rgba(217, 147, 43, 0.25);
+    color: #d9932b;
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1.5;
+}
+
+.pf-inline-note svg { width: 15px; height: 15px; flex: none; margin-top: 2px; }
+
+/* Информативен вариант (студент / журналист — предстои документ), за да не
+   изглежда като предупреждение за такса. */
+.pf-inline-note.is-info {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: var(--muted, #a7a39b);
+}
+
+/* Глобално — author-level display бие UA [hidden]. Без това правило
+   `hidden` няма ефект върху flex/grid елементите тук. */
+[hidden] { display: none !important; }

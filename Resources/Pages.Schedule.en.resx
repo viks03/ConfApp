@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <data name="Nav_Schedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Sched_DownloadSubtitle" xml:space="preserve"><value>Download the program</value></data>
+  <data name="Sched_DownloadTitle" xml:space="preserve"><value>International conference on Academic education and Science in Cryptoeconomics, Blockchain and Financial Innovations</value></data>
+  <data name="Sched_h1Title" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Sched_BtnBg" xml:space="preserve"><value>PROGRAM BG (PDF)</value></data>
+  <data name="Sched_BtnEn" xml:space="preserve"><value>PROGRAM EN (PDF)</value></data>
+  <data name="Sched_DeadlinesTitle" xml:space="preserve"><value>Deadlines for submitting reports</value></data>
+  <data name="Sched_DeadlinesList" xml:space="preserve"><value>&lt;li&gt;- Abstract submission: June 30, 2026&lt;/li&gt;&lt;li&gt;- Full paper submission: September 15, 2026&lt;/li&gt;</value></data>
+  <data name="Sched_Day1_Date" xml:space="preserve"><value>29-Oct-2026</value></data>
+  <data name="Sched_Day2_Date" xml:space="preserve"><value>30-Oct-2026</value></data>
+  <data name="Sched_Day3_Date" xml:space="preserve"><value>31-Oct-2026</value></data>
+  <data name="Sched_NoEvents" xml:space="preserve"><value>No events scheduled for this day yet.</value></data>
+  <data name="Sched_ParallelLabel" xml:space="preserve"><value>PARALLEL SESSIONS</value></data>
+  <data name="Sched_ParallelDisclaimer" xml:space="preserve"><value>Important: Some sessions take place simultaneously. Please pay close attention to the location of your selected session and check whether it is available for in-person attendance only or also accessible via livestream.</value></data>
+  <data name="Sched_InVenue" xml:space="preserve"><value>In Venue</value></data>
+  <data name="Sched_Livestream" xml:space="preserve"><value>Livestream</value></data>
+  <data name="Sched_ScrollDown" xml:space="preserve"><value>Scroll down</value></data>
+  <data name="Sched_ReadMore" xml:space="preserve"><value>Read more</value></data>
+  <data name="Sched_ShowLess" xml:space="preserve"><value>Show less</value></data>
+  
+  <data name="REGISTRATION" xml:space="preserve"><value>REGISTRATION</value></data>
+  <data name="OPENING" xml:space="preserve"><value>OPENING</value></data>
+  <data name="PLENARY SESSION" xml:space="preserve"><value>PLENARY SESSION</value></data>
+  <data name="NETWORKING" xml:space="preserve"><value>NETWORKING</value></data>
+  <data name="PANEL DISCUSSION" xml:space="preserve"><value>PANEL DISCUSSION</value></data>
+  <data name="LUNCH" xml:space="preserve"><value>LUNCH</value></data>
+  <data name="WORKSHOP" xml:space="preserve"><value>WORKSHOP</value></data>
+  <data name="DINNER" xml:space="preserve"><value>DINNER</value></data>
+  <data name="PLENARY" xml:space="preserve"><value>PLENARY</value></data>
+  <data name="COFFEE BREAK" xml:space="preserve"><value>COFFEE BREAK</value></data>
+  <data name="PANEL" xml:space="preserve"><value>PANEL</value></data>
+  <data name="ROUNDTABLE" xml:space="preserve"><value>ROUNDTABLE</value></data>
+  <data name="CLOSING SESSION" xml:space="preserve"><value>CLOSING SESSION</value></data>
+  <data name="FAREWELL LUNCH" xml:space="preserve"><value>FAREWELL LUNCH</value></data>
+</root>

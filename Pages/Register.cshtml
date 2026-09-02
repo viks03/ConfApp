@@ -1,0 +1,534 @@
+@page
+@model ConferenceApp.Pages.RegisterModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["reg_title"].Value;
+
+    var phase = Model.Phase;                       // 1, 2 или 3
+    var phaseTitles = new[] { Localizer["reg_phase1_title"], Localizer["reg_phase2_title"], Localizer["reg_phase3_title"] };
+    var phaseLabels = new[] { Localizer["reg_phase1"], Localizer["reg_phase2"], Localizer["reg_phase3"] };
+
+    string StepClass(int i) => i == phase ? "is-current" : (i < phase ? "is-done" : "");
+
+    // Форми на участие: 1 лектор, 2 студент, 3 онлайн, 4 журналист.
+    // Журналистът не качва доклад; студентът и журналистът минават потвърждение.
+    // PartForm в модела е string ("1"–"4"), не int — сравненията са по низ.
+    var part        = Model.Input?.PartForm ?? "";
+    var canUpload   = part == "1" || part == "2" || part == "3";
+    var needsCheck  = part == "2" || part == "4";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/authStyle.css" asp-append-version="true">
+}
+
+<main class="auth-page auth-page--wide">
+    <div class="auth-split">
+
+        <div class="auth-col">
+            <div class="auth-form-wrap auth-step-in">
+
+                <div class="auth-brand">
+                    <img src="~/images/logos/mainLogo.png" alt="">
+                    <span class="auth-brand-rule"></span>
+                    <span class="auth-step">0@(phase) / 03</span>
+                </div>
+
+                <ol class="auth-stepper">
+                    @for (var i = 1; i <= 3; i++)
+                    {
+                        <li class="@StepClass(i)">
+                            <b>0@(i)</b>
+                            <span>@phaseLabels[i - 1]</span>
+                        </li>
+                    }
+                </ol>
+
+                <p class="auth-eyebrow">@Localizer["reg_subtitle"]</p>
+                <h1 class="auth-title">@phaseTitles[phase - 1]</h1>
+                <span class="auth-title-rule"></span>
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="auth-alert" role="alert">@TempData["ErrorMessage"]</div>
+                }
+
+                <form class="auth-form auth-form--long" method="post" id="registrationForm" enctype="multipart/form-data" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="auth-alert"></div>
+
+                    <input type="hidden" asp-for="Phase" />
+
+                    @* Полетата от предишните фази пътуват като hidden, за да не се губят. *@
+                    @if (phase > 1)
+                    {
+                        <input type="hidden" asp-for="Input.FirstName" />
+                        <input type="hidden" asp-for="Input.LastName" />
+                        <input type="hidden" asp-for="Input.Age" />
+                        <input type="hidden" asp-for="Input.AcademicTitle" />
+                        <input type="hidden" asp-for="Input.Email" />
+                        <input type="hidden" asp-for="Input.Phone" />
+                        <input type="hidden" asp-for="Input.IsForeigner" />
+                    }
+                    @if (phase > 2)
+                    {
+                        <input type="hidden" asp-for="Input.Workplace" />
+                        <input type="hidden" asp-for="Input.PartForm" />
+                        @* Пътят на вече записания доклад — самият IFormFile не
+                           може да пътува в hidden input, затова файлът се
+                           материализира на изхода от фаза 2 (виж
+                           Register.cshtml.cs) и тук пътува само пътят му. *@
+                        <input type="hidden" asp-for="Input.SavedFilePath" />
+                    }
+
+                    @* ── Фаза 01: лични данни ─────────────────────────────── *@
+                    @if (phase == 1)
+                    {
+                        <div class="auth-grid-2">
+                            <div class="auth-field">
+                                <label asp-for="Input.FirstName">@Localizer["label_fname"] <span class="required">*</span></label>
+                                <input asp-for="Input.FirstName" type="text" id="Input_FirstName" class="auth-input" autocomplete="given-name" autofocus>
+                                <span asp-validation-for="Input.FirstName" class="error-message"></span>
+                            </div>
+                            <div class="auth-field">
+                                <label asp-for="Input.LastName">@Localizer["label_lname"] <span class="required">*</span></label>
+                                <input asp-for="Input.LastName" type="text" id="Input_LastName" class="auth-input" autocomplete="family-name">
+                                <span asp-validation-for="Input.LastName" class="error-message"></span>
+                            </div>
+                            <div class="auth-field">
+                                <label asp-for="Input.Age">@Localizer["label_age"] <span class="required">*</span></label>
+                                <input asp-for="Input.Age" type="text" id="Input_Age" class="auth-input" inputmode="numeric">
+                                <span asp-validation-for="Input.Age" class="error-message"></span>
+                            </div>
+                            <div class="auth-field">
+                                <label asp-for="Input.AcademicTitle">@Localizer["label_academic_title"] <span class="required">*</span></label>
+                                <input asp-for="Input.AcademicTitle" type="text" id="Input_AcademicTitle" class="auth-input">
+                                <span asp-validation-for="Input.AcademicTitle" class="error-message"></span>
+                            </div>
+                            <div class="auth-field">
+                                <label asp-for="Input.Email">@Localizer["label_email"] <span class="required">*</span></label>
+                                <input asp-for="Input.Email" type="email" id="Input_Email" class="auth-input" placeholder="email@example.com" autocomplete="email">
+                                <span id="email-error" class="error-message"></span>
+                            </div>
+                            <div class="auth-field">
+                                <label asp-for="Input.Phone">@Localizer["label_phone"] <span class="required">*</span></label>
+                                <input asp-for="Input.Phone" type="tel" id="Input_Phone" class="auth-input" placeholder="+359" autocomplete="tel">
+                                <span asp-validation-for="Input.Phone" class="error-message"></span>
+                            </div>
+                        </div>
+
+                        <label class="auth-toggle-row" id="foreigner-section">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                            <span>@Localizer["label_foreigner"]</span>
+                            <input asp-for="Input.IsForeigner" type="checkbox" id="foreigner-check">
+                        </label>
+                    }
+
+                    @* ── Фаза 02: участие ─────────────────────────────────── *@
+                    @if (phase == 2)
+                    {
+                        <div class="auth-field">
+                            <label asp-for="Input.Workplace">@Localizer["label_organization"] <span class="required">*</span></label>
+                            <input asp-for="Input.Workplace" type="text" id="Input_Workplace" class="auth-input" autocomplete="organization" autofocus>
+                            <span asp-validation-for="Input.Workplace" class="error-message"></span>
+                        </div>
+
+                        <div class="auth-field">
+                            <label class="auth-label">@Localizer["label_part_form"] <span class="required">*</span></label>
+                            <div class="auth-choice">
+                                <label>
+                                    <input asp-for="Input.PartForm" type="radio" value="1" data-upload="1" required>
+                                    @Localizer["opt_lector"]
+                                </label>
+                                <label>
+                                    <input asp-for="Input.PartForm" type="radio" value="2" data-upload="1" data-verify="1">
+                                    @Localizer["opt_student"]
+                                </label>
+                                <label>
+                                    <input asp-for="Input.PartForm" type="radio" value="3" data-upload="1">
+                                    @Localizer["opt_online"]
+                                </label>
+                                <label>
+                                    <input asp-for="Input.PartForm" type="radio" value="4" data-verify="1">
+                                    @Localizer["opt_journalist"]
+                                </label>
+                            </div>
+                            <span asp-validation-for="Input.PartForm" class="error-message"></span>
+                        </div>
+
+                        @* Докладът е само за лектор, студент и онлайн участник. *@
+                        <div class="auth-callout" id="verify-notice" hidden="@(needsCheck ? null : "hidden")">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                            <div>
+                                <b>@Localizer["verify_notice_title"]</b>
+                                <span id="verify-notice-text"
+                                      data-student="@Localizer["verify_notice_student"]"
+                                      data-journalist="@Localizer["verify_notice_journalist"]">@(part == "4" ? Localizer["verify_notice_journalist"] : Localizer["verify_notice_student"])</span>
+                            </div>
+                        </div>
+
+                        <div id="upload-section" hidden="@(canUpload ? null : "hidden")">
+                            <div class="auth-drop-head">
+                                <label asp-for="Input.UploadedFile">@Localizer["label_upload"]</label>
+                                <span class="auth-note">@Localizer["upload_hint"]</span>
+                            </div>
+
+                            <label class="auth-drop" id="drop-zone">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8"></path><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="m8 17 4-4 4 4"></path></svg>
+                                <span class="auth-drop-label"
+                                      data-drop-idle="@Localizer["upload_drop_idle"]"
+                                      data-drop-active="@Localizer["upload_drop_active"]"
+                                      data-drop-mobile="@Localizer["upload_drop_mobile"]">@Localizer["upload_drop_idle"]</span>
+                                <span class="auth-drop-btn">@Localizer["upload_btn"]</span>
+                                <input asp-for="Input.UploadedFile" type="file" accept=".pdf,.doc,.docx" id="Input_UploadedFile" class="file-input">
+                            </label>
+
+                            @* Бутон за премахване — показва се само когато има избран файл.
+                               Извън <label class="auth-drop">, за да не отваря диалога при клик. *@
+                            <button type="button" class="auth-drop-clear" id="drop-clear" hidden>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                                <span>@Localizer["upload_remove"]</span>
+                            </button>
+
+                            <span class="auth-field-err" id="file-error" hidden></span>
+                            <span asp-validation-for="Input.UploadedFile" class="error-message"></span>
+                        </div>
+                    }
+
+                    @* ── Фаза 03: съгласия ────────────────────────────────── *@
+                    @if (phase == 3)
+                    {
+                        <dl class="auth-summary">
+                            <div>
+                                <dt>@Localizer["sum_name"]</dt>
+                                <dd>@Model.Input?.FirstName @Model.Input?.LastName</dd>
+                            </div>
+                            <div>
+                                <dt>@Localizer["sum_email"]</dt>
+                                <dd>@Model.Input?.Email</dd>
+                            </div>
+                            <div>
+                                <dt>@Localizer["sum_part"]</dt>
+                                <dd>
+                                    @switch (part)
+                                    {
+                                        case "1": @Localizer["opt_lector"]; break;
+                                        case "2": @Localizer["opt_student"]; break;
+                                        case "3": @Localizer["opt_online"]; break;
+                                        case "4": @Localizer["opt_journalist"]; break;
+                                    }
+                                </dd>
+                            </div>
+                        </dl>
+
+                    @* ═══════════════════════════════════════════════════════════
+                       БЪГ ФИКС (съгласията изчезваха при включен adblock):
+                       uBlock Origin "Annoyances", EasyList и подобните имат
+                       козметични правила, които крият елементи с "gdpr",
+                       "consent" или "marketing" в id/class — точно каквито
+                       бяха тук (`id="gdpr-check"`, `id="marketing-check"`,
+                       `class="auth-consents"`). Правилата са писани срещу
+                       cookie банери, но удрят и легитимни форми.
+
+                       Без задължителното GDPR поле регистрация е невъзможна,
+                       затова идентификаторите тук са неутрални. `asp-for`
+                       генерира `name="Input.IsGDPR"` — то остава непроменено,
+                       binding-ът работи както преди. Долу в скрипта има и
+                       runtime проверка, която засича скрито поле и го връща.
+                       ═══════════════════════════════════════════════════════ *@
+                        <div class="auth-agreements" id="form-agreements">
+                            <label class="auth-check">
+                                <input asp-for="Input.IsGDPR" type="checkbox" id="terms-accept" required>
+                                <span>@Localizer["label_gdpr"] <span class="required">*</span></span>
+                            </label>
+                            <span asp-validation-for="Input.IsGDPR" class="error-message"></span>
+
+                            @* Публикуването на доклада има смисъл само когато има доклад. *@
+                            @if (canUpload)
+                            {
+                                <label class="auth-check" id="paper-share-row">
+                                    <input asp-for="Input.ConsentToPublishPaper" type="checkbox" id="paper-share">
+                                    <span>@Localizer["label_publish_consent"]</span>
+                                </label>
+                            }
+
+                            <label class="auth-check" id="updates-row">
+                                <input asp-for="Input.IsMarketing" type="checkbox" id="updates-optin">
+                                <span>@Localizer["label_marketing"]</span>
+                            </label>
+
+                            <p class="auth-legal">
+                                @Localizer["label_gdpr_see"]
+                                <a href="/Privacy" class="legalLinks" target="_blank">@Localizer["link_privacy"]</a>
+                                @Localizer["label_gdpr_mid"]
+                                <a href="/Terms" class="legalLinks" target="_blank">@Localizer["link_terms"]</a>.
+                            </p>
+                        </div>
+                    }
+
+                    <div class="auth-actions-row">
+                        @if (phase > 1)
+                        {
+                            <button type="submit" class="auth-back" asp-page-handler="Back" formnovalidate>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>
+                                <span>@Localizer["btn_back"]</span>
+                            </button>
+                        }
+                        <button type="submit" id="submitBtn" class="auth-submit">
+                            <span>@(phase == 3 ? Localizer["btn_reg"] : Localizer["btn_next"])</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+
+                    <p class="auth-note">@Localizer["required_field"]</p>
+                </form>
+
+                <div class="auth-footer">
+                    <p>@Localizer["text_have_account"] <a href="/Login">@Localizer["link_login"]</a></p>
+                </div>
+
+            </div>
+        </div>
+
+        <partial name="_AuthVisual" model="1" />
+
+    </div>
+
+    @* _AuthHandoff партиалът нарочно НЕ е тук: фаза 3 води към /Verification
+       (въвеждане на код), а не към профила — overlay-ът щеше да твърди
+       "Отваряме профила ви", което е невярно. Виж Login.cshtml и
+       Verification.cshtml, където преходът наистина завършва в /Profile. *@
+</main>
+
+@section Scripts {
+    @* Съобщенията за валидация идват от resx, за да следват езика на страницата.
+       Сериализират се през JsonSerializer — ръчното вграждане в единични кавички
+       се чупеше от апостроф в текста (напр. "doesn't"), скриптът гърмеше и
+       validation.js падаше на вградените си резервни текстове. *@
+    @{
+        var vMessages = new Dictionary<string, string>
+        {
+            ["first_name_required"] = Localizer["v_first_name_required"].Value,
+            ["first_name_short"]    = Localizer["v_first_name_short"].Value,
+            ["first_name_latin"]    = Localizer["v_first_name_latin"].Value,
+            ["last_name_required"]  = Localizer["v_last_name_required"].Value,
+            ["last_name_short"]     = Localizer["v_last_name_short"].Value,
+            ["last_name_latin"]     = Localizer["v_last_name_latin"].Value,
+            ["age_required"]        = Localizer["v_age_required"].Value,
+            ["age_digits"]          = Localizer["v_age_digits"].Value,
+            ["age_range"]           = Localizer["v_age_range"].Value,
+            ["title_required"]      = Localizer["v_title_required"].Value,
+            ["email_required"]      = Localizer["v_email_required"].Value,
+            ["email_invalid"]       = Localizer["v_email_invalid"].Value,
+            ["email_taken"]         = Localizer["v_email_taken"].Value,
+            ["phone_required"]      = Localizer["v_phone_required"].Value,
+            ["phone_invalid"]       = Localizer["v_phone_invalid"].Value,
+            ["workplace_required"]  = Localizer["v_workplace_required"].Value,
+            ["partform_required"]   = Localizer["v_partform_required"].Value,
+            ["gdpr_required"]       = Localizer["v_gdpr_required"].Value,
+            ["file_type"]           = Localizer["Error_InvalidFileType"].Value,
+            ["file_too_large"]      = Localizer["Error_FileTooLarge"].Value
+        };
+    }
+    <script>
+        window.ValidationMessages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(vMessages));
+    </script>
+
+    <script>
+        window.AppTranslations = {
+            required: '@Html.Raw(Localizer["Error_Required"].Value)',
+            nameLength: '@Html.Raw(Localizer["Error_NameLength"].Value)',
+            nameLatinOnly: '@Html.Raw(Localizer["Error_NameLatinOnly"].Value)',
+            ageRange: '@Html.Raw(Localizer["Error_AgeRange"].Value)',
+            invalidEmail: '@Html.Raw(Localizer["Error_InvalidEmail"].Value)',
+            emailTaken: '@Html.Raw(Localizer["Error_EmailTaken"].Value)',
+            phoneFormat: '@Html.Raw(Localizer["Error_PhoneFormat"].Value)',
+            gdpr: '@Html.Raw(Localizer["Error_GDPR"].Value)',
+            fileTooLarge: '@Html.Raw(Localizer["Error_FileTooLarge"].Value)'
+        };
+
+        // ── Фаза 02: формата на участие управлява доклада и дисклеймъра ────
+        // ── Защита срещу adblock, който крие съгласията ───────────────
+        // Дори с неутралните имена, някой филтър може да улучи блока.
+        // Без задължителното GDPR поле регистрацията е невъзможна, затова
+        // ако установим, че е скрито, го връщаме насила.
+        (function guardAgreements() {
+            var block = document.getElementById('form-agreements');
+            if (!block) return;
+
+            function ensureVisible() {
+                var cs = window.getComputedStyle(block);
+                if (cs.display === 'none' || cs.visibility === 'hidden' || block.offsetParent === null) {
+                block.style.setProperty('display', 'flex', 'important');
+                block.style.setProperty('visibility', 'visible', 'important');
+                block.style.setProperty('opacity', '1', 'important');
+                block.style.setProperty('height', 'auto', 'important');
+                }
+            }
+
+            ensureVisible();
+            // Филтрите се прилагат и след първоначалния render.
+            setTimeout(ensureVisible, 300);
+            setTimeout(ensureVisible, 1200);
+        })();
+
+        (function () {
+            var radios  = document.querySelectorAll('.auth-choice input[type="radio"]');
+            if (!radios.length) return;
+
+            var upload  = document.getElementById('upload-section');
+            var notice  = document.getElementById('verify-notice');
+            var text    = document.getElementById('verify-notice-text');
+            var fileIn  = document.getElementById('Input_UploadedFile');
+            var zone    = document.getElementById('drop-zone');
+            var label   = zone ? zone.querySelector('.auth-drop-label') : null;
+
+            function setDropLabel(name) {
+                if (!label) return;
+                if (name) {
+                    label.textContent = name;
+                    zone.classList.add('has-file');
+                } else {
+                    label.textContent = window.matchMedia('(max-width: 820px)').matches
+                        ? label.dataset.dropMobile
+                        : label.dataset.dropIdle;
+                    zone.classList.remove('has-file');
+                }
+            }
+
+            // ── Файл: лимит, разширение, премахване ──────────────────────
+            // Съобщенията идват от resx, за да са преведени.
+            var FILE_MSG = {
+                type:     '@Html.Raw(Localizer["Error_InvalidFileType"].Value)',
+                tooLarge: '@Html.Raw(Localizer["Error_FileTooLarge"].Value)'
+            };
+
+            var MAX_FILE_BYTES = 10 * 1024 * 1024;          // 10 MB
+            var ALLOWED_EXT    = ['pdf', 'doc', 'docx'];
+            var clearBtn       = document.getElementById('drop-clear');
+            var fileErr        = document.getElementById('file-error');
+
+            function showFileError(msg) {
+                if (!fileErr) return;
+                if (msg) { fileErr.textContent = msg; fileErr.hidden = false; }
+                else     { fileErr.textContent = '';  fileErr.hidden = true;  }
+            }
+
+            function clearFile() {
+                if (fileIn) fileIn.value = '';
+                setDropLabel(null);
+                if (clearBtn) clearBtn.hidden = true;
+                showFileError('');
+            }
+
+            // Проверява избрания файл. Връща true, ако е приет.
+            function checkFile() {
+                if (!fileIn || !fileIn.files || !fileIn.files.length) {
+                    if (clearBtn) clearBtn.hidden = true;
+                    showFileError('');
+                    return true;
+                }
+
+                var f   = fileIn.files[0];
+                var ext = (f.name.split('.').pop() || '').toLowerCase();
+
+                if (ALLOWED_EXT.indexOf(ext) === -1) {
+                    clearFile();
+                    showFileError(FILE_MSG.type);
+                    return false;
+                }
+
+                if (f.size > MAX_FILE_BYTES) {
+                    var mb = (f.size / 1024 / 1024).toFixed(1);
+                    clearFile();
+                    showFileError(FILE_MSG.tooLarge.replace('{0}', mb));
+                    return false;
+                }
+
+                setDropLabel(f.name);
+                if (clearBtn) clearBtn.hidden = false;
+                showFileError('');
+                return true;
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    clearFile();
+                });
+            }
+
+            function apply() {
+                var picked = document.querySelector('.auth-choice input:checked');
+                if (!picked) return;
+
+                var canUpload  = picked.dataset.upload === '1';
+                var needsCheck = picked.dataset.verify === '1';
+
+                upload.hidden = !canUpload;
+                notice.hidden = !needsCheck;
+
+                // Журналистът няма доклад — чистим каченото, ако е сменил формата.
+                if (!canUpload && fileIn) {
+                    clearFile();
+                }
+
+                if (needsCheck) {
+                    text.textContent = picked.value === '4' ? text.dataset.journalist : text.dataset.student;
+                }
+            }
+
+            radios.forEach(function (radio) { radio.addEventListener('change', apply); });
+
+            // ── Preset тип участие от URL (?type=...) ──────────────────────
+            var typeMap = { lector: '1', student: '2', online: '3', journalist: '4' };
+            var type = (new URLSearchParams(window.location.search).get('type') || '').trim().toLowerCase();
+            var preset = typeMap[type];
+            if (preset && !document.querySelector('.auth-choice input:checked')) {
+                var radio = document.querySelector('.auth-choice input[value="' + preset + '"]');
+                if (radio) radio.checked = true;
+            }
+
+            apply();
+
+            // ── Drag & drop за доклада (десктоп) ──────────────────────────
+            // zone, label и setDropLabel са обявени горе — тук само слушателите.
+            if (zone && fileIn) {
+                setDropLabel(null);
+
+                ['dragenter', 'dragover'].forEach(function (ev) {
+                    zone.addEventListener(ev, function (e) {
+                        e.preventDefault();
+                        zone.classList.add('is-dragging');
+                        if (label) label.textContent = label.dataset.dropActive;
+                    });
+                });
+
+                ['dragleave', 'dragend'].forEach(function (ev) {
+                    zone.addEventListener(ev, function () {
+                        zone.classList.remove('is-dragging');
+                        setDropLabel(fileIn.files[0] ? fileIn.files[0].name : null);
+                    });
+                });
+
+                // Ако страницата се е върнала с вече избран файл (напр. назад
+                // от фаза 3), показваме името и бутона за премахване веднага.
+                checkFile();
+
+                zone.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    zone.classList.remove('is-dragging');
+                    if (e.dataTransfer.files.length) {
+                        fileIn.files = e.dataTransfer.files;
+                        // change го прекарва през checkFile — размер и разширение
+                        // се валидират и при drag & drop, не само при избор с диалог.
+                        fileIn.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+
+                fileIn.addEventListener('change', checkFile);
+            }
+        })();
+    </script>
+    <script src="~/js/validation.js" asp-append-version="true"></script>
+}

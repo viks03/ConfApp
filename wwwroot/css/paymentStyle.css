@@ -1,0 +1,1417 @@
+/* ══════════════════════════════════════════════════════════════════════
+   paymentStyle.css — редизайн на /Payment/{slug}
+   Заменя стария paymentStyle.css изцяло.
+
+   Палитрата и шрифтът идват от mainStyle.css през променливи
+   (--bg, --panel, --text, --muted, --line, --accent) — тук няма нов :root.
+   Страницата се рендира в <main> между sticky топбара и футъра, затова
+   няма 100vh никъде: sticky дясната колона ползва --pay-top.
+
+   ВАЖНО: класовете, които scriptPayment.js чете или мутира, са запазени
+   с точните си имена — .m-tab(.active), .pay-panel(.active), .panel-inner,
+   .crypto-grid, .crypto-item(.selected), .crypto-select-prompt,
+   .wallet-box, .qr-box, .qr-img, .qr-fallback, .btn-copy, .icon-copy-btn,
+   .sum-ref-val, .iban-submitted-box(.visible), .btn-pay(.btn-pay--loading),
+   .payment-confirmed-box и подкласовете му, @keyframes fadeIn.
+   Не преименувайте тези класове без промяна в скрипта.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.pay-page {
+    --pay-top: 84px;
+    --pay-ok: #4ea86b;
+    --pay-wait: #d9932b;
+    background: var(--bg, #050505);
+    color: var(--text, #f4f2ec);
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 300;
+}
+
+.pay-page *,
+.pay-page *::before,
+.pay-page *::after { box-sizing: border-box; }
+
+.pay-page ::selection { background: rgba(255, 54, 54, 0.35); }
+
+.pay-page :is(button, a, input, summary):focus-visible {
+    outline: 2px solid var(--accent, #ff3636);
+    outline-offset: 2px;
+}
+
+/* Радиус: 0 навсякъде. */
+.pay-page :is(button, a, input, .m-tab, .crypto-item, .iban-table, .wallet-box, .qr-frame) { border-radius: 0; }
+
+/* ── Скелет ───────────────────────────────────────────────────────── */
+.pay-split {
+    display: grid;
+    grid-template-columns: 1fr 0.44fr;
+    grid-template-rows: auto;
+    align-content: start;
+}
+
+.pay-col {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    padding: 64px 5vw 96px;
+}
+
+.pay-wrap {
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
+    animation: payIn 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Дясната колона е една обвивка с два блока. На телефон обвивката става
+   display: contents и двата блока стават самостоятелни редове около
+   основната колона (справка горе, панелите в средата, бележките долу). */
+.pay-aside-col {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    min-width: 0;
+    background: var(--panel, #0b0b0b);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@keyframes payIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes payPanel {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes payPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.3; transform: scale(0.65); }
+}
+
+@keyframes payMark {
+    from { transform: scale(0.2); opacity: 0; }
+    60%  { transform: scale(1.12); opacity: 1; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+@keyframes payBar {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+}
+
+/* Ползва се от динамично вкараните кутии в scriptPayment.js — не махайте. */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Глава ────────────────────────────────────────────────────────── */
+.pay-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 44px;
+}
+
+.pay-brand img {
+    height: 28px;
+    width: auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.92;
+}
+
+.pay-brand-rule {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.pay-eyebrow {
+    font-size: 0.69rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.pay-title {
+    margin: 0 0 10px;
+    font-size: 3.4rem;
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+}
+
+.pay-rule {
+    display: block;
+    width: 56px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    margin-bottom: 14px;
+}
+
+.pay-sub {
+    margin: 0 0 40px;
+    max-width: 46ch;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--muted, #a7a39b);
+    text-wrap: pretty;
+}
+
+/* ── Табове за метод ──────────────────────────────────────────────── */
+.method-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 32px;
+}
+
+.m-tab {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-height: 64px;
+    padding: 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 0;
+    border-top: 2px solid transparent;
+    color: var(--muted, #a7a39b);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.m-tab:hover { background: rgba(255, 255, 255, 0.05); }
+
+.m-tab svg {
+    width: 22px;
+    height: 22px;
+    flex: none;
+    stroke: #8a8680;
+    fill: none;
+    transition: stroke 0.18s ease;
+}
+
+.m-tab-label { flex: 1; line-height: 1.25; }
+
+.m-tab.active {
+    background: rgba(255, 54, 54, 0.08);
+    border-top-color: var(--accent, #ff3636);
+    color: var(--text, #f4f2ec);
+}
+
+.m-tab.active svg { stroke: var(--accent, #ff3636); }
+
+/* ── Панели ───────────────────────────────────────────────────────── */
+.pay-panel { display: none; }
+
+.pay-panel.active {
+    display: block;
+    animation: payPanel 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* ── Информационна лента ─────────────────────────────────────────── */
+.info-box {
+    display: flex;
+    gap: 12px;
+    margin: 0 0 24px;
+    padding: 15px 16px;
+    background: rgba(255, 54, 54, 0.06);
+    border: 1px solid rgba(255, 54, 54, 0.22);
+    border-left: 3px solid var(--accent, #ff3636);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: #d8d5cf;
+    text-wrap: pretty;
+}
+
+.info-box svg {
+    width: 17px;
+    height: 17px;
+    flex: none;
+    margin-top: 3px;
+    stroke: var(--accent, #ff3636);
+    fill: none;
+}
+
+.info-box strong {
+    color: var(--text, #f4f2ec);
+    font-weight: 500;
+}
+
+/* ── Stripe: поддържани методи ───────────────────────────────────── */
+.stripe-methods-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 26px;
+}
+
+.stripe-method-badge {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 36px;
+    padding: 0 13px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.stripe-method-badge svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+}
+
+/* Обходните икони на Apple / Google са с реалните си цветове (fill), за
+   да са разпознаваеми; иконата на картата е stroke в цвета на текста. */
+.stripe-method-badge .icon-stroke {
+    stroke: var(--muted, #a7a39b);
+    fill: none;
+}
+
+.stripe-method-badge .icon-apple { fill: #d8d5cf; }
+
+/* ── Stripe: сума / валута / процесор ────────────────────────────── */
+.stripe-summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 28px;
+}
+
+.stripe-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 16px 18px;
+    background: var(--panel, #0b0b0b);
+}
+
+.stripe-summary-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.stripe-summary-val {
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: var(--text, #f4f2ec);
+}
+
+.stripe-summary-val.is-amount { color: var(--accent, #ff3636); }
+
+/* ── Бутон за плащане ────────────────────────────────────────────── */
+.btn-pay {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 60px;
+    padding: 0 20px;
+    background: var(--accent, #ff3636);
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: left;
+    transition: background 0.18s ease;
+}
+
+.btn-pay:hover { background: #e02020; }
+
+.btn-pay svg {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+}
+
+.btn-pay-text { flex: 1; }
+
+.btn-pay--loading {
+    opacity: 0.65;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.btn-pay-outline {
+    background: transparent;
+    border: 1px solid var(--accent, #ff3636);
+    color: var(--accent, #ff3636);
+    min-height: 58px;
+    font-size: 0.88rem;
+    letter-spacing: 0.13em;
+}
+
+.btn-pay-outline:hover { background: rgba(255, 54, 54, 0.08); }
+
+/* ── Бележка за сигурност ───────────────────────────────────────── */
+.secure-note {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 16px 0 0;
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.secure-note svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+}
+
+/* ── Крипто: избор на монета ─────────────────────────────────────── */
+.crypto-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 24px;
+}
+
+.crypto-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    min-height: 76px;
+    padding: 15px 16px;
+    background: var(--panel, #0b0b0b);
+    border: 0;
+    border-left: 2px solid transparent;
+    color: var(--text, #f4f2ec);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.18s ease;
+}
+
+.crypto-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+.crypto-symbol {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--text, #f4f2ec);
+    transition: color 0.18s ease;
+}
+
+.crypto-name {
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.crypto-item.selected {
+    background: rgba(255, 54, 54, 0.08);
+    border-left-color: var(--accent, #ff3636);
+}
+
+.crypto-item.selected .crypto-symbol { color: var(--accent, #ff3636); }
+
+/* Скриптът показва това с display:flex — затова flex, не block. */
+.crypto-select-prompt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    min-height: 96px;
+    padding: 20px;
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    letter-spacing: 0.06em;
+    color: #8a8680;
+}
+
+.crypto-select-prompt svg {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    stroke: rgba(255, 255, 255, 0.22);
+    fill: none;
+}
+
+/* ── Крипто: портфейл + QR ───────────────────────────────────────── */
+.crypto-details-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wallet-box {
+    min-width: 0;
+    padding: 20px;
+    background: var(--panel, #0b0b0b);
+    transition: opacity 0.2s ease;
+}
+
+.wallet-coin-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wallet-coin-name {
+    font-size: 0.95rem;
+    color: var(--text, #f4f2ec);
+    letter-spacing: 0.04em;
+}
+
+.wallet-network-badge {
+    margin-left: auto;
+    padding: 4px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.wallet-amount-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.wallet-amount-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.wallet-amount-val {
+    font-size: 1.18rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--accent, #ff3636);
+}
+
+.wallet-addr-label {
+    margin: 16px 0 8px;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.wallet-addr-text {
+    margin: 0 0 14px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    letter-spacing: 0.03em;
+    word-break: break-all;
+    color: #d8d5cf;
+}
+
+.btn-copy {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 42px;
+    padding: 0 14px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--muted, #a7a39b);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.btn-copy:hover {
+    border-color: var(--accent, #ff3636);
+    color: var(--accent, #ff3636);
+}
+
+.btn-copy svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+}
+
+.qr-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 20px;
+    background: var(--panel, #0b0b0b);
+    transition: opacity 0.2s ease;
+}
+
+.qr-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.qr-frame {
+    width: 148px;
+    height: 148px;
+    padding: 8px;
+    background: #f4f2ec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.qr-fallback {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+    color: #55524d;
+}
+
+.qr-hint {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6f6b65;
+}
+
+/* ── Крипто: потвърдено плащане (вкарва се от скрипта) ───────────── */
+.payment-confirmed-box {
+    margin-top: 20px;
+    padding: 24px 20px;
+    background: rgba(78, 168, 107, 0.07);
+    border: 1px solid rgba(78, 168, 107, 0.3);
+    border-left: 3px solid var(--pay-ok, #4ea86b);
+    animation: fadeIn 0.35s ease both;
+}
+
+.payment-confirmed-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(78, 168, 107, 0.45);
+}
+
+.payment-confirmed-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--pay-ok, #4ea86b);
+    fill: none;
+}
+
+.payment-confirmed-title {
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #8fd3a3;
+    margin-bottom: 8px;
+}
+
+.payment-confirmed-sub {
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: #cdc7bd;
+    margin-bottom: 14px;
+}
+
+.payment-confirmed-ref {
+    display: inline-block;
+    padding: 7px 14px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    color: var(--text, #f4f2ec);
+}
+
+.payment-confirmed-redirect {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6f6b65;
+}
+
+.payment-confirmed-redirect svg {
+    width: 12px;
+    height: 12px;
+    stroke: #6f6b65;
+    fill: none;
+    animation: paySpin 1.2s linear infinite;
+}
+
+@keyframes paySpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* ── IBAN ─────────────────────────────────────────────────────────── */
+.iban-invoice-notice {
+    display: flex;
+    gap: 12px;
+    margin: 0 0 26px;
+    padding: 15px 16px;
+    background: rgba(217, 147, 43, 0.07);
+    border: 1px solid rgba(217, 147, 43, 0.28);
+    border-left: 3px solid var(--pay-wait, #d9932b);
+    font-size: 0.84rem;
+    line-height: 1.6;
+    color: #cdc7bd;
+    text-wrap: pretty;
+}
+
+.iban-invoice-notice svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    margin-top: 3px;
+    stroke: var(--pay-wait, #d9932b);
+    fill: none;
+}
+
+.iban-invoice-notice strong {
+    color: var(--text, #f4f2ec);
+    font-weight: 500;
+}
+
+.iban-table {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}
+
+.iban-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    border-left: 2px solid transparent;
+}
+
+.iban-row:last-child { border-bottom: 0; }
+
+.iban-row-highlight {
+    background: rgba(255, 54, 54, 0.05);
+    border-left-color: var(--accent, #ff3636);
+}
+
+.iban-key {
+    flex: none;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.iban-val-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.iban-val {
+    font-size: 0.95rem;
+    text-align: right;
+    word-break: break-word;
+    color: var(--text, #f4f2ec);
+}
+
+.iban-val.mono {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.88rem;
+    letter-spacing: 0.05em;
+}
+
+.iban-total {
+    font-size: 1.18rem;
+    font-weight: 600;
+    color: var(--accent, #ff3636);
+}
+
+.iban-ref {
+    font-weight: 600;
+    letter-spacing: 0.06em;
+}
+
+.req-star { color: var(--accent, #ff3636); }
+
+/* Скриптът подменя innerHTML на този бутон при копиране — затова размерите
+   са на бутона, а не на иконата вътре. */
+.icon-copy-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex: none;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #8a8680;
+    cursor: pointer;
+    padding: 0;
+    transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.icon-copy-btn:hover {
+    border-color: var(--accent, #ff3636);
+    color: var(--accent, #ff3636);
+}
+
+.icon-copy-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+}
+
+/* ── IBAN: заявката е регистрирана ──────────────────────────────── */
+.iban-submitted-box {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 20px;
+    background: rgba(217, 147, 43, 0.07);
+    border: 1px solid rgba(217, 147, 43, 0.28);
+    border-left: 3px solid var(--pay-wait, #d9932b);
+    animation: fadeIn 0.35s ease both;
+}
+
+.iban-submitted-box.visible { display: flex; }
+
+.iban-submitted-head {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.iban-submitted-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    background: var(--pay-wait, #d9932b);
+    animation: payPulse 2.4s ease-in-out infinite;
+}
+
+.iban-submitted-title {
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--pay-wait, #d9932b);
+}
+
+.iban-submitted-text {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: #d8d5cf;
+    text-wrap: pretty;
+}
+
+.iban-submitted-text strong {
+    color: var(--text, #f4f2ec);
+    font-weight: 500;
+}
+
+.iban-submitted-ref {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.iban-submitted-ref-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.iban-submitted-ref-val {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    color: var(--text, #f4f2ec);
+}
+
+.pay-link-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.18s ease;
+}
+
+.pay-link-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+}
+
+.pay-link-btn svg {
+    width: 17px;
+    height: 17px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+}
+
+/* ── Дясна колона: детайли на плащането ─────────────────────────── */
+.pay-aside-top {
+    min-width: 0;
+    padding: calc(var(--pay-top) - 20px) 36px 28px;
+}
+
+.pay-aside-bottom {
+    min-width: 0;
+    padding: 0 36px 48px;
+}
+
+.pay-aside-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.summary-title {
+    margin: 0;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.tier-card {
+    position: relative;
+    padding: 18px;
+    background: rgba(255, 54, 54, 0.05);
+    border: 1px solid rgba(255, 54, 54, 0.28);
+    overflow: hidden;
+}
+
+.tier-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 100% 26px,
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 26px 100%;
+    pointer-events: none;
+}
+
+.tier-name,
+.tier-desc,
+.tier-perks { position: relative; }
+
+.tier-name {
+    margin: 0 0 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+}
+
+.tier-desc {
+    margin: 0 0 14px;
+    font-size: 0.84rem;
+    line-height: 1.6;
+    color: var(--muted, #a7a39b);
+}
+
+.tier-perks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tier-perks li {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: #cdc7bd;
+}
+
+.tier-perks svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    margin-top: 3px;
+    stroke: var(--pay-ok, #4ea86b);
+    fill: none;
+}
+
+.summary-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.sum-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sum-label {
+    flex: none;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.sum-val {
+    min-width: 0;
+    font-size: 0.9rem;
+    text-align: right;
+    color: var(--text, #f4f2ec);
+}
+
+.sum-val.mono {
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 0.06em;
+}
+
+.sum-total {
+    padding-top: 18px;
+    border-top: 2px solid rgba(255, 255, 255, 0.14);
+}
+
+.sum-total-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.sum-total-price-group {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sum-price-old {
+    font-size: 1rem;
+    color: #6f6b65;
+    text-decoration: line-through;
+}
+
+.sum-total-val {
+    font-size: 2.5rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: var(--accent, #ff3636);
+}
+
+.security-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.badge {
+    display: flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 11px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #6f6b65;
+}
+
+.summary-note {
+    margin: 0;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.84rem;
+    line-height: 1.7;
+    color: #8a8680;
+    text-wrap: pretty;
+}
+
+.summary-note a {
+    color: var(--accent, #ff3636);
+    text-decoration: none;
+}
+
+.summary-note a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── Overlay при успешно плащане (?payment=success) ──────────────── */
+.pay-success-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    background: rgba(5, 5, 5, 0.97);
+}
+
+.pay-success-box {
+    width: 100%;
+    max-width: 520px;
+    animation: payIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.pay-success-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 28px;
+    background: rgba(78, 168, 107, 0.08);
+    border: 1px solid rgba(78, 168, 107, 0.45);
+    animation: payMark 0.5s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.pay-success-mark svg {
+    width: 34px;
+    height: 34px;
+    stroke: var(--pay-ok, #4ea86b);
+    fill: none;
+}
+
+.pay-success-label {
+    margin: 0 0 12px;
+    font-size: 0.69rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--pay-ok, #4ea86b);
+}
+
+.pay-success-title {
+    margin: 0 0 12px;
+    font-size: 2.5rem;
+    font-weight: 600;
+    line-height: 1.1;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+}
+
+.pay-success-rule {
+    display: block;
+    width: 56px;
+    height: 2px;
+    margin-bottom: 18px;
+    background: var(--pay-ok, #4ea86b);
+}
+
+.pay-success-msg {
+    margin: 0 0 28px;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--muted, #a7a39b);
+    text-wrap: pretty;
+}
+
+.pay-success-ref {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pay-success-ref-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.pay-success-ref-val {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    color: var(--text, #f4f2ec);
+}
+
+.pay-success-bar {
+    display: block;
+    height: 2px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.pay-success-bar span {
+    display: block;
+    height: 100%;
+    background: var(--pay-ok, #4ea86b);
+    transform-origin: left;
+    animation: payBar 10s linear both;
+}
+
+.pay-success-countdown {
+    margin: 0 0 22px;
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.pay-success-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 56px;
+    padding: 0 20px;
+    background: var(--pay-ok, #4ea86b);
+    color: #050505;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.18s ease;
+}
+
+.pay-success-btn:hover {
+    background: #61bd7e;
+    color: #050505;
+    text-decoration: none;
+}
+
+.pay-success-btn svg {
+    width: 19px;
+    height: 19px;
+    flex: none;
+    stroke: currentColor;
+    fill: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Таблет: една колона, дясната става обикновен блок под съдържанието. */
+@media (max-width: 1100px) {
+    .pay-split { grid-template-columns: 1fr; }
+
+    .pay-col {
+        grid-row: 2;
+        padding: 40px 28px 64px;
+    }
+
+    .pay-aside-col {
+        grid-column: 1;
+        grid-row: 1;
+        position: static;
+        border-left: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .pay-aside-top { padding: 28px 28px 26px; }
+    .pay-aside-bottom { padding: 0 28px 30px; }
+
+    .pay-title { font-size: 2.8rem; }
+}
+
+/* Телефон: справката горе, панелите в средата, бележките долу. Обвивката
+   става display:contents, за да се пренаредят двата блока самостоятелно. */
+@media (max-width: 820px) {
+    .pay-split { grid-template-rows: auto auto auto; }
+
+    .pay-aside-col {
+        display: contents;
+        background: transparent;
+    }
+
+    .pay-aside-top {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 22px 20px 26px;
+        background: var(--panel, #0b0b0b);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .pay-col {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 26px 20px 36px;
+    }
+
+    .pay-aside-bottom {
+        grid-column: 1;
+        grid-row: 3;
+        padding: 26px 20px 34px;
+        background: var(--bg, #050505);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Главата отляво се крие — горният блок вече носи логото и контекста. */
+    .pay-head { display: none; }
+    .pay-brand--mobile { display: flex; }
+
+    .method-tabs { grid-template-columns: 1fr; }
+
+    .stripe-summary-row { grid-template-columns: 1fr; }
+
+    .stripe-summary-item {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 13px 16px;
+    }
+
+    .crypto-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .crypto-details-grid { grid-template-columns: 1fr; }
+
+    .qr-box { align-items: center; }
+
+    .sum-total-val { font-size: 2.1rem; }
+
+    .pay-success-title { font-size: 1.9rem; }
+}
+
+@media (min-width: 821px) {
+    .pay-brand--mobile { display: none; }
+}
+
+@media (max-width: 480px) {
+    .pay-col { padding: 24px 16px 32px; }
+    .pay-aside-top { padding: 20px 16px 24px; }
+    .pay-aside-bottom { padding: 24px 16px 30px; }
+
+    .iban-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .iban-val { text-align: left; }
+
+    .btn-pay {
+        min-height: 56px;
+        font-size: 0.88rem;
+        letter-spacing: 0.1em;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pay-page *,
+    .pay-page *::before,
+    .pay-page *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    .pay-success-bar span { transform: scaleX(0); }
+}

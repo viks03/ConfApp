@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Travel_PageTitle" xml:space="preserve"><value>Място и Пътуване</value></data>
+  <data name="Venue_Label" xml:space="preserve"><value>МЯСТО</value></data>
+  <data name="Venue_Title" xml:space="preserve"><value>Университет за национално и световно стопанство</value></data>
+  <data name="Venue_Item_VenueTitle" xml:space="preserve"><value>МЯСТО НА КОНФЕРЕНЦИЯТА</value></data>
+  <data name="Venue_Item_VenueAddress" xml:space="preserve"><value>УНСС, ул. „8-ми декември“ 19, 1700 София, България</value></data>
+  <data name="Venue_Item_HoursTitle" xml:space="preserve"><value>ЧАСОВЕ НА ПРОВЕЖДАНЕ</value></data>
+  <data name="Venue_Item_HoursValue" xml:space="preserve"><value>Ден 1-3: 09:00 - 20:00&lt;br&gt;Регистрация от 08:30 всеки ден</value></data>
+  <data name="Venue_Item_EmailTitle" xml:space="preserve"><value>ИМЕЙЛ</value></data>
+  <data name="Transport_Label" xml:space="preserve"><value>КАК ДА СТИГНЕТЕ</value></data>
+  <data name="Transport_Title" xml:space="preserve"><value>Транспортни опции</value></data>
+  <data name="Transport_Air_Title" xml:space="preserve"><value>По въздух</value></data>
+  <data name="Transport_Air_Desc" xml:space="preserve"><value>Летище София (SOF) е основната международна врата с 40+ директни маршрута.</value></data>
+  <data name="Transport_Metro_Title" xml:space="preserve"><value>С Метро и Автобус</value></data>
+  <data name="Transport_Metro_Desc" xml:space="preserve"><value>Хванете метрото от летището до метростанция „Г.М. Димитров“. Оттам се прехвърлете на автобусна линия 280 или 294 и слезте на спирка „УНСС“. Цена: 0.80€</value></data>
+  <data name="Transport_Transfer_Title" xml:space="preserve"><value>Трансфер</value></data>
+  <data name="Transport_Transfer_Desc" xml:space="preserve"><value>Предлагаме летищен трансфер. Резервирайте чрез Екстра пакета при регистрация.</value></data>
+  <data name="Hotels_Label" xml:space="preserve"><value>НАСТАНЯВАНЕ</value></data>
+  <data name="Hotels_Title" xml:space="preserve"><value>Препоръчани хотели</value></data>
+  <data name="Hotels_FooterNote" xml:space="preserve"><value>За ползване на преференциални цени за настаняване, моля, пишете на conference.education@unwe.bg с тема „Hotel Booking“</value></data>
+</root>

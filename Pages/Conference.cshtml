@@ -1,0 +1,382 @@
+@page
+@model ConferenceModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Nav_Conference"].Value ?? "Conference";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/conferenceStyle.css" asp-append-version="true" />
+}
+
+<main>
+    <section class="hero conference-hero">
+      <div class="hero-overlay"></div>
+
+      <a href="#tickets-section" class="scroll-down-arrow" aria-label="Scroll down">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </a>
+    </section>
+    
+    <section class="about-section" id="tickets-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Conf_SofiaLabel"]</p>
+            <h2>@Localizer["Conf_AboutTitle"]</h2>
+            <div class="about-text">
+                <p>@Localizer["Conf_AboutPara1"]</p>
+                <p>@Localizer["Conf_AboutPara2"]</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="goals-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Conf_GoalsLabel"]</p>
+            <h2>@Localizer["Conf_GoalsTitle"]</h2>
+            <div class="grid-2-col">
+                <div class="feature-card">
+                    <div class="icon-box"><img src="~/images/conference/reward.png" alt=""></div>
+                    <h4>@Localizer["Conf_Goal1_Title"]</h4>
+                    <p>@Localizer["Conf_Goal1_Desc"]</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box"><img src="~/images/conference/book.png" alt=""></div>
+                    <h4>@Localizer["Conf_Goal2_Title"]</h4>
+                    <p>@Localizer["Conf_Goal2_Desc"]</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box"><img src="~/images/conference/judge.png" alt=""></div>
+                    <h4>@Localizer["Conf_Goal3_Title"]</h4>
+                    <p>@Localizer["Conf_Goal3_Desc"]</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon-box"><img src="~/images/conference/institution.png" alt=""></div>
+                    <h4>@Localizer["Conf_Goal4_Title"]</h4>
+                    <p>@Localizer["Conf_Goal4_Desc"]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+     @if (Model.InstitutionalPartners.Any() || Model.BusinessPartners.Any() || Model.MediaPartners.Any())
+    {
+        <section class="partners-section">
+            <div class="section-inner reveal center-section">
+                <p class="section-label">@Localizer["Conf_PartnersLabel"]</p>
+                <h2>@Localizer["Conf_PartnersTitle"]</h2>
+
+                <div class="partners-3col">
+
+                    @if (Model.InstitutionalPartners.Any())
+                    {
+                        <div class="partners-col">
+                            <p class="partners-col-heading">@Localizer["Conf_InstPartners"]</p>
+                            @foreach (var partner in Model.InstitutionalPartners)
+                            {
+                                var isBg = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                var name = isBg ? (string.IsNullOrWhiteSpace(partner.NameBg) ? partner.NameEn : partner.NameBg) : partner.NameEn;
+                                var logo = string.IsNullOrEmpty(partner.LogoImagePath) ? "/images/logos/avatar.png" : partner.LogoImagePath;
+                                var hasUrl = !string.IsNullOrEmpty(partner.WebsiteUrl);
+                                if (hasUrl)
+                                {
+                                    <a class="partner-tile clickable" href="@partner.WebsiteUrl" target="_blank" rel="noopener">
+                                        <span class="partner-tile-arrow">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="7" y1="17" x2="17" y2="7"></line>
+                                                <polyline points="7 7 17 7 17 17"></polyline>
+                                            </svg>
+                                        </span>
+                                        <div class="partner-tile-logo"><img src="@logo" alt="@name"></div>
+                                        <span class="partner-tile-name">@name</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="partner-tile">
+                                        <div class="partner-tile-logo"><img src="@logo" alt="@name"></div>
+                                        <span class="partner-tile-name">@name</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+
+                    @if (Model.BusinessPartners.Any())
+                    {
+                        <div class="partners-col">
+                            <p class="partners-col-heading">@Localizer["Conf_BusPartners"]</p>
+                            @foreach (var partner in Model.BusinessPartners)
+                            {
+                                var isBg = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                var name = isBg ? (string.IsNullOrWhiteSpace(partner.NameBg) ? partner.NameEn : partner.NameBg) : partner.NameEn;
+                                var logo = string.IsNullOrEmpty(partner.LogoImagePath) ? "/images/logos/avatar.png" : partner.LogoImagePath;
+                                var hasUrl = !string.IsNullOrEmpty(partner.WebsiteUrl);
+                                if (hasUrl)
+                                {
+                                    <a class="partner-tile clickable" href="@partner.WebsiteUrl" target="_blank" rel="noopener">
+                                        <span class="partner-tile-arrow">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="7" y1="17" x2="17" y2="7"></line>
+                                                <polyline points="7 7 17 7 17 17"></polyline>
+                                            </svg>
+                                        </span>
+                                        <div class="partner-tile-logo"><img src="@logo" alt="@name"></div>
+                                        <span class="partner-tile-name">@name</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="partner-tile">
+                                        <div class="partner-tile-logo"><img src="@logo" alt="@name"></div>
+                                        <span class="partner-tile-name">@name</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+
+                    @if (Model.MediaPartners.Any())
+                    {
+                        <div class="partners-col">
+                            <p class="partners-col-heading">@Localizer["Conf_MediaPartners"]</p>
+                            @foreach (var partner in Model.MediaPartners)
+                            {
+                                var isBg = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                var name = isBg ? (string.IsNullOrWhiteSpace(partner.NameBg) ? partner.NameEn : partner.NameBg) : partner.NameEn;
+                                var logo = string.IsNullOrEmpty(partner.LogoImagePath) ? "/images/logos/avatar.png" : partner.LogoImagePath;
+                                var hasUrl = !string.IsNullOrEmpty(partner.WebsiteUrl);
+                                if (hasUrl)
+                                {
+                                    <a class="partner-tile clickable" href="@partner.WebsiteUrl" target="_blank" rel="noopener">
+                                        <span class="partner-tile-arrow">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="7" y1="17" x2="17" y2="7"></line>
+                                                <polyline points="7 7 17 7 17 17"></polyline>
+                                            </svg>
+                                        </span>
+                                        <div class="partner-tile-logo"><img src="@logo" alt="@name"></div>
+                                        <span class="partner-tile-name">@name</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="partner-tile">
+                                        <div class="partner-tile-logo"><img src="@logo" alt="@name"></div>
+                                        <span class="partner-tile-name">@name</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </section>
+    }
+
+    <section class="deliverables-section light-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Conf_OutcomesLabel"]</p>
+            <h2>@Localizer["Conf_DeliverablesTitle"]</h2>
+            
+            <div class="grid-4-col">
+                <div class="deliverable-item">
+                    <span class="item-number">01</span>
+                    <h4>@Localizer["Conf_Deliv1_Title"]</h4>
+                    <p>@Localizer["Conf_Deliv1_Desc"]</p>
+                </div>
+                <div class="deliverable-item">
+                    <span class="item-number">02</span>
+                    <h4>@Localizer["Conf_Deliv2_Title"]</h4>
+                    <p>@Localizer["Conf_Deliv2_Desc"]</p>
+                </div>
+                <div class="deliverable-item">
+                    <span class="item-number">03</span>
+                    <h4>@Localizer["Conf_Deliv3_Title"]</h4>
+                    <p>@Localizer["Conf_Deliv3_Desc"]</p>
+                </div>
+                <div class="deliverable-item">
+                    <span class="item-number">04</span>
+                    <h4>@Localizer["Conf_Deliv4_Title"]</h4>
+                    <p>@Localizer["Conf_Deliv4_Desc"]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="themes-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Conf_ThemesLabel"]</p>
+            <h2>@Localizer["Conf_ThemesTitle"]</h2>
+            <div class="grid-4-col">
+                <div class="theme-card">
+                    <div class="icon-box"><img src="~/images/conference/openbook.png" alt=""></div>
+                    <h4>@Localizer["Conf_Theme1_Title"]</h4>
+                </div>
+                <div class="theme-card">
+                    <div class="icon-box"><img src="~/images/conference/judge.png" alt=""></div>
+                    <h4>@Localizer["Conf_Theme2_Title"]</h4>
+                </div>
+                <div class="theme-card">
+                    <div class="icon-box"><img src="~/images/conference/chip.png" alt=""></div>
+                    <h4>@Localizer["Conf_Theme3_Title"]</h4>
+                </div>
+                <div class="theme-card">
+                    <div class="icon-box"><img src="~/images/conference/atom.png" alt=""></div>
+                    <h4>@Localizer["Conf_Theme4_Title"]</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="structure-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Conf_StructureLabel"]</p>
+            <h2>@Localizer["Conf_StructureTitle"]</h2>
+            <div class="grid-3-col">
+                <div class="feature-card">
+                    <p class="day-label">@Localizer["Conf_Day1"]</p>
+                    <h4>@Localizer["Conf_Day1_Title"]</h4>
+                    @Html.Raw(Localizer["Conf_Day1_List"].Value)
+                </div>
+                <div class="feature-card">
+                    <p class="day-label">@Localizer["Conf_Day2"]</p>
+                    <h4>@Localizer["Conf_Day2_Title"]</h4>
+                    @Html.Raw(Localizer["Conf_Day2_List"].Value)
+                </div>
+                <div class="feature-card">
+                    <p class="day-label">@Localizer["Conf_Day3"]</p>
+                    <h4>@Localizer["Conf_Day3_Title"]</h4>
+                    @Html.Raw(Localizer["Conf_Day3_List"].Value)
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="themes-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Conf_ResourcesLabel"]</p>
+            <h2>@Localizer["Conf_ResourcesTitle"]</h2>
+            <div class="grid-3-col">
+                <a href="~/uploads/documents/official-paper-template.docx" download="Official Paper Template.docx">
+                    <div class="theme-card">
+                        <div class="icon-box"><img src="~/images/conference/docs.png" alt=""></div>
+                        <h4>@Localizer["Conf_Doc1_Title"]</h4>
+                        <h5>@Html.Raw(Localizer["Conf_Doc1_Desc"].Value)</h5>
+                    </div>
+                </a>
+                <a href="~/uploads/documents/authorship-declaration.docx" download="Authorship Declaration.docx">
+                    <div class="theme-card">
+                        <div class="icon-box"><img src="~/images/conference/sign.png" alt=""></div>
+                        <h4>@Localizer["Conf_Doc2_Title"]</h4>
+                        <h5>@Html.Raw(Localizer["Conf_Doc2_Desc"].Value)</h5>
+                    </div>
+                </a>
+                <a href="~/uploads/documents/ceeol-copyright-agreement.docx" download="CEEOL Copyright Agreement.docx">
+                    <div class="theme-card">
+                        <div class="icon-box"><img src="~/images/conference/database.png" alt=""></div>
+                        <h4>@Localizer["Conf_Doc3_Title"]</h4>
+                        <h5>@Localizer["Conf_Doc3_Desc"]</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    @if (Model.OrganizingCommittee.Any() || Model.ProgramCommittee.Any() || Model.StudentCommittee.Any())
+    {
+        <section class="committees-section">
+            <div class="section-inner reveal center-section">
+                <!-- Централно заглавие за цялата секция с комитети -->
+                <p class="section-label">@Localizer["Conf_LeadershipLabel"]</p>
+                <h2>Our Committees</h2>
+
+                <div class="grid-3-col">
+                    
+                    @if (Model.OrganizingCommittee.Any())
+                    {
+                        <div class="committee-column">
+                            <h2 class="text-left" style="font-size: 1.5rem; margin-bottom: 20px;">@Localizer["Conf_OrgCommittee"]</h2>
+                            <div class="person-list">
+                                @foreach (var member in Model.OrganizingCommittee)
+                                {
+                                    var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                    var name = isBulgarian ? (string.IsNullOrWhiteSpace(member.FullNameBg) ? member.FullNameEn : member.FullNameBg) : member.FullNameEn;
+                                    var role = isBulgarian ? (string.IsNullOrWhiteSpace(member.RoleBg) ? member.RoleEn : member.RoleBg) : member.RoleEn;
+                                    var org = isBulgarian ? (string.IsNullOrWhiteSpace(member.OrganizationBg) ? member.OrganizationEn : member.OrganizationBg) : member.OrganizationEn;
+                                    var avatarSrc = string.IsNullOrEmpty(member.AvatarImagePath) ? "/images/logos/avatar.png" : member.AvatarImagePath;
+                                    
+                                    <div class="person-card">
+                                        <div class="avatar"><img src="@avatarSrc" alt="@name"></div>
+                                        <div class="person-info">
+                                            <h4>@name</h4>
+                                            <p class="role">@role</p>
+                                            <p class="org">@org</p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.ProgramCommittee.Any())
+                    {
+                        <div class="committee-column">
+                            <h2 class="text-left" style="font-size: 1.5rem; margin-bottom: 20px;">@Localizer["Conf_ProgCommittee"]</h2>
+                            <div class="person-list">
+                                @foreach (var member in Model.ProgramCommittee)
+                                {
+                                    var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                    var name = isBulgarian ? (string.IsNullOrWhiteSpace(member.FullNameBg) ? member.FullNameEn : member.FullNameBg) : member.FullNameEn;
+                                    var role = isBulgarian ? (string.IsNullOrWhiteSpace(member.RoleBg) ? member.RoleEn : member.RoleBg) : member.RoleEn;
+                                    var org = isBulgarian ? (string.IsNullOrWhiteSpace(member.OrganizationBg) ? member.OrganizationEn : member.OrganizationBg) : member.OrganizationEn;
+                                    var avatarSrc = string.IsNullOrEmpty(member.AvatarImagePath) ? "/images/logos/avatar.png" : member.AvatarImagePath;
+                                    
+                                    <div class="person-card">
+                                        <div class="avatar"><img src="@avatarSrc" alt="@name"></div>
+                                        <div class="person-info">
+                                            <h4>@name</h4>
+                                            <p class="role">@role</p>
+                                            <p class="org">@org</p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.StudentCommittee.Any())
+                    {
+                        <div class="committee-column">
+                            <h2 class="text-left" style="font-size: 1.5rem; margin-bottom: 20px;">@Localizer["Conf_StuCommittee"]</h2>
+                            <div class="person-list">
+                                @foreach (var member in Model.StudentCommittee)
+                                {
+                                    var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                    var name = isBulgarian ? (string.IsNullOrWhiteSpace(member.FullNameBg) ? member.FullNameEn : member.FullNameBg) : member.FullNameEn;
+                                    var role = isBulgarian ? (string.IsNullOrWhiteSpace(member.RoleBg) ? member.RoleEn : member.RoleBg) : member.RoleEn;
+                                    var org = isBulgarian ? (string.IsNullOrWhiteSpace(member.OrganizationBg) ? member.OrganizationEn : member.OrganizationBg) : member.OrganizationEn;
+                                    var avatarSrc = string.IsNullOrEmpty(member.AvatarImagePath) ? "/images/logos/avatar.png" : member.AvatarImagePath;
+                                    
+                                    <div class="person-card">
+                                        <div class="avatar"><img src="@avatarSrc" alt="@name"></div>
+                                        <div class="person-info">
+                                            <h4>@name</h4>
+                                            <p class="role">@role</p>
+                                            <p class="org">@org</p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </section>
+    }
+
+   
+</main>

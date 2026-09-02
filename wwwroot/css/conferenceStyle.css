@@ -1,0 +1,506 @@
+/* Основни настройки (ако вече ги имаш от предния файл, не ги дублирай) */
+:root {
+    --bg-black: #0a0a0a;
+    --accent-red: #8b0000; /* Уеднаквен червен цвят с останалите страници */
+    --text-white: #ffffff;
+    --text-gray: #a0a0a0;
+    --card-bg: #141414;
+    --card-hover: #1a1a1a;
+}
+
+.center-section {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.text-left {
+    text-align: left;
+    width: 100%;
+}
+
+/* Hero Section */
+.conference-hero {
+    /* Променете пътя по-долу, за да сложите вашата снимка */
+    background-image: url('../images/conference/bannerAbout.png'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Уверяваме се, че банерът е позициониран правилно, за да държи стрелката */
+.hero.attend-hero {
+  position: relative;
+}
+
+/* Стилът на самата стрелка */
+.scroll-down-arrow {
+  position: absolute;
+  bottom: 40px; /* На 40px от долния ръб на банера */
+  left: 50%;
+  transform: translateX(-50%); /* Центрираме я перфектно */
+  width: 50px;
+  height: 50px;
+  color: #ffffff; /* Бял цвят */
+  z-index: 10;
+  transition: color 0.3s ease;
+  animation: bounce 2s infinite; /* Извикваме анимацията за подскачане */
+}
+
+/* Ефект при посочване с мишката */
+.scroll-down-arrow:hover {
+  color: #cc0000; /* Става в акцентното ви червено */
+}
+
+/* Анимацията (Keyframes) за подскачането */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  40% {
+    transform: translateX(-50%) translateY(-15px);
+  }
+  60% {
+    transform: translateX(-50%) translateY(-7px);
+  }
+}
+
+/* About Section */
+
+.about-section,
+.goals-section,
+.themes-section,
+.structure-section,
+.committees-section,
+.partners-section{
+    margin: 30px;
+}
+
+.about-text {
+    max-width: 800px;
+    color: var(--text-gray);
+    font-size: 0.95rem;
+}
+
+.about-text p {
+    margin-bottom: 20px;
+}
+
+/* Grid Layouts */
+.grid-2-col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 100%;
+}
+
+.grid-3-col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    width: 100%;
+}
+
+.grid-4-col {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    width: 100%;
+}
+
+/* Cards */
+.feature-card {
+    background: var(--card-bg);
+    padding: 35px 30px;
+    border-radius: 6px;
+    text-align: left;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    background-color: var(--card-hover);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.feature-card h4 {
+    margin: 15px 0 10px;
+    font-size: 1.1rem;
+}
+
+.feature-card p {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.icon-box {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 15px;
+    transition: transform 0.3s ease;
+}
+
+.icon-box img {
+    width: 100%;
+    height: 100%;
+    filter: invert(15%) sepia(94%) saturate(6000%) hue-rotate(350deg) brightness(90%) contrast(110%); /* Прави черни икони червени */
+}
+
+.feature-card:hover .icon-box,
+.theme-card:hover .icon-box {
+    transform: scale(1.15) rotate(5deg);
+}
+
+/* Theme Cards (Малките 4 карти) */
+.theme-card {
+    background: var(--card-bg);
+    padding: 25px 20px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.theme-card:hover {
+    transform: translateY(-5px);
+    background-color: var(--card-hover);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.theme-card h4 {
+    font-size: 0.9rem;
+    margin: 10px 0 0;
+}
+
+/* Light Section (Deliverables) */
+.light-section {
+    background-color: #ffffff;
+    color: #000000;
+    padding: 60px 0;
+    margin: 60px 0; /* Дава отстояние от тъмните секции, правейки банера пълен (full-width) */
+}
+
+.light-section h2 {
+    color: #000000;
+}
+
+.light-section .section-label {
+    color: var(--accent-red);
+}
+
+.deliverable-item {
+    background: #f9f9f9;
+    border: 1px solid #eaeaea;
+    padding: 35px 30px;
+    border-radius: 6px;
+    text-align: left;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.deliverable-item:hover {
+    transform: translateY(-5px);
+    background-color: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.deliverable-item .item-number {
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: var(--accent-red);
+    opacity: 0.5;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.deliverable-item h4 {
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+    color: #000000;
+}
+
+.deliverable-item p {
+    color: #555555;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Program Specific */
+.day-label {
+    color: var(--accent-red) !important;
+    font-size: 0.75rem !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 10px !important;
+}
+
+/* Committees */
+.committees-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+}
+
+.person-card {
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.person-card:hover {
+    transform: translateY(-5px);
+    background-color: var(--card-hover);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    background: #333;
+    border-radius: 50%;
+    margin-right: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.person-card:hover .avatar img {
+    transform: scale(1.08);
+}
+
+.person-info h4 {
+    margin: 0 0 5px;
+    font-size: 1rem;
+}
+
+.person-info .role {
+    color: var(--accent-red);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.person-info .org {
+    color: var(--text-gray);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+/* ── Partners — 3-column redesign ────────────────────────────────────── */
+
+.partners-section {
+    padding: 20px 0 70px;
+}
+
+.partners-section h2 {
+    margin-bottom: 40px;
+}
+
+.partners-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.partners-col {
+    padding: 32px 28px;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.partners-col:last-child {
+    border-right: none;
+}
+
+.partners-col-heading {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #FF3636;
+    margin: 0 0 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Партньорски тайл */
+.partner-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 100px;
+    padding: 20px 16px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    text-decoration: none;
+    overflow: hidden;
+    cursor: default;
+    margin-bottom: 14px;
+}
+
+.partner-tile:last-child {
+    margin-bottom: 0;
+}
+
+.partner-tile.clickable {
+    cursor: pointer;
+    transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.partner-tile.clickable::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #FF3636;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.3s ease;
+    border-radius: 0 0 10px 10px;
+}
+
+.partner-tile.clickable:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 54, 54, 0.25);
+    transform: translateY(-3px);
+}
+
+.partner-tile.clickable:hover::after {
+    transform: scaleX(1);
+}
+
+/* SVG стрелка — кръгъл badge */
+.partner-tile-arrow {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 54, 54, 0.1);
+    border: 1px solid rgba(255, 54, 54, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FF3636;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.partner-tile-arrow svg {
+    width: 11px;
+    height: 11px;
+    stroke: #FF3636;
+    display: block;
+    flex-shrink: 0;
+}
+
+.partner-tile.clickable:hover .partner-tile-arrow {
+    opacity: 1;
+    background: rgba(255, 54, 54, 0.2);
+}
+
+/* Лого */
+.partner-tile-logo {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.partner-tile-logo img {
+    max-width: 88%;
+    max-height: 80px;
+    object-fit: contain;
+    filter: brightness(0.72) grayscale(0.1);
+    transition: filter 0.25s ease;
+}
+
+.partner-tile.clickable:hover .partner-tile-logo img {
+    filter: brightness(1.05) grayscale(0);
+}
+
+/* Надпис — увеличен */
+.partner-tile-name {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.35);
+    transition: color 0.25s ease;
+}
+
+.partner-tile.clickable:hover .partner-tile-name {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .partners-3col {
+        grid-template-columns: 1fr 1fr;
+    }
+    .partners-col:nth-child(2) {
+        border-right: none;
+    }
+    .partners-col:nth-child(3) {
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+        border-right: none;
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 600px) {
+    .partners-3col {
+        grid-template-columns: 1fr;
+    }
+    .partners-col {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .partners-col:last-child {
+        border-bottom: none;
+    }
+    .partners-col:nth-child(3) {
+        grid-column: auto;
+        border-top: none;
+    }
+}
+
+/* Мобилна адаптация (Responsive) */
+@media (max-width: 1024px) {
+    .grid-4-col { grid-template-columns: repeat(2, 1fr); }
+    .committees-wrapper { gap: 30px; }
+}
+
+@media (max-width: 768px) {
+    .grid-2-col, .grid-3-col, .committees-wrapper, .partners-grid {
+        grid-template-columns: 1fr;
+    }
+}

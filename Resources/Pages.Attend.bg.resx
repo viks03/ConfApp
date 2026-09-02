@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <data name="Nav_Attend" xml:space="preserve"><value>Билети</value></data>
+  <data name="Attend_TicketsLabel" xml:space="preserve"><value>БИЛЕТИ</value></data>
+  <data name="Attend_TicketsTitle" xml:space="preserve"><value>Изберете своя пропуск</value></data>
+  <data name="Attend_RibbonLimited" xml:space="preserve"><value>ОГРАНИЧЕНИ</value></data>
+  <data name="Attend_BtnGetTicket" xml:space="preserve"><value>ВЗЕМИ БИЛЕТ</value></data>
+  
+  <data name="Attend_AccessOnlineTitle" xml:space="preserve"><value>Онлайн зрител</value></data>
+  <data name="Attend_AccessOnlineDesc" xml:space="preserve"><value>Не можете да присъствате лично? Присъединете се към събитието онлайн от всяка точка на света.</value></data>
+  <data name="Attend_AccessOnlineBtn" xml:space="preserve"><value>Гледай онлайн</value></data>
+  
+  <data name="Attend_AccessJournalistTitle" xml:space="preserve"><value>Журналистически достъп</value></data>
+  <data name="Attend_AccessJournalistDesc" xml:space="preserve"><value>Вие сте журналист? Кандидатствайте за медиен достъп, за да отразите събитието.</value></data>
+  <data name="Attend_AccessJournalistBtn" xml:space="preserve"><value>Кандидатствай</value></data>
+  <data name="Attend_AccessJournalistBtn_SubmitDocs" xml:space="preserve"><value>Качете документи</value></data>
+  
+  <data name="Attend_ExtrasLabel" xml:space="preserve"><value>ДОПЪЛНИТЕЛНИ</value></data>
+  <data name="Attend_ExtrasTitle" xml:space="preserve"><value>Допълнителни пакети и плащане</value></data>
+  
+  <data name="Attend_Extra1Title" xml:space="preserve"><value>Допълнителен пакет 1</value></data>
+  <data name="Attend_Extra1Desc" xml:space="preserve"><value>Трансфер Летище София – Хотел – Летище София</value></data>
+  
+  <data name="Attend_Extra2Title" xml:space="preserve"><value>Допълнителен пакет 2</value></data>
+  <data name="Attend_Extra2Desc" xml:space="preserve"><value>Трансфер Летище София – Хотел + Хотелско настаняване – Летище София</value></data>
+  
+  <data name="Attend_PaymentMethods" xml:space="preserve"><value>Методи на плащане</value></data>
+  <data name="Attend_BankTransfer" xml:space="preserve"><value>Банков превод:</value></data>
+  <data name="Attend_BankDesc" xml:space="preserve"><value>Информация за нашата банкова сметка и инструкции за плащане ще бъдат генерирани и предоставени след завършване на регистрацията.</value></data>
+  
+  <data name="Attend_Method_Card" xml:space="preserve"><value>Дебитна / Кредитна карта</value></data>
+  <data name="Attend_Method_CardDesc" xml:space="preserve"><value>Сигурно плащане в реално време чрез Stripe. Регистрацията се потвърждава автоматично веднага.</value></data>
+  <data name="Attend_Method_Crypto" xml:space="preserve"><value>Криптовалута</value></data>
+  <data name="Attend_Method_CryptoDesc" xml:space="preserve"><value>Плащане с Биткойн, Етериум, USDC и други активи чрез Go28. Автоматизирано и сигурно отчитане.</value></data>
+  
+  <data name="Attend_Tag_Instant" xml:space="preserve"><value>Моментално</value></data>
+  <data name="Attend_Tag_Days" xml:space="preserve"><value>дни</value></data>
+</root>

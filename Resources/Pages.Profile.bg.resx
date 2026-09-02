@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="page_title" xml:space="preserve"><value>Моят профил</value></data>
+
+  <data name="prof_subtitle" xml:space="preserve"><value>ВАШИЯТ АКАУНТ</value></data>
+  <data name="prof_title" xml:space="preserve"><value>Профил</value></data>
+  <data name="prof_desc" xml:space="preserve"><value>Управлявайте личната си информация и следете статуса на регистрацията.</value></data>
+
+  <data name="lbl_fname" xml:space="preserve"><value>Собствено Име</value></data>
+  <data name="lbl_lname" xml:space="preserve"><value>Фамилия</value></data>
+  <data name="lbl_age" xml:space="preserve"><value>Възраст</value></data>
+  <data name="lbl_phone" xml:space="preserve"><value>Телефонен номер</value></data>
+  <data name="lbl_title" xml:space="preserve"><value>Академично звание</value></data>
+  <data name="lbl_org" xml:space="preserve"><value>Организация / Месторабота</value></data>
+  <data name="lbl_part" xml:space="preserve"><value>Тип участие</value></data>
+  <data name="lbl_foreigner" xml:space="preserve"><value>Аз съм чужденец (не-български гражданин)</value></data>
+  <data name="lbl_marketing" xml:space="preserve"><value>Съгласен/на съм да получавам новини и обновления за конференцията</value></data>
+  <data name="lbl_update_file" xml:space="preserve"><value>Качване / Замяна на доклад</value></data>
+  <data name="lbl_current_file" xml:space="preserve"><value>Текущ файл:</value></data>
+  
+  <data name="lbl_partform_locked_pending" xml:space="preserve"><value>Типът на участие е заключен, докато документите Ви се проверяват. Можете да го промените отново след приключване на проверката.</value></data>
+  <data name="lbl_partform_locked_approved" xml:space="preserve"><value>Типът на участие е заключен, тъй като верификацията Ви е одобрена. Свържете се с поддръжката, ако имате нужда от промяна.</value></data>
+  <data name="lbl_partform_locked_paid" xml:space="preserve"><value>Типът на участие е заключен, тъй като плащането Ви е потвърдено успешно. Свържете се с поддръжката, ако имате нужда от промяна.</value></data>
+
+  <data name="opt_choose" xml:space="preserve"><value>— Изберете тип —</value></data>
+  <data name="opt_lector" xml:space="preserve"><value>Лектор/Академик</value></data>
+  <data name="opt_student" xml:space="preserve"><value>Студент/Докторант</value></data>
+  <data name="opt_guest" xml:space="preserve"><value>Гост</value></data>
+  <data name="opt_online" xml:space="preserve"><value>Онлайн участник</value></data>
+  <data name="opt_journalist" xml:space="preserve"><value>Журналист/Медия</value></data>
+
+  <data name="btn_save" xml:space="preserve"><value>ЗАПАЗИ ПРОМЕНИТЕ</value></data>
+
+  <data name="Msg_UpdateSuccess" xml:space="preserve"><value>Профилът ви беше успешно актуализиран.</value></data>
+
+  <data name="status_confirmed_label" xml:space="preserve"><value>Регистрацията е потвърдена</value></data>
+  <data name="status_confirmed_msg" xml:space="preserve"><value>Вашето участие в конференцията е официално потвърдено. Очакваме ви!</value></data>
+
+  <data name="status_unpaid_label" xml:space="preserve"><value>Регистрацията не е завършена</value></data>
+  <data name="status_unpaid_msg" xml:space="preserve"><value>Профилът ви все още не е потвърден и не можете да участвате в представянето на доклада си. За да участвате, моля заплатете таксата за участие. Ако сте платили чрез банков превод (IBAN), моля изчакайте от 1 до 3 работни дни, за да може плащането ви да бъде одобрено и статусът ви да бъде актуализиран.</value></data>
+  <data name="status_ref_label" xml:space="preserve"><value>Вашият референтен номер</value></data>
+  <data name="status_iban_pending_msg" xml:space="preserve"><value>Банковият превод е регистриран — обработката отнема 1–3 работни дни.</value></data>
+
+  <data name="status_action_pay" xml:space="preserve"><value>КЪМ ПЛАЩАНЕ</value></data>
+  <data name="status_action_see_options" xml:space="preserve"><value>ВИЖТЕ ОПЦИИТЕ</value></data>
+
+  <data name="status_online_link_note" xml:space="preserve"><value>Участниците, които ще представят доклада си онлайн, ще получат линк за участие на имейл адреса, посочен при регистрация.</value></data>
+
+  <data name="status_verif_needed_label" xml:space="preserve"><value>Необходима е верификация на документи</value></data>
+  <data name="status_student_doc_msg" xml:space="preserve"><value>За да завършите регистрацията си като Студент / Докторант, трябва да качите валидна студентска книжка или друг документ, доказващ статуса ви. Участието е напълно безплатно след одобрение от нашия екип.</value></data>
+  <data name="status_journalist_doc_msg" xml:space="preserve"><value>За да завършите регистрацията си като Журналист / Медия, трябва да качите валидна прессарта или официална акредитация от вашата медия. Участието е безплатно след одобрение от нашия екип.</value></data>
+  <data name="status_action_submit_doc" xml:space="preserve"><value>КАЧЕТЕ ДОКУМЕНТИ</value></data>
+
+  <data name="status_verif_pending_label" xml:space="preserve"><value>⏳ Документите се обработват</value></data>
+  <data name="status_verif_pending_msg" xml:space="preserve"><value>Документите ви са получени и се преглеждат от модератор. Процесът обикновено отнема 1–3 работни дни. Ще получите имейл уведомление при промяна на статуса.</value></data>
+
+  <data name="status_verif_approved_msg" xml:space="preserve"><value>Документите ви са обработени успешно и сте допуснат/а да участвате в представянето на доклада.</value></data>
+
+  <data name="status_verif_rejected_label" xml:space="preserve"><value>✕ Документите са отхвърлени</value></data>
+  <data name="status_verif_rejected_msg" xml:space="preserve"><value>За съжаление предоставените документи не бяха приети. Моля, прегледайте изискванията и качете валидни документи отново.</value></data>
+  <data name="status_action_resubmit" xml:space="preserve"><value>КАЧЕТЕ ОТНОВО</value></data>
+  <data name="status_rejection_reason_label" xml:space="preserve"><value>Причина за отхвърляне</value></data>
+
+  <data name="Error_Required" xml:space="preserve"><value>Това поле е задължително.</value></data>
+  <data name="Error_NameLength" xml:space="preserve"><value>Името трябва да е между 2 и 50 символа.</value></data>
+  <data name="Error_NameLatinOnly" xml:space="preserve"><value>Използвайте само латиница.</value></data>
+  <data name="Error_AgeRange" xml:space="preserve"><value>Възрастта трябва да е между 18 и 100 години.</value></data>
+  <data name="Error_PhoneFormat" xml:space="preserve"><value>Моля, въведете валиден телефонен номер.</value></data>
+  <data name="Error_FileTooLarge" xml:space="preserve"><value>Файлът е твърде голям ({0} MB). Максималният размер е 10 MB.</value></data>
+  <data name="Error_FileUploadFailed" xml:space="preserve"><value>Възникна проблем при качването на файла.</value></data>
+  <data name="Error_InvalidFileType" xml:space="preserve"><value>Разрешени са само PDF, DOC или DOCX файлове.</value></data>
+
+  <data name="warn_type_change_to_paid" xml:space="preserve"><value>Преминавате от безплатно онлайн участие към платен тип. Ще е необходимо да заплатите таксата за участие. Желаете ли да продължите?</value></data>
+
+
+  <data name="sec_personal" xml:space="preserve"><value>Лични данни</value></data>
+  <data name="sec_participation" xml:space="preserve"><value>Участие</value></data>
+  <data name="sec_paper" xml:space="preserve"><value>Доклад</value></data>
+  <data name="lbl_download" xml:space="preserve"><value>Изтегли</value></data>
+  <data name="file_hint" xml:space="preserve"><value>PDF, DOC или DOCX до 10 MB</value></data>
+  <data name="file_drop_idle" xml:space="preserve"><value>Плъзнете файла тук</value></data>
+  <data name="file_drop_active" xml:space="preserve"><value>Пуснете файла</value></data>
+  <data name="btn_choose_file" xml:space="preserve"><value>Избери файл</value></data>
+  <data name="fact_part" xml:space="preserve"><value>Форма</value></data>
+  <data name="fact_status" xml:space="preserve"><value>Статус</value></data>
+  <data name="fact_ref" xml:space="preserve"><value>Референция</value></data>
+  <data name="fact_paper" xml:space="preserve"><value>Доклад</value></data>
+  <data name="fact_no_paper" xml:space="preserve"><value>Няма качен</value></data>
+  <data name="btn_logout" xml:space="preserve"><value>Изход от профила</value></data>
+  <data name="status_iban_pending_label" xml:space="preserve"><value>Чака потвърждение</value></data>
+  <data name="v_first_name_required" xml:space="preserve"><value>Моля, въведете Вашето име.</value></data>
+  <data name="v_first_name_short" xml:space="preserve"><value>Името трябва да е поне 2 символа.</value></data>
+  <data name="v_first_name_latin" xml:space="preserve"><value>Моля, използвайте само латински букви.</value></data>
+  <data name="v_last_name_required" xml:space="preserve"><value>Моля, въведете Вашата фамилия.</value></data>
+  <data name="v_last_name_short" xml:space="preserve"><value>Фамилията трябва да е поне 2 символа.</value></data>
+  <data name="v_last_name_latin" xml:space="preserve"><value>Моля, използвайте само латински букви.</value></data>
+  <data name="v_age_required" xml:space="preserve"><value>Моля, въведете Вашата възраст.</value></data>
+  <data name="v_age_digits" xml:space="preserve"><value>Моля, въведете само цифри.</value></data>
+  <data name="v_age_range" xml:space="preserve"><value>Възрастта трябва да е между 18 и 100 години.</value></data>
+  <data name="v_title_required" xml:space="preserve"><value>Моля, въведете Вашето академично звание.</value></data>
+  <data name="v_email_required" xml:space="preserve"><value>Моля, въведете Вашия имейл адрес.</value></data>
+  <data name="v_email_invalid" xml:space="preserve"><value>Моля, въведете валиден имейл адрес.</value></data>
+  <data name="v_email_taken" xml:space="preserve"><value>Вече съществува регистрация с този имейл адрес.</value></data>
+  <data name="v_phone_required" xml:space="preserve"><value>Моля, въведете телефонен номер.</value></data>
+  <data name="v_phone_invalid" xml:space="preserve"><value>Моля, въведете валиден телефонен номер.</value></data>
+  <data name="v_workplace_required" xml:space="preserve"><value>Моля, въведете Вашата организация.</value></data>
+  <data name="v_partform_required" xml:space="preserve"><value>Моля, изберете форма на участие.</value></data>
+  <data name="v_gdpr_required" xml:space="preserve"><value>Съгласието за обработка на лични данни е задължително.</value></data>
+  <data name="upload_remove" xml:space="preserve"><value>Премахни файла</value></data>
+  <data name="Error_FirstNameRequired" xml:space="preserve"><value>Моля, въведете Вашето име.</value></data>
+  <data name="Error_FirstNameLength" xml:space="preserve"><value>Името трябва да е поне 2 символа.</value></data>
+  <data name="Error_FirstNameLatin" xml:space="preserve"><value>Моля, използвайте само латински букви.</value></data>
+  <data name="Error_LastNameRequired" xml:space="preserve"><value>Моля, въведете Вашата фамилия.</value></data>
+  <data name="Error_LastNameLength" xml:space="preserve"><value>Фамилията трябва да е поне 2 символа.</value></data>
+  <data name="Error_LastNameLatin" xml:space="preserve"><value>Моля, използвайте само латински букви.</value></data>
+  <data name="Error_TitleRequired" xml:space="preserve"><value>Моля, въведете Вашето академично звание.</value></data>
+  <data name="Error_TitleLength" xml:space="preserve"><value>Званието трябва да е поне 2 символа.</value></data>
+  <data name="Error_PhoneRequired" xml:space="preserve"><value>Моля, въведете телефонен номер.</value></data>
+  <data name="Error_WorkplaceRequired" xml:space="preserve"><value>Моля, въведете Вашата организация.</value></data>
+  <data name="Error_WorkplaceLength" xml:space="preserve"><value>Организацията трябва да е поне 2 символа.</value></data>
+  <data name="Error_PartFormRequired" xml:space="preserve"><value>Моля, изберете форма на участие.</value></data>
+  <data name="Error_InvalidPartForm" xml:space="preserve"><value>Невалидна форма на участие.</value></data>
+</root>

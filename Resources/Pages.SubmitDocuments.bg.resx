@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="SD_PageTitle" xml:space="preserve"><value>Подаване на документи</value></data>
+  <data name="SD_Subtitle" xml:space="preserve"><value>ВЕРИФИКАЦИЯ</value></data>
+
+  <data name="SD_NotEligible_Title" xml:space="preserve"><value>Верификация не е необходима</value></data>
+  <data name="SD_NotEligible_Msg" xml:space="preserve"><value>Вашият профил е регистриран с тип участие, който не изисква допълнителна проверка на документи.</value></data>
+  <data name="SD_BackToProfile" xml:space="preserve"><value>КЪМ ПРОФИЛА</value></data>
+  <data name="SD_SeeOptions" xml:space="preserve"><value>ВИЖТЕ ОПЦИИТЕ</value></data>
+
+  <data name="SD_Status_Approved_Title" xml:space="preserve"><value>Успешна верификация</value></data>
+  <data name="SD_Status_Approved_Msg" xml:space="preserve"><value>Вашите документи бяха успешно обработени и одобрени. Не са необходими допълнителни действия от Ваша страна.</value></data>
+  <data name="SD_Status_Rejected_Title" xml:space="preserve"><value>Отхвърлена верификация</value></data>
+  <data name="SD_Status_Rejected_Msg" xml:space="preserve"><value>За съжаление, изпратените документи не бяха приети. Моля, прегледайте причината и качете валидни документи по-долу.</value></data>
+  <data name="SD_Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="SD_Status_Pending_Title" xml:space="preserve"><value>Документите се преглеждат</value></data>
+
+  <data name="SD_InfoBox" xml:space="preserve"><value>Моля, уверете се, че документите са ясни и четливи. Максимален размер: 3MB. Позволени формати: JPG, PNG.</value></data>
+  <data name="SD_Section_Docs" xml:space="preserve"><value>Файл за проверка</value></data>
+  <data name="SD_Section_Info" xml:space="preserve"><value>Допълнителна информация</value></data>
+
+  <data name="SD_CurrentFile" xml:space="preserve"><value>Текущ файл</value></data>
+  <data name="SD_ClickToUpload" xml:space="preserve"><value>Кликнете за избор на файл</value></data>
+  <data name="SD_FileHint" xml:space="preserve"><value>Позволени формати: JPG, PNG (до 3MB)</value></data>
+
+  <data name="SD_Title_Student" xml:space="preserve"><value>Студент / Докторант</value></data>
+  <data name="SD_Desc_Student" xml:space="preserve"><value>За да се възползвате от субсидираното участие, предоставете актуален документ, доказващ Вашия студентски статус.</value></data>
+  <data name="SD_Student_Doc1Label" xml:space="preserve"><value>Студентска книжка / Уверение</value></data>
+  <data name="SD_Student_University" xml:space="preserve"><value>Университет</value></data>
+  <data name="SD_Student_UniversityPlaceholder" xml:space="preserve"><value>напр. УНСС</value></data>
+  <data name="SD_Student_Specialty" xml:space="preserve"><value>Специалност</value></data>
+  <data name="SD_Student_SpecialtyPlaceholder" xml:space="preserve"><value>напр. Финанси</value></data>
+  <data name="SD_Student_Year" xml:space="preserve"><value>Курс / Година на обучение</value></data>
+  <data name="SD_Year" xml:space="preserve"><value>Курс</value></data>
+  <data name="SD_PhD_Masters" xml:space="preserve"><value>Магистър / Докторант</value></data>
+  <data name="SD_Student_FacultyNumber" xml:space="preserve"><value>Факултетен номер</value></data>
+  <data name="SD_Student_FacultyNumberPlaceholder" xml:space="preserve"><value>Въведете Вашия номер</value></data>
+  <data name="SD_Student_FacultyNumberHint" xml:space="preserve"><value>Използва се за сверка с предоставения документ.</value></data>
+
+  <data name="SD_Title_Journalist" xml:space="preserve"><value>Журналист / Медия</value></data>
+  <data name="SD_Desc_Journalist" xml:space="preserve"><value>За да получите медийна акредитация, моля предоставете валидна журналистическа карта.</value></data>
+  <data name="SD_Journalist_Doc1Label" xml:space="preserve"><value>Журналистическа карта</value></data>
+  <data name="SD_Journalist_Media" xml:space="preserve"><value>Медия</value></data>
+  <data name="SD_Journalist_MediaPlaceholder" xml:space="preserve"><value>Име на медията</value></data>
+  <data name="SD_Journalist_Position" xml:space="preserve"><value>Длъжност</value></data>
+  <data name="SD_Journalist_PositionPlaceholder" xml:space="preserve"><value>напр. Репортер</value></data>
+  <data name="SD_Journalist_Website" xml:space="preserve"><value>Уебсайт на медията</value></data>
+  <data name="SD_Journalist_WebsiteHint" xml:space="preserve"><value>Незадължително, но препоръчително.</value></data>
+
+  <data name="SD_SubmitBtn" xml:space="preserve"><value>ЗАЯВИ ВЕРИФИКАЦИЯ</value></data>
+
+  <data name="SD_Err_Required" xml:space="preserve"><value>Полето е задължително.</value></data>
+  <data name="SD_Err_Student_Doc1Required" xml:space="preserve"><value>Моля, качете снимка на студентската си книжка.</value></data>
+  <data name="SD_Err_Journalist_Doc1Required" xml:space="preserve"><value>Моля, качете снимка на журналистическата си карта.</value></data>
+  <data name="SD_Err_FileTooLarge" xml:space="preserve"><value>Файлът е твърде голям. Максимум 3MB.</value></data>
+  <data name="SD_Err_FileType" xml:space="preserve"><value>Невалиден формат. Позволени са само JPG и PNG.</value></data>
+  <data name="SD_Err_UploadFailed" xml:space="preserve"><value>Грешка при качването. Опитайте отново.</value></data>
+  <data name="SD_Err_SaveFailed" xml:space="preserve"><value>Грешка при запазването на данните в базата.</value></data>
+
+  <data name="SD_Status_None_Title" xml:space="preserve"><value>Преди да качите</value></data>
+  <data name="SD_View" xml:space="preserve"><value>Отвори</value></data>
+  <data name="SD_DropActive" xml:space="preserve"><value>Пуснете файла</value></data>
+  <data name="SD_Choose" xml:space="preserve"><value>Избери файл</value></data>
+  <data name="SD_RulesTitle" xml:space="preserve"><value>Изисквания към файла</value></data>
+  <data name="SD_Rule_Legible" xml:space="preserve"><value>Всички данни в документа са четливи</value></data>
+  <data name="SD_Rule_Format" xml:space="preserve"><value>Формати JPG или PNG, до 3MB</value></data>
+  <data name="SD_Rule_Valid" xml:space="preserve"><value>Документът е с валидност за 2025/2026</value></data>
+  <data name="SD_Fact_Role" xml:space="preserve"><value>Форма на участие</value></data>
+  <data name="SD_Fact_Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="SD_Fact_File" xml:space="preserve"><value>Файл</value></data>
+  <data name="SD_Fact_NoFile" xml:space="preserve"><value>Няма качен</value></data>
+  <data name="SD_Fact_None" xml:space="preserve"><value>Няма</value></data>
+  <data name="SD_Fact_Rejected" xml:space="preserve"><value>Отхвърлено</value></data>
+  <data name="SD_Fact_Approved" xml:space="preserve"><value>Одобрено</value></data>
+  <data name="SD_Err_UniversityRequired" xml:space="preserve"><value>Моля, въведете Вашия университет.</value></data>
+  <data name="SD_Err_UniversityLength" xml:space="preserve"><value>Университетът трябва да е поне 2 символа.</value></data>
+  <data name="SD_Err_SpecialtyRequired" xml:space="preserve"><value>Моля, въведете Вашата специалност.</value></data>
+  <data name="SD_Err_SpecialtyLength" xml:space="preserve"><value>Специалността трябва да е поне 2 символа.</value></data>
+  <data name="SD_Err_YearRequired" xml:space="preserve"><value>Моля, изберете Вашия курс.</value></data>
+  <data name="SD_Err_YearInvalid" xml:space="preserve"><value>Невалиден избор на курс.</value></data>
+  <data name="SD_Err_StudentIdRequired" xml:space="preserve"><value>Моля, въведете Вашия факултетен номер.</value></data>
+  <data name="SD_Err_StudentIdLength" xml:space="preserve"><value>Факултетният номер трябва да е поне 2 символа.</value></data>
+  <data name="SD_Err_MediaRequired" xml:space="preserve"><value>Моля, въведете Вашата медия.</value></data>
+  <data name="SD_Err_MediaLength" xml:space="preserve"><value>Медията трябва да е поне 2 символа.</value></data>
+  <data name="SD_Err_PositionRequired" xml:space="preserve"><value>Моля, въведете Вашата длъжност.</value></data>
+  <data name="SD_Err_PositionLength" xml:space="preserve"><value>Длъжността трябва да е поне 2 символа.</value></data>
+  <data name="SD_Err_WebsiteLength" xml:space="preserve"><value>Адресът е твърде дълъг.</value></data>
+  <data name="SD_Err_FileSize" xml:space="preserve"><value>Файлът е твърде голям ({0} MB). Максималният размер е 3 MB.</value></data>
+  <data name="v_university_required" xml:space="preserve"><value>Моля, въведете Вашия университет.</value></data>
+  <data name="v_specialty_required" xml:space="preserve"><value>Моля, въведете Вашата специалност.</value></data>
+  <data name="v_studentid_required" xml:space="preserve"><value>Моля, въведете Вашия факултетен номер.</value></data>
+  <data name="v_year_required" xml:space="preserve"><value>Моля, изберете Вашия курс.</value></data>
+  <data name="v_media_required" xml:space="preserve"><value>Моля, въведете Вашата медия.</value></data>
+  <data name="v_position_required" xml:space="preserve"><value>Моля, въведете Вашата длъжност.</value></data>
+  <data name="v_url_invalid" xml:space="preserve"><value>Адресът трябва да започва с https://</value></data>
+  <data name="v_proof_required" xml:space="preserve"><value>Моля, прикачете снимка на документа.</value></data>
+  <data name="SD_SubmitSuccess" xml:space="preserve"><value>Документите са изпратени успешно. Ще получите имейл при промяна на статуса.</value></data>
+</root>

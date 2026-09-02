@@ -1,0 +1,755 @@
+@page
+@model ConferenceApp.Pages.ProfileModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["page_title"].Value;
+
+    // Взимаме стойността директно от C# модела
+    bool lockPartForm = Model.IsPartFormLocked;
+
+    bool isOnline    = Model.Input.PartForm == "3";
+    bool isConfirmed = Model.PaymentStatus == "Confirmed";
+
+    // ── Само за показване: име, инициали, имейл ──────────────────────
+    var fullName = $"{Model.Input.FirstName} {Model.Input.LastName}".Trim();
+    if (string.IsNullOrWhiteSpace(fullName)) fullName = User.Identity?.Name ?? "";
+    // Инициалите се вземат като символи, не през LINQ .Take(1) — то връща
+    // IEnumerable<char> и string.Concat пада на Concat(object, object).
+    var fn = (Model.Input.FirstName ?? "").Trim();
+    var ln = (Model.Input.LastName ?? "").Trim();
+    var initials = "";
+    if (fn.Length > 0) initials += fn[0];
+    if (ln.Length > 0) initials += ln[0];
+    initials = initials.ToUpperInvariant();
+    if (initials.Length == 0) initials = "—";
+    var userEmail = User.Identity?.Name ?? "";
+
+    // ── Справката отдясно ────────────────────────────────────────────
+    var partFormName = Model.Input.PartForm switch
+    {
+        "1" => Localizer["opt_lector"].Value,
+        "2" => Localizer["opt_student"].Value,
+        "3" => Localizer["opt_online"].Value,
+        "4" => Localizer["opt_journalist"].Value,
+        _   => "—"
+    };
+
+    // Кратък статус за справката + тон (зелено потвърдено, оранжево в изчакване,
+    // червено за нужно действие). Логиката е същата като на статус панела.
+    string factStatus;
+    string factStatusTone;
+    if (Model.IsPaymentGroup)
+    {
+        if (isConfirmed)              { factStatus = Localizer["status_confirmed_label"].Value;      factStatusTone = "is-ok"; }
+        else if (Model.IbanSubmitted) { factStatus = Localizer["status_iban_pending_label"].Value;   factStatusTone = "is-wait"; }
+        else                          { factStatus = Localizer["status_unpaid_label"].Value;        factStatusTone = "is-alert"; }
+    }
+    else if (Model.IsVerifGroup)
+    {
+        if (!Model.HasVerifDocument || Model.VerificationStatus == "None")
+                                                       { factStatus = Localizer["status_verif_needed_label"].Value;   factStatusTone = "is-alert"; }
+        else if (Model.VerificationStatus == "Pending") { factStatus = Localizer["status_verif_pending_label"].Value;  factStatusTone = "is-wait"; }
+        else if (Model.VerificationStatus == "Approved"){ factStatus = Localizer["status_confirmed_label"].Value;      factStatusTone = "is-ok"; }
+        else                                           { factStatus = Localizer["status_verif_rejected_label"].Value; factStatusTone = "is-alert"; }
+    }
+    else { factStatus = "—"; factStatusTone = "is-empty"; }
+
+    bool hasFile = !string.IsNullOrEmpty(Model.CurrentFileName);
+
+    // Плочките за форма на участие се рендират от този списък, за да няма
+    // повторение между заключения и незаключения клон.
+    var partOptions = new[]
+    {
+        new KeyValuePair<string, string>("1", Localizer["opt_lector"].Value),
+        new KeyValuePair<string, string>("2", Localizer["opt_student"].Value),
+        new KeyValuePair<string, string>("3", Localizer["opt_online"].Value),
+        new KeyValuePair<string, string>("4", Localizer["opt_journalist"].Value)
+    };
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/profileStyle.css" asp-append-version="true">
+}
+
+<main class="pf-page">
+    <div class="pf-split">
+
+        @* ══ Лява колона — формата ══════════════════════════════════ *@
+        <div class="pf-col">
+            <div class="pf-form-wrap">
+
+                <div class="pf-brand pf-brand--desktop">
+                    <img src="~/images/logos/mainLogo.png" alt="">
+                    <span class="pf-brand-rule"></span>
+                    <span class="pf-eyebrow">@Localizer["prof_subtitle"]</span>
+                </div>
+
+                <div class="pf-head">
+                    <h1 class="pf-title">@fullName</h1>
+                    <span class="pf-title-rule"></span>
+                    <p class="pf-desc">@Localizer["prof_desc"]</p>
+                </div>
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="pf-saved" role="status">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
+                <div asp-validation-summary="ModelOnly" class="pf-alert"></div>
+
+                <form class="pf-form" method="POST" id="profileForm" enctype="multipart/form-data" novalidate>
+
+                    @* ══ 01 Лични данни ══ *@
+                    <div class="pf-section">
+                        <div class="pf-section-head">
+                            <b>01</b>
+                            <span>@Localizer["sec_personal"]</span>
+                        </div>
+
+                        <div class="pf-grid-2">
+                            <div class="pf-field">
+                                <label asp-for="Input.FirstName">@Localizer["lbl_fname"]</label>
+                                <input asp-for="Input.FirstName" type="text" id="Input_FirstName" required>
+                                <span asp-validation-for="Input.FirstName" class="field-error"></span>
+                            </div>
+                            <div class="pf-field">
+                                <label asp-for="Input.LastName">@Localizer["lbl_lname"]</label>
+                                <input asp-for="Input.LastName" type="text" id="Input_LastName" required>
+                                <span asp-validation-for="Input.LastName" class="field-error"></span>
+                            </div>
+                            <div class="pf-field">
+                                <label asp-for="Input.Age">@Localizer["lbl_age"]</label>
+                                <input asp-for="Input.Age" type="number" id="Input_Age" required>
+                                <span asp-validation-for="Input.Age" class="field-error"></span>
+                            </div>
+                            <div class="pf-field">
+                                <label asp-for="Input.Phone">@Localizer["lbl_phone"]</label>
+                                <input asp-for="Input.Phone" type="tel" id="Input_Phone" required>
+                                <span asp-validation-for="Input.Phone" class="field-error"></span>
+                            </div>
+                            <div class="pf-field">
+                                <label asp-for="Input.AcademicTitle">@Localizer["lbl_title"]</label>
+                                <input asp-for="Input.AcademicTitle" type="text" id="Input_AcademicTitle" required>
+                                <span asp-validation-for="Input.AcademicTitle" class="field-error"></span>
+                            </div>
+                            <div class="pf-field">
+                                <label asp-for="Input.Workplace">@Localizer["lbl_org"]</label>
+                                <input asp-for="Input.Workplace" type="text" id="Input_Workplace" required>
+                                <span asp-validation-for="Input.Workplace" class="field-error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* ══ 02 Участие ══ *@
+                    <div class="pf-section">
+                        <div class="pf-section-head">
+                            <b>02</b>
+                            <span>@Localizer["sec_participation"]</span>
+                        </div>
+
+                        <div class="pf-field">
+                            <span class="pf-label" id="pf-part-label">@Localizer["lbl_part"]</span>
+
+                            @* Формата на участие е плочки, не dropdown — както в
+                               прототипа. Радио-тата пазят name="Input.PartForm", така
+                               че binding-ът е непроменен. *@
+                            @if (lockPartForm)
+                            {
+                                <div class="pf-choice is-locked" role="group" aria-labelledby="pf-part-label">
+                                    @foreach (var opt in partOptions)
+                                    {
+                                        var isSel = Model.Input.PartForm == opt.Key;
+                                        <span class="pf-choice-item @(isSel ? "is-selected" : "is-off")">@opt.Value</span>
+                                    }
+                                </div>
+                                <input type="hidden" name="Input.PartForm" value="@Model.Input.PartForm" />
+
+                                string lockedClass = Model.IsPaymentGroup && isConfirmed || Model.VerificationStatus == "Approved"
+                                                     ? "locked-success" : "locked-warning";
+
+                                <div class="locked-field-note @lockedClass">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    </svg>
+                                    <span>
+                                        @if (Model.IsPaymentGroup && isConfirmed)
+                                        {
+                                            @Localizer["lbl_partform_locked_paid"]
+                                        }
+                                        else if (Model.VerificationStatus == "Approved")
+                                        {
+                                            @Localizer["lbl_partform_locked_approved"]
+                                        }
+                                        else
+                                        {
+                                            @Localizer["lbl_partform_locked_pending"]
+                                        }
+                                    </span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="pf-choice" role="radiogroup" aria-labelledby="pf-part-label">
+                                    @foreach (var opt in partOptions)
+                                    {
+                                        <label class="pf-choice-item">
+                                            <input type="radio" name="Input.PartForm" value="@opt.Key"
+                                                   checked="@(Model.Input.PartForm == opt.Key)" required>
+                                            <span>@opt.Value</span>
+                                        </label>
+                                    }
+                                </div>
+
+                                @* Бележка при смяна на формата — вместо нативния confirm
+                                   диалог. Текстът зависи от избраното:
+                                     • платена форма (лектор / онлайн) → бележка за таксата
+                                     • верификационна (студент / журналист) → бележка, че
+                                       ще трябва документ за потвърждение
+                                   Скриптът долу превключва текста и видимостта. *@
+                                <p class="pf-inline-note" id="partform-notice" hidden>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                                    <span id="partform-notice-text"
+                                          data-paid="@Localizer["warn_type_change_to_paid"]"
+                                          data-student="@Localizer["status_student_doc_msg"]"
+                                          data-journalist="@Localizer["status_journalist_doc_msg"]"></span>
+                                </p>
+                            }
+                            <span asp-validation-for="Input.PartForm" class="field-error"></span>
+                        </div>
+
+                        @* Ограден ред, не разпиляно съгласие — това е свойство на участието. *@
+                        <label class="pf-toggle-row">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                                <path d="M2 12h20"></path>
+                            </svg>
+                            <span>@Localizer["lbl_foreigner"]</span>
+                            <input asp-for="Input.IsForeigner" type="checkbox">
+                        </label>
+
+                        <label class="pf-consent">
+                            <input asp-for="Input.WantsMarketing" type="checkbox">
+                            <span>@Localizer["lbl_marketing"]</span>
+                        </label>
+                    </div>
+
+                    @* ══ 03 Доклад ══ *@
+                    <div class="pf-section">
+                        <div class="pf-section-head">
+                            <b>03</b>
+                            <span>@Localizer["sec_paper"]</span>
+                        </div>
+
+                        @if (hasFile)
+                        {
+                            <div class="pf-file">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+                                    <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+                                </svg>
+                                <span class="pf-file-name">
+                                    <b>@Localizer["lbl_current_file"]</b>
+                                    <span>@Model.CurrentFileName</span>
+                                </span>
+                                <a href="?handler=Download" class="pf-file-action">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"></path><path d="m7 10 5 5 5-5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>
+                                    <span>@Localizer["lbl_download"]</span>
+                                </a>
+                            </div>
+                        }
+
+                        <div>
+                            <div class="pf-drop-head">
+                                <span class="pf-label">@Localizer["lbl_update_file"]</span>
+                                <span>@Localizer["file_hint"]</span>
+                            </div>
+
+                            @* Label-ът обгръща истинския input — id и class не са
+                               променяни, за да не се чупи нищо, което ги търси. *@
+                            <label class="pf-drop" id="pf-drop">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 13v8"></path>
+                                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+                                    <path d="m8 17 4-4 4 4"></path>
+                                </svg>
+                                <span class="pf-drop-label" id="pf-drop-label"
+                                      data-idle="@Localizer["file_drop_idle"]"
+                                      data-active="@Localizer["file_drop_active"]">@Localizer["file_drop_idle"]</span>
+                                <span class="pf-file-action">@Localizer["btn_choose_file"]</span>
+                                <input asp-for="Input.UploadedFile" type="file" accept=".pdf,.doc,.docx"
+                                       id="Input_UploadedFile" class="file-input">
+                            </label>
+
+                            @* Премахване на избрания файл — извън <label>, за да не
+                               отваря диалога при клик. Показва се само при избран файл. *@
+                            <button type="button" class="pf-drop-clear" id="pf-drop-clear" hidden>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                                <span>@Localizer["upload_remove"]</span>
+                            </button>
+
+                            <span class="field-error" id="pf-file-error" hidden></span>
+                            <span asp-validation-for="Input.UploadedFile" class="field-error"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="pf-submit">
+                        <span>@Localizer["btn_save"]</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                    </button>
+                </form>
+
+            </div>
+        </div>
+
+        @* ══ Дясна колона ═══════════════════════════════════════════
+           На телефон обвивката става display: contents и двата блока
+           стават самостоятелни редове: горният преди формата, долният
+           след нея. Затова тук няма дублиран маркъп. *@
+        <div class="pf-aside-col">
+
+            <div class="pf-aside-top">
+                <div class="pf-stack">
+
+                    <div class="pf-brand pf-brand--mobile">
+                        <img src="~/images/logos/mainLogo.png" alt="">
+                        <span class="pf-brand-rule"></span>
+                        <span class="pf-eyebrow">@Localizer["prof_subtitle"]</span>
+                    </div>
+
+                    <div class="pf-identity">
+                        <span class="pf-avatar" aria-hidden="true">@initials</span>
+                        <span class="pf-identity-body">
+                            <span class="pf-identity-name">@fullName</span>
+                            <span class="pf-identity-mail">@userEmail</span>
+                        </span>
+                    </div>
+
+                    @* ══════════════════════════════════════════════════════════
+                       СТАТУС ПАНЕЛ — пълна матрица на всички случаи
+                    ══════════════════════════════════════════════════════════ *@
+                    @{
+                        @* ── СЛУЧАЙ 1: Платена група (Lector=1 / Online=3) ── *@
+                        if (Model.IsPaymentGroup)
+                        {
+                            if (isConfirmed)
+                            {
+                                @* ✅ Платено и потвърдено *@
+                                <div class="status-panel status-confirmed">
+                                    <div class="status-panel-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <span>@Localizer["status_confirmed_label"]</span>
+                                    </div>
+                                    <div class="status-panel-body">
+                                        <div class="status-panel-msg">@Localizer["status_confirmed_msg"]</div>
+                                    </div>
+                                </div>
+                            }
+                            else if (Model.IbanSubmitted)
+                            {
+                                @* ⏳ Заявен банков превод — чака потвърждение *@
+                                <div class="status-panel status-pending status-iban">
+                                    <div class="status-panel-icon">
+                                        <span class="status-panel-dot" aria-hidden="true"></span>
+                                        <span>@Localizer["status_iban_pending_label"]</span>
+                                    </div>
+                                    <div class="status-panel-body">
+                                        <div class="status-panel-msg">@Localizer["status_iban_pending_msg"]</div>
+                                        @if (!string.IsNullOrEmpty(Model.ReferenceNumber))
+                                        {
+                                            <div class="status-ref">
+                                                @Localizer["status_ref_label"]: <strong>@Model.ReferenceNumber</strong>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                @* ⚠️ Не е платено *@
+                                <div class="status-panel status-warning">
+                                    <div class="status-panel-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                        <span>@Localizer["status_unpaid_label"]</span>
+                                    </div>
+                                    <div class="status-panel-body">
+                                        <div class="status-panel-msg">@Localizer["status_unpaid_msg"]</div>
+                                        @if (!string.IsNullOrEmpty(Model.ReferenceNumber))
+                                        {
+                                            <div class="status-ref">
+                                                @Localizer["status_ref_label"]: <strong>@Model.ReferenceNumber</strong>
+                                            </div>
+                                        }
+                                        <div class="status-panel-actions">
+                                            <a asp-page="/Payment" asp-route-slug="@Model.PaymentSlug" class="status-action-btn">
+                                                <span>@Localizer["status_action_pay"]</span>
+                                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                                            </a>
+                                            <a asp-page="/Attend" class="status-action-btn status-action-secondary">@Localizer["status_action_see_options"]</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                        @* ── СЛУЧАЙ 2: Верификационна група (Student=2 / Journalist=4) ── *@
+                        else if (Model.IsVerifGroup)
+                        {
+                            if (!Model.HasVerifDocument || Model.VerificationStatus == "None")
+                            {
+                                @* ⚠️ Няма качени документи (или са нулирани от админ) *@
+                                <div class="status-panel status-warning">
+                                    <div class="status-panel-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                        <span>@Localizer["status_verif_needed_label"]</span>
+                                    </div>
+                                    <div class="status-panel-body">
+                                        <div class="status-panel-msg">
+                                            @(Model.Input.PartForm == "2"
+                                                ? Localizer["status_student_doc_msg"].Value
+                                                : Localizer["status_journalist_doc_msg"].Value)
+                                        </div>
+                                        <div class="status-panel-actions">
+                                            <a href="/SubmitDocuments" class="status-action-btn">
+                                                <span>@Localizer["status_action_submit_doc"]</span>
+                                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                @* Документи са качени — показваме статуса на проверката *@
+                                string verifClass = Model.VerificationStatus switch
+                                {
+                                    "Approved" => "status-confirmed",
+                                    "Rejected" => "status-rejected",
+                                    _          => "status-pending"
+                                };
+
+                                <div class="status-panel @verifClass">
+                                    <div class="status-panel-icon">
+                                        @if (Model.VerificationStatus == "Approved")
+                                        {
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                                            <span>@Localizer["status_confirmed_label"]</span>
+                                        }
+                                        else if (Model.VerificationStatus == "Rejected")
+                                        {
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                            <span>@Localizer["status_verif_rejected_label"]</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-panel-dot" aria-hidden="true"></span>
+                                            <span>@Localizer["status_verif_pending_label"]</span>
+                                        }
+                                    </div>
+                                    <div class="status-panel-body">
+
+                                        @if (Model.VerificationStatus == "Pending")
+                                        {
+                                            @* ⏳ Под проверка *@
+                                            <div class="status-panel-msg">@Localizer["status_verif_pending_msg"]</div>
+                                        }
+                                        else if (Model.VerificationStatus == "Approved")
+                                        {
+                                            @* ✅ Одобрен *@
+                                            <div class="status-panel-msg">@Localizer["status_verif_approved_msg"]</div>
+                                        }
+                                        else if (Model.VerificationStatus == "Rejected")
+                                        {
+                                            @* ❌ Отхвърлен *@
+                                            <div class="status-panel-msg">@Localizer["status_verif_rejected_msg"]</div>
+
+                                            @if (!string.IsNullOrWhiteSpace(Model.RejectionReason))
+                                            {
+                                                <details class="status-reason">
+                                                    <summary>
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+                                                        @Localizer["status_rejection_reason_label"]
+                                                    </summary>
+                                                    <p>@Model.RejectionReason</p>
+                                                </details>
+                                            }
+
+                                            <div class="status-panel-actions">
+                                                <a href="/SubmitDocuments" class="status-action-btn">
+                                                    <span>@Localizer["status_action_resubmit"]</span>
+                                                    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                                                </a>
+                                            </div>
+                                        }
+
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+
+                </div>
+            </div>
+
+            <div class="pf-aside-bottom">
+                <div class="pf-stack">
+
+                    <div class="pf-facts">
+                        <div>
+                            <b>@Localizer["fact_part"]</b>
+                            <span>@partFormName</span>
+                        </div>
+                        <div>
+                            <b>@Localizer["fact_status"]</b>
+                            <span class="@factStatusTone">@factStatus</span>
+                        </div>
+                        <div>
+                            <b>@Localizer["fact_ref"]</b>
+                            @if (!string.IsNullOrEmpty(Model.ReferenceNumber))
+                            {
+                                <span class="is-ref">@Model.ReferenceNumber</span>
+                            }
+                            else
+                            {
+                                <span class="is-empty">—</span>
+                            }
+                        </div>
+                        <div>
+                            <b>@Localizer["fact_paper"]</b>
+                            @if (hasFile)
+                            {
+                                <span>@Model.CurrentFileName</span>
+                            }
+                            else
+                            {
+                                <span class="is-empty">@Localizer["fact_no_paper"]</span>
+                            }
+                        </div>
+                    </div>
+
+                    @* Online бележка — линкът пристига на имейла *@
+                    @if (isOnline)
+                    {
+                        <div class="status-panel status-info">
+                            <div class="status-panel-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                            </div>
+                            <div class="status-panel-body">
+                                <div class="status-panel-msg">@Localizer["status_online_link_note"]</div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="pf-logout">
+                        <form method="post" asp-page="/Logout">
+                            <button type="submit">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path></svg>
+                                @Localizer["btn_logout"]
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</main>
+
+@section Scripts {
+    @* Съобщенията за валидация идват от resx, за да следват езика на страницата.
+       Сериализират се през JsonSerializer — ръчното вграждане в единични кавички
+       се чупеше от апостроф в текста (напр. "doesn't"), скриптът гърмеше и
+       validation.js падаше на вградените си резервни текстове. *@
+    @{
+        var vMessages = new Dictionary<string, string>
+        {
+            ["first_name_required"] = Localizer["v_first_name_required"].Value,
+            ["first_name_short"]    = Localizer["v_first_name_short"].Value,
+            ["first_name_latin"]    = Localizer["v_first_name_latin"].Value,
+            ["last_name_required"]  = Localizer["v_last_name_required"].Value,
+            ["last_name_short"]     = Localizer["v_last_name_short"].Value,
+            ["last_name_latin"]     = Localizer["v_last_name_latin"].Value,
+            ["age_required"]        = Localizer["v_age_required"].Value,
+            ["age_digits"]          = Localizer["v_age_digits"].Value,
+            ["age_range"]           = Localizer["v_age_range"].Value,
+            ["title_required"]      = Localizer["v_title_required"].Value,
+            ["email_required"]      = Localizer["v_email_required"].Value,
+            ["email_invalid"]       = Localizer["v_email_invalid"].Value,
+            ["email_taken"]         = Localizer["v_email_taken"].Value,
+            ["phone_required"]      = Localizer["v_phone_required"].Value,
+            ["phone_invalid"]       = Localizer["v_phone_invalid"].Value,
+            ["workplace_required"]  = Localizer["v_workplace_required"].Value,
+            ["partform_required"]   = Localizer["v_partform_required"].Value,
+            ["gdpr_required"]       = Localizer["v_gdpr_required"].Value,
+            ["file_type"]           = Localizer["Error_InvalidFileType"].Value,
+            ["file_too_large"]      = Localizer["Error_FileTooLarge"].Value
+        };
+    }
+    <script>
+        window.ValidationMessages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(vMessages));
+    </script>
+
+    <script>
+        // Бележка при смяна към платен тип участие.
+        // (validation.js вече обслужва и #profileForm — тук е само тази
+        // специфична логика, която не е обща валидация.)
+        (function () {
+            var tiles = document.querySelectorAll('input[type="radio"][name="Input.PartForm"]');
+            if (!tiles.length) return;
+
+            var original = '@Model.Input.PartForm';
+            var paid   = { '1': true, '3': true };   // лектор и онлайн се плащат
+            var verif  = { '2': true, '4': true };   // студент и журналист качват документ
+            var notice = document.getElementById('partform-notice');
+            var noticeText = document.getElementById('partform-notice-text');
+
+            // ПРОМЯНА: тук стоеше `window.confirm(...)` — нативен браузърен
+            // диалог, който трябваше да се потвърди при всяко превключване.
+            // Той спираше работата, изглеждаше като предупреждение за грешка
+            // и не пасваше на дизайна. Смяната и без това не е необратима:
+            // нищо не се записва, докато потребителят не натисне "Запази".
+            // Затова сега само показваме спокойна бележка под плочките.
+            function refreshNotice() {
+                if (!notice || !noticeText) return;
+
+                var picked = document.querySelector('input[name="Input.PartForm"]:checked');
+                if (!picked || picked.value === original) { notice.hidden = true; return; }
+
+                var v = picked.value;
+                if (paid[v]) {
+                    noticeText.textContent = noticeText.dataset.paid;
+                    notice.classList.remove('is-info');
+                    notice.hidden = false;
+                } else if (verif[v]) {
+                    // БЪГ ФИКС: досега бележка излизаше САМО за платените форми,
+                    // тоест студент и журналист не научаваха, че ще трябва да
+                    // качат документ за потвърждение.
+                    noticeText.textContent = v === '4'
+                        ? noticeText.dataset.journalist
+                        : noticeText.dataset.student;
+                    notice.classList.add('is-info');
+                    notice.hidden = false;
+                } else {
+                    notice.hidden = true;
+                }
+            }
+
+            tiles.forEach(function (radio) {
+                radio.addEventListener('change', refreshNotice);
+            });
+
+            refreshNotice();
+        })();
+    </script>
+
+    <script>
+        // Зоната за доклад: drag & drop и име на избрания файл.
+        // Работи само върху визуалното — самият input е непроменен.
+        (function () {
+            var drop  = document.getElementById('pf-drop');
+            var input = document.getElementById('Input_UploadedFile');
+            var label = document.getElementById('pf-drop-label');
+            if (!drop || !input || !label) return;
+
+            var idle = label.dataset.idle || label.textContent;
+
+            // Същите правила както в регистрацията: 10 MB, само PDF/DOC/DOCX.
+            var MAX_FILE_BYTES = 10 * 1024 * 1024;
+            var ALLOWED_EXT    = ['pdf', 'doc', 'docx'];
+            var clearBtn       = document.getElementById('pf-drop-clear');
+            var errEl          = document.getElementById('pf-file-error');
+            var FILE_MSG = {
+                type:     '@Html.Raw(Localizer["Error_InvalidFileType"].Value)',
+                tooLarge: '@Html.Raw(Localizer["Error_FileTooLarge"].Value)'
+            };
+
+            function showError(msg) {
+                if (!errEl) return;
+                if (msg) { errEl.textContent = msg; errEl.hidden = false; }
+                else     { errEl.textContent = '';  errEl.hidden = true;  }
+            }
+
+            function show(name) {
+                label.textContent = name || idle;
+                drop.classList.toggle('has-file', !!name);
+                if (clearBtn) clearBtn.hidden = !name;
+            }
+
+            function clearFile() {
+                input.value = '';
+                show('');
+                showError('');
+            }
+
+            function checkFile() {
+                if (!input.files || !input.files.length) { show(''); showError(''); return true; }
+
+                var f   = input.files[0];
+                var ext = (f.name.split('.').pop() || '').toLowerCase();
+
+                if (ALLOWED_EXT.indexOf(ext) === -1) {
+                    clearFile();
+                    showError(FILE_MSG.type);
+                    return false;
+                }
+                if (f.size > MAX_FILE_BYTES) {
+                    var mb = (f.size / 1024 / 1024).toFixed(1);
+                    clearFile();
+                    showError(FILE_MSG.tooLarge.replace('{0}', mb));
+                    return false;
+                }
+
+                show(f.name);
+                showError('');
+                return true;
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    clearFile();
+                });
+            }
+
+            input.addEventListener('change', checkFile);
+
+            ['dragenter', 'dragover'].forEach(function (t) {
+                drop.addEventListener(t, function (e) {
+                    e.preventDefault();
+                    drop.classList.add('is-dragging');
+                    label.textContent = label.dataset.active || idle;
+                });
+            });
+
+            ['dragleave', 'dragend'].forEach(function (t) {
+                drop.addEventListener(t, function () {
+                    drop.classList.remove('is-dragging');
+                    show(input.files && input.files[0] ? input.files[0].name : '');
+                });
+            });
+
+            drop.addEventListener('drop', function (e) {
+                e.preventDefault();
+                drop.classList.remove('is-dragging');
+                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                    input.files = e.dataTransfer.files;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+
+            checkFile();
+        })();
+    </script>
+    <script src="~/js/validation.js" asp-append-version="true"></script>
+}

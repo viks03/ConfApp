@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="verify_title" xml:space="preserve"><value>Верификация</value></data>
+  <data name="verify_subtitle" xml:space="preserve"><value>Добре дошли в бъдещето</value></data>
+  <data name="verify_info_sent" xml:space="preserve"><value>Изпратихме 6-цифрен код за активация на:</value></data>
+  <data name="verify_info_valid" xml:space="preserve"><value>Валиден още</value></data>
+  <data name="verify_spam_note" xml:space="preserve"><value>Моля, проверете и папката "Спам".</value></data>
+  
+  <data name="verify_paste_hint" xml:space="preserve"><value>Може да поставите целия код с Ctrl+V в което и да е поле.</value></data>
+  <data name="label_code" xml:space="preserve"><value>Въведете кода тук:</value></data>
+  <data name="btn_verify" xml:space="preserve"><value>Потвърди</value></data>
+  <data name="text_have_account" xml:space="preserve"><value>Имате акаунт?</value></data>
+  
+  <data name="text_no_account" xml:space="preserve"><value>Нямате акаунт?</value></data>
+  
+  <data name="link_register" xml:space="preserve"><value>Регистрирайте се</value></data>
+  <data name="link_login" xml:space="preserve"><value>Вход</value></data>
+  <data name="verify_resend_btn" xml:space="preserve"><value>Изпрати нов код</value></data>
+  <data name="verify_resend_wait" xml:space="preserve"><value>Можете да изискате нов код след {0} секунди</value></data>
+  <data name="Error_AccountLocked" xml:space="preserve"><value>Акаунтът е временно блокиран поради твърде много грешни опити. Моля, опитайте след 15 минути.</value></data>
+  <data name="Error_TooManyEmails" xml:space="preserve"><value>Надвишен лимит. Моля, изчакайте преди да изискате нов код отново.</value></data>
+  <data name="Success_CodeResent" xml:space="preserve"><value>Успешно изпратихме нов код на вашия имейл!</value></data>
+
+  
+  <data name="Error_InvalidCodeWithAttempts" xml:space="preserve"><value>Невалиден код за потвърждение. Остават Ви {0} опит(а), преди акаунтът да бъде временно заключен.</value></data>
+  <data name="Error_CodeExpired" xml:space="preserve"><value>Кодът е изтекъл. Моля, регистрирайте се отново.</value></data>
+  <data name="Error_CodeRequired" xml:space="preserve"><value>Моля, въведете пълния 6-цифрен код.</value></data>
+  <data name="verify_paste_hint_prefix" xml:space="preserve"><value>Копирайте кода от имейла и натиснете</value></data>
+  <data name="verify_paste_hint_suffix" xml:space="preserve"><value>полетата се попълват сами.</value></data>
+</root>

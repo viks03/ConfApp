@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Pay_HeaderLabel" xml:space="preserve"><value>ФИНАЛИЗИРАНЕ НА РЕГИСТРАЦИЯТА</value></data>
+  <data name="Pay_Summary_RefLabel" xml:space="preserve"><value>Референтен номер</value></data>
+  <data name="Pay_Closed_Title" xml:space="preserve"><value>Плащанията са временно спрени</value></data>
+  <data name="Pay_Closed_Sub" xml:space="preserve"><value>Временно спряхме приемането на плащания, докато оправим нещо от наша страна. С регистрацията ви всичко е наред.</value></data>
+  <data name="Pay_Closed_Point_Saved" xml:space="preserve"><value>Регистрацията ви е запазена. Мястото ви е запазено.</value></data>
+  <data name="Pay_Closed_Point_NoAction" xml:space="preserve"><value>В момента няма нужда да правите нищо.</value></data>
+  <data name="Pay_Closed_Point_Email" xml:space="preserve"><value>Ще ви пишем по имейл веднага щом плащанията заработят отново.</value></data>
+  <data name="Pay_Closed_BackToProfile" xml:space="preserve"><value>Обратно към моя профил</value></data>
+</root>

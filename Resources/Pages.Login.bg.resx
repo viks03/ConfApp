@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="login_title" xml:space="preserve"><value>Вход</value></data>
+  <data name="login_subtitle" xml:space="preserve"><value>Добре дошли отново</value></data>
+  <data name="label_email" xml:space="preserve"><value>Имейл адрес</value></data>
+  <data name="label_password" xml:space="preserve"><value>Парола за достъп</value></data>
+  <data name="btn_next" xml:space="preserve"><value>Продължи</value></data>
+  <data name="btn_login" xml:space="preserve"><value>Влез в профила</value></data>
+  <data name="text_no_account" xml:space="preserve"><value>Нямате акаунт?</value></data>
+  <data name="link_register" xml:space="preserve"><value>Регистрирайте се тук</value></data>
+  <data name="reveal_show" xml:space="preserve"><value>Покажи</value></data>
+  <data name="reveal_hide" xml:space="preserve"><value>Скрий</value></data>
+  
+  <data name="Error_EmailRequired" xml:space="preserve"><value>Моля, въведете имейл адрес.</value></data>
+  <data name="Error_UserNotFound" xml:space="preserve"><value>Не е намерен акаунт с този имейл адрес.</value></data>
+  <data name="Error_PasswordRequired" xml:space="preserve"><value>Моля, въведете своята парола.</value></data>
+  <data name="Error_InvalidPassword" xml:space="preserve"><value>Грешна парола. Моля, опитайте отново.</value></data>
+  <data name="Error_AccountLocked" xml:space="preserve"><value>Акаунтът е временно заключен поради твърде много неуспешни опити. Моля, опитайте по-късно.</value></data>
+  <data name="Error_TooManyEmails" xml:space="preserve"><value>Твърде много опити. Моля, изчакайте малко преди да поискате нов код.</value></data>
+
+  <data name="Error_AdminLoginDetected" xml:space="preserve"><value>Засечен е опит за влизане като администратор. Оставащи опити: {0}</value></data>
+  <data name="Error_LoginRestricted" xml:space="preserve"><value>Твърде много неуспешни опита. Изчакайте малко и опитайте пак.</value></data>
+  <data name="Error_IPBlocked" xml:space="preserve"><value>Вашето IP е временно блокирано.</value></data>
+</root>

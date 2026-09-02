@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Home_PageTitle" xml:space="preserve"><value>Home</value></data>
+  <data name="Home_HeroSubtitle" xml:space="preserve"><value>Sofia, Bulgaria - 2026</value></data>
+  <data name="Home_HeroTitle" xml:space="preserve"><value>Blockchain Education 2026</value></data>
+  <data name="Home_HeroConferenceName" xml:space="preserve"><value>International Conference on &lt;strong&gt;Cryptoeconomics&lt;/strong&gt;, &lt;strong&gt;Blockchain Technologies&lt;/strong&gt; and &lt;strong&gt;Financial Innovations&lt;/strong&gt;</value></data>
+  <data name="Global_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Home_HeroDateValue" xml:space="preserve"><value>29-31 October 2026</value></data>
+  <data name="Global_Location" xml:space="preserve"><value>Location</value></data>
+  <data name="Home_HeroLocValue" xml:space="preserve"><value>UNWE, Sofia, BG</value></data>
+  <data name="Global_Duration" xml:space="preserve"><value>Duration</value></data>
+  <data name="Home_HeroDurationValue" xml:space="preserve"><value>3 Days</value></data>
+  <data name="Global_Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Home_HeroLangValue" xml:space="preserve"><value>English</value></data>
+  <data name="Home_AboutLabel" xml:space="preserve"><value>ABOUT THE CONFERENCE</value></data>
+  <data name="Home_GapTitle" xml:space="preserve"><value>A Structural Gap at the Heart of European Academia</value></data>
+  <data name="Home_GapDesc1" xml:space="preserve"><value>The rapid evolution of blockchain technologies and the cryptoeconomy has outpaced academic frameworks, leaving a critical gap in European higher education.</value></data>
+  <data name="Home_GapDesc2" xml:space="preserve"><value>This conference serves as a platform for systematic dialogue between academia, regulators, and industry to bridge this divide.</value></data>
+  <data name="Global_BtnLearnMore" xml:space="preserve"><value>LEARN MORE</value></data>
+  <data name="Global_BtnViewAgenda" xml:space="preserve"><value>VIEW AGENDA</value></data>
+  <data name="Home_Quote" xml:space="preserve"><value>"We are not convening to discuss blockchain. We are convening to build the academic architecture that governs its transfer into a tangible, structured, and recognized new European educational field."</value></data>
+  <data name="Home_DelivLabel" xml:space="preserve"><value>KEY DELIVERABLES</value></data>
+  <data name="Home_DelivTitle" xml:space="preserve"><value>What This Conference Will Produce</value></data>
+  <data name="Home_Deliv1_Title" xml:space="preserve"><value>THE SOFIA DECLARATION</value></data>
+  <data name="Home_Deliv1_Desc" xml:space="preserve"><value>Shared academic standards for cryptoeconomics education, formally adopted across European universities.</value></data>
+  <data name="Home_Deliv2_Title" xml:space="preserve"><value>ACADEMIC FRAMEWORK</value></data>
+  <data name="Home_Deliv2_Desc" xml:space="preserve"><value>A permanent international consortium enabling ongoing research exchange and faculty collaboration.</value></data>
+  <data name="Home_Deliv3_Title" xml:space="preserve"><value>CURRICULUM FRAMEWORKS</value></data>
+  <data name="Home_Deliv3_Desc" xml:space="preserve"><value>Implementation-ready models for new university programs, blockchain labs, and regulatory compliance frameworks.</value></data>
+  <data name="Home_Deliv4_Title" xml:space="preserve"><value>INDUSTRY PARTNERSHIP</value></data>
+  <data name="Home_Deliv4_Desc" xml:space="preserve"><value>Foundations for funded collaboration between higher education and leading Web3 industry actors in DeFi and asset tokenization.</value></data>
+  <data name="Home_DomainsLabel" xml:space="preserve"><value>CORE AREAS</value></data>
+  <data name="Home_DomainsTitle" xml:space="preserve"><value>Four Domains of Inquiry</value></data>
+  <data name="Home_Dom1_Title" xml:space="preserve"><value>Education &amp; Academic Standards</value></data>
+  <data name="Home_Dom1_Desc" xml:space="preserve"><value>Curriculum design, quality benchmarks, cross-institutional alignment, and the Sofia Declaration framework.</value></data>
+  <data name="Home_Dom2_Title" xml:space="preserve"><value>Regulatory Frameworks (MiCA)</value></data>
+  <data name="Home_Dom2_Desc" xml:space="preserve"><value>European regulatory frameworks and their direct impact on academic programs and infrastructure.</value></data>
+  <data name="Home_Dom3_Title" xml:space="preserve"><value>Web3 Technologies &amp; Tokenomics</value></data>
+  <data name="Home_Dom3_Desc" xml:space="preserve"><value>DeFi, RWA tokenization, blockchain-AI convergence, and emerging paradigms in digital finance.</value></data>
+  <data name="Home_Dom4_Title" xml:space="preserve"><value>Research &amp; Industry Synergy</value></data>
+  <data name="Home_Dom4_Desc" xml:space="preserve"><value>Academic research translation, joint projects, and innovation labs.</value></data>
+  <data name="Speakers_Subtitle" xml:space="preserve"><value>SPEAKERS</value></data>
+  <data name="Speakers_Title" xml:space="preserve"><value>International Faculty</value></data>
+  <data name="Home_ViewAllLecturers" xml:space="preserve"><value>View All Lecturers &#8594;</value></data>
+  <data name="Home_TimelineLabel" xml:space="preserve"><value>KEY DATES</value></data>
+  <data name="Home_TimelineTitle" xml:space="preserve"><value>Conference Timeline</value></data>
+  <data name="Home_Time1_Label" xml:space="preserve"><value>EARLY BIRD</value></data>
+  <data name="Home_Time1_Date" xml:space="preserve"><value>Aug 31, 2026</value></data>
+  <data name="Home_Time1_Desc" xml:space="preserve"><value>Discounted tickets end</value></data>
+  <data name="Home_Time4_Label" xml:space="preserve"><value>PAYMENTS</value></data>
+  <data name="Home_Time4_Date" xml:space="preserve"><value>Oct 20, 2026</value></data>
+  <data name="Home_Time4_Desc" xml:space="preserve"><value>Payment deadline </value></data>
+  <data name="Home_Time5_Label" xml:space="preserve"><value>CONFERENCE</value></data>
+  <data name="Home_Time5_Date" xml:space="preserve"><value>Oct 29–31, 2026</value></data>
+  <data name="Home_Time5_Desc" xml:space="preserve"><value>UNWE Campus, Sofia, Bulgaria</value></data>
+  <data name="Home_AgendaLabel" xml:space="preserve"><value>AGENDA AT A GLANCE</value></data>
+  <data name="Home_AgendaTitle" xml:space="preserve"><value>Three Days of Focused Inquiry</value></data>
+  <data name="Day01Title" xml:space="preserve"><value>EDUCATION &amp; REGULATION</value></data>
+  <data name="Home_Day01List_Html" xml:space="preserve"><value>&lt;ul&gt;&lt;li&gt;Opening Plenary Session&lt;/li&gt;&lt;li&gt;Global Trends in Blockchain Education&lt;/li&gt;&lt;li&gt;MiCA Regulatory Framework Analysis&lt;/li&gt;&lt;li&gt;Curriculum Models &amp;amp; Competencies&lt;/li&gt;&lt;li&gt;Evening Networking Reception&lt;/li&gt;&lt;/ul&gt;</value></data>
+  <data name="Day02Title" xml:space="preserve"><value>TECHNOLOGY &amp; RESEARCH</value></data>
+  <data name="Home_Day02List_Html" xml:space="preserve"><value>&lt;ul&gt;&lt;li&gt;Web3 Research Frontiers&lt;/li&gt;&lt;li&gt;Peer-reviewed Paper Sessions&lt;/li&gt;&lt;li&gt;Tokenization of Real Assets (RWA)&lt;/li&gt;&lt;li&gt;DeFi &amp;amp; Sustainable Economic Models&lt;/li&gt;&lt;li&gt;Industry–Academia Matchmaking&lt;/li&gt;&lt;/ul&gt;</value></data>
+  <data name="Day03Title" xml:space="preserve"><value>STANDARDS &amp; DECLARATION</value></data>
+  <data name="Home_Day03List_Html" xml:space="preserve"><value>&lt;ul&gt;&lt;li&gt;Curriculum Design Workshops&lt;/li&gt;&lt;li&gt;Blockchain Labs &amp;amp; Infrastructure&lt;/li&gt;&lt;li&gt;International Academic Network&lt;/li&gt;&lt;li&gt;Sofia Declaration Signing&lt;/li&gt;&lt;li&gt;Official Closing Ceremony&lt;/li&gt;&lt;/ul&gt;</value></data>
+  <data name="Global_BtnFullSchedule" xml:space="preserve"><value>VIEW FULL SCHEDULE</value></data>
+  <data name="Home_CtaTitle" xml:space="preserve"><value>The development of blockchain technologies and cryptoeconomics.</value></data>
+  <data name="Home_CtaPara1" xml:space="preserve"><value>The development of blockchain technologies and cryptoeconomics relies on a continuous dialogue between academia, regulators, and industry. The creation of a recognized educational program with varying depth and refined academic standards.</value></data>
+  <data name="Home_CtaPara2" xml:space="preserve"><value>The International Conference on Academic Standards in Cryptoeconomics and Blockchain creates a platform for systematic dialogue between universities, research institutes, and practitioners. Organized by UNWE, the Institute of Cryptoeconomics, Blockchain and Innovations (ICBI), and the National Association for Blockchain and Innovations (NABI). Together, we bring academia, regulators, and industry into a shared space focused on quality education, research, and innovation.</value></data>
+  <data name="Home_StudyTitle" xml:space="preserve"><value>Study Cryptoeconomics &amp; Blockchain</value></data>
+  <data name="Home_StudyDesc" xml:space="preserve"><value>Select your educational journey within the Digital Finance landscape.</value></data>
+  <data name="Home_BtnBachelor" xml:space="preserve"><value>BACHELOR PROGRAM</value></data>
+  <data name="Home_BtnMaster" xml:space="preserve"><value>MASTER PROGRAM</value></data>
+</root>

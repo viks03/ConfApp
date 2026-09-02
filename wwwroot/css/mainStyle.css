@@ -1,0 +1,1940 @@
+/* Navigation Bar & Body */
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-ExtraLight.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Нативен, site-wide плавен преход между цели страници (View Transitions
+   API за MPA навигация) — браузърът прави cross-fade между старата и
+   новата страница вместо твърд "мигащ" reload. В момента поддържано в
+   Chromium (Chrome/Edge); в другите браузъри просто няма ефект — обичайна
+   навигация, нищо не се чупи. Най-забележимо на Verification -> Done,
+   но важи за цялото приложение безплатно. */
+@view-transition {
+  navigation: auto;
+}
+:root {
+  --bg: #050505;
+  --panel: #0b0b0b;
+  --panel-soft: rgba(255, 255, 255, 0.04);
+  --text: #f4f2ec;
+  --muted: #a7a39b;
+  --line: rgba(255, 255, 255, 0.08);
+  --accent: #FF3636;
+  --accent-soft: #ff363692;
+  --max-width: 1180px;
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  --mobile-nav-strip-width: clamp(56px, 15vw, 84px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+::-webkit-scrollbar{
+  display: none;
+}
+
+body {
+  margin: 0;
+  /* min-height + flex column тук е "sticky footer" фиксът: на страници с
+     малко съдържание (напр. Login) .site-main се разтяга (flex: 1 0 auto)
+     и бута footer-а до долния край на viewport-а вместо той да "залепва"
+     веднага след кратичкото съдържание. .topbar (sticky) и mobile nav
+     overlay (fixed) не се влияят от това. */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at top left, rgba(255, 70, 59, 0.12), transparent 24%),
+    linear-gradient(180deg, #080808 0%, #030303 100%);
+  color: var(--text);
+  font-family: "Oswald", Arial, sans-serif;
+  font-weight: 300;
+}
+
+.site-main {
+  /* Само flex-sizing спрямо body — самият .site-main остава обикновен block
+     контейнер отвътре, за да не пипа layout-а на съществуващите страници
+     (hero, section-inner и т.н. продължават да се държат както досега). */
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+.footer {
+  flex: 0 0 auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.9rem 2rem;
+  background: rgb(0, 0, 0);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.22rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  cursor: pointer;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 1.05rem;
+  height: 1px;
+  margin: 0 auto;
+  background: #fff;
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.brand,
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.mainLogo_Img {
+  width: 40px;
+  height: auto;
+  display: block;
+  margin-top: 2px;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.15rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nav a {
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 200ms ease;
+  word-break: break-word;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.nav a:hover{
+  transition: .3s;
+  background-color: var(--accent-soft);
+  color: #fff;
+}
+
+.nav a.active {
+  color: #fff;
+  background-color: var(--accent);
+
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.lang-switch,
+.register-btn,
+.cta-primary,
+.cta-secondary {
+  transition:
+    transform 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.lang-switch {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: transparent;
+  color: #fff;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lang-switch:hover{
+  cursor: pointer;
+  transform: translateY(-2px);
+  transition: .3s ease;
+  color: #020202;
+  background-color: #fff;
+}
+
+.register-btn {
+  background: var(--accent);
+  color: #fff;
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  font-weight: 500;
+}
+
+.register-btn:hover{
+  cursor: pointer;
+  transform: translateY(-2px);
+  transition: .3s ease;
+  color: var(--accent);
+  background-color: #fff;
+}
+
+.login-btn{
+  color: #fff;
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+}
+
+.login-btn:hover{
+  cursor: pointer;
+  color: var(--accent);
+  transform: translateY(-3px);
+  transition: .3s ease;
+;
+}
+
+
+.cta-primary:hover{
+  transform: translateY(-2px);
+  background-color: var(--accent);
+  border: 1px solid #fff;
+  color: #fff;
+}
+
+.cta-secondary:hover{
+  transform: translateY(-2px);
+  background-color: #fff;
+  border: 1px solid #fff;
+  color: var(--accent);
+}
+
+
+
+/* Footer */
+
+.cta-section {
+  background:
+    radial-gradient(circle at center top, rgba(255, 122, 91, 0.28), transparent 46%),
+    var(--accent);
+  padding: 4rem 0;
+}
+
+.cta-inner {
+  text-align: center;
+}
+
+.cta-inner h2 {
+  font-family: "Oswald", Arial, sans-serif;
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: 0.01em;
+  font-size: clamp(2.5rem, 5vw, 4.2rem);
+  margin-bottom: 1.8rem;
+}
+
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cta-primary,
+.cta-secondary {
+  min-width: 12.5rem;
+  padding: 0.95rem 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.cta-primary {
+  background: #fff;
+  color: var(--accent);
+}
+
+.cta-secondary {
+  background: transparent;
+  color: #fff;
+}
+
+/* Global Layout & Hero Base */
+.hero {
+  position: relative;
+  min-height: 72vh;
+  overflow: hidden;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.2) 52%, rgba(0, 0, 0, 0.58) 100%);
+}
+
+.section-inner,
+.cta-inner {
+  width: min(var(--max-width), calc(100% - 3rem));
+  margin: 0 auto;
+}
+
+.eyebrow,
+.section-label {
+  margin: 0 0 0.6rem;
+  color: var(--accent-soft);
+  font-family: "Oswald", Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.footer {
+  padding: 3.5rem 0 1.4rem;
+  background: #020202;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  align-items: start;
+  margin-top: 20px;
+  width: min(var(--max-width), calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 15px;
+}
+
+.footer-copy,
+.footer-contact p,
+.copyright {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.footer-copy {
+  max-width: 21rem;
+  word-break: break-word;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.92rem;
+}
+
+.footer-contact h3 {
+  margin: 0 0 0.8rem;
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.footer-contact p,
+.copyright {
+  margin: 0.15rem 0;
+}
+
+.copyright {
+  text-align: center;
+  margin-top: 2.2rem;
+  font-size: 0.85rem;
+}
+
+/* ==================== Footer v2 (redesign skeleton, Aug 2026) ====================
+   Ново оформление на footer-а (виж <footer> в _Layout.cshtml): CTA карти,
+   intro/brand блок с decorative "сфера", панел с Quick Links + Contact,
+   legal ред и copyright. Mobile-first база + отделен @media (min-width:
+   981px) блок за десктоп. Класовете са изцяло нови (footer-shell /
+   footer-cta-* / footer-intro-* / footer-panel / footer-col-* /
+   footer-legal-* / footer-copyright) — старите .footer-inner / .footer-brand
+   / .footer-copy / .footer-links / .footer-contact / .copyright правила
+   по-горе остават непроменени, в случай че се ползват другаде извън
+   footer-а. Само скелет/стилове на този етап — .reveal вече се наблюдава
+   глобално от revealObserver в scriptMain.js, така че новите секции просто
+   се включват в съществуващия scroll-fade без допълнителен JS. */
+
+.footer-shell {
+  width: min(var(--max-width), calc(100% - 3rem));
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.2rem;
+}
+
+/* --- CTA cards --- */
+.footer-cta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.footer-cta-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 4px;
+  border: 1px solid var(--accent);
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow: hidden;
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.footer-cta-card--primary {
+  background:
+    radial-gradient(circle at 85% 0%, rgba(255, 255, 255, 0.22), transparent 55%),
+    linear-gradient(120deg, #ff6a5c, var(--accent) 65%);
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(255, 54, 54, 0.22);
+}
+
+.footer-cta-card--outline {
+  background:
+    radial-gradient(circle at 85% 0%, rgba(255, 54, 54, 0.22), transparent 60%),
+    rgba(255, 54, 54, 0.05);
+  color: #fff;
+}
+
+/* Диагонален "проблясък", който преминава през бутона при hover —
+   само на primary (Register) картата, за да не претрупва outline
+   вариантa. Изисква overflow:hidden на .footer-cta-card по-горе. */
+.footer-cta-card--primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-18deg);
+  transition: left 550ms ease;
+  pointer-events: none;
+}
+
+.footer-cta-card--primary:hover::after {
+  left: 130%;
+}
+
+.footer-cta-card:hover {
+  transform: translateY(-2px);
+  border-color: #fff;
+  box-shadow: 0 14px 34px rgba(255, 54, 54, 0.3);
+}
+
+.footer-cta-card:hover .footer-cta-icon {
+  transform: scale(1.06);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.footer-cta-card:hover .footer-cta-arrow {
+  transform: translateX(3px);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.footer-cta-icon {
+  /* Семпъл кръг, само border — точно като .footer-social-link, без
+     background градиент/пълнеж (виж заявка на клиента). */
+  flex: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  transition: transform 220ms ease, border-color 220ms ease;
+}
+
+.footer-cta-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.footer-cta-label {
+  flex: 1;
+}
+
+.footer-cta-arrow {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  opacity: 0.95;
+  transition: transform 220ms ease, border-color 220ms ease;
+}
+
+.footer-cta-arrow svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* --- Brand / intro --- */
+/* Цялото каре (лого+заглавие+tagline+описание+social+bit rain ефекта)
+   вече е ЕДНА "стъклена" карта — същия glassy look като .footer-panel
+   отдолу (border: var(--line) + background: var(--panel-soft) +
+   border-radius: 6px), вместо разпилян текст без видим контур. */
+.footer-intro {
+  position: relative;
+  overflow: hidden;
+  padding: 1.6rem;
+  min-height: 10rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-soft);
+}
+
+/* Само позиционира/изрязва bit rain зоната вдясно вътре в картата —
+   собствен border/background тук би направил "кутия в кутия"; сега
+   ефектът просто живее в дясната част на същата стъклена карта и се
+   стапя в нея (mask-image по-долу), не е отделно рамкиран. Удължена
+   зона (62% вместо 58%) — ефектът стига още по-навътре наляво. */
+.footer-intro-art-frame {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(24rem, 62%);
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 0 5px 5px 0;
+}
+
+.footer-intro-art {
+  /* <canvas> — рисува се от footerBitRain модула в scriptMain.js: 0/1
+     (и по някой hex) битове, летящи отдясно наляво, с прогресивно
+     усилващо се размазване наляво (реален per-band blur в JS, не само
+     fade). mask-image по-долу е самият fade — плътно само в дясната
+     половина (0–50%), после видим, постепенен преход към прозрачност
+     през цялата лява половина, вместо кратка опашка в самия край. */
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 100%);
+  mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+.footer-intro-content {
+  position: relative;
+  z-index: 1;
+}
+
+.footer-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-brand-logo {
+  /* Важи само за варианта С tagline (двуредов текстов блок) — вариантът
+     БЕЗ tagline вече не минава оттук изобщо, той ползва .mainLogo_Img
+     директно (виж коментара там, малко по-долу), буквално същия клас
+     като в топбара, без clamp/калибровка тук.
+
+     КАК ДА КАЛИБРИРАШ РЪЧНО (clamp(МИН, ТЕМПО, МАКС)):
+     - МИН (1.65rem) → колко малко да е логото на най-тесните телефони.
+       Вдигни/свали САМО това число, ако е добро на десктоп, но малко/
+       голямо на тесен телефон.
+     - МАКС (2.18rem) → размерът на широк екран/десктоп. Вдигни/свали
+       САМО това, ако десктоп версията не е точна, без да пипаш телефон.
+     - ТЕМПО (6.4vw) → колко бързо расте между МИН и МАКС. По-голямо
+       число = стига до МАКС на по-тесен екран (расте по-рязко);
+       по-малко = по-плавен преход по-широк диапазон. Рядко трябва да
+       се пипа това, обикновено само МИН/МАКС са достатъчни. */
+  width: auto;
+  height: clamp(1.65rem, 6.4vw, 2.18rem);
+  object-fit: contain;
+  display: block;
+  flex: none;
+}
+
+/* Прилага се от _Layout.cshtml само когато tagline-ът реално е празен —
+   в този случай <img>-ът НЕ носи класа .footer-brand-logo изобщо, само
+   .mainLogo_Img (виж горе в _Layout.cshtml) — буквално същият клас,
+   използван в топбара, никакво отделно clamp()/compound-selector правило
+   тук вече не съществува. Гарантира, че двете места е физически
+   невъзможно да се разминат по стойност — вместо да поддържам две
+   успоредни числа, които бавно се разминаваха при всяка малка "leko
+   вдигни" корекция. */
+
+.footer-brand-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* Разстоянието title↔tagline идва от ДВЕ неща, не само от gap: (1)
+     тази gap стойност (пространство МЕЖДУ двата реда), и (2) line-height
+     на всеки от двата (виж .footer-brand-title/.footer-brand-tagline
+     по-долу) — line-height добавя "невидим" отстъп над/под самите
+     букви във всеки ред, отделно от gap-а. Затова свих и трите заедно. */
+  gap: 0.08rem;
+  /* min-width: 0 override-ва default-ния flex "min-width: auto" — иначе
+     .footer-brand-title (сега с white-space: nowrap) би отказал да се
+     свие под собствената си "естествена" ширина и би преляло извън
+     картата на тесни телефони, вместо да остави clamp()-а горе да си
+     свърши работата. */
+  min-width: 0;
+}
+
+.footer-brand-title {
+  font-family: "Oswald", Arial, sans-serif;
+  /* Fluid типография вместо фиксиран 1.1rem — на тесни телефони
+     "Blockchain Education 2026" се чупеше насред фразата (виж
+     скрийншотовете). clamp() плавно смалява шрифта според ширината на
+     viewport-а (не на един фиксиран breakpoint), а white-space: nowrap
+     гарантира, че вече никога няма да пренесе на нов ред — щом шрифтът
+     вече е достатъчно смален да се събере. Tagline-ът остава свободен
+     да пренася (по-дълга фраза, нормално е).
+
+     Тази стойност важи само когато ИМА tagline (двуредов блок) — виж
+     .footer-brand-row.no-tagline .footer-brand-title по-долу за
+     едноредовия вариант, който overwrite-ва точно това число, без да
+     пипа nowrap/line-height/останалото тук. */
+  font-size: clamp(0.88rem, 3.8vw, 1.2rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  /* По подразбиране браузърът ползва line-height ~1.2, което добавя
+     видим "въздух" над/под буквите — свито до 1.1 за плътен, но не
+     прекалено сбит блок. */
+  line-height: 1.1;
+}
+
+/* Прилага се от _Layout.cshtml само когато tagline-ът реално е празен —
+   в този случай логото до заглавието е буквално .mainLogo_Img (виж
+   по-горе в този файл), със същия фиксиран font-size (1.05rem), какъвто
+   топбарът ползва до него (.brand span) — не fluid clamp(), защото и
+   логото тук вече не е fluid, а фиксирано 40px. Затова заглавието
+   трябва да е фиксирано, не clamp(), за да пасне точно на логото —
+   иначе точно това несъответствие се получи (виж скрийншота). Скоупнато
+   само за .no-tagline, така че НЕ засяга варианта с tagline по-горе. */
+.footer-brand-row.no-tagline .footer-brand-title {
+  font-size: 1.05rem;
+}
+
+.footer-brand-tagline {
+  font-size: clamp(0.68rem, 2.6vw, 0.79rem);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--accent);
+  /* Marquee вместо пренасяне на нов ред — огледален механизъм на
+     .mobile-nav-promo-title (виж по-долу в този файл и
+     measureFooterTaglineOverflow() в scriptMain.js). overflow: hidden +
+     nowrap тук крият излишъка; .is-overflowing/--marquee-distance идват
+     от JS само когато текстът РЕАЛНО не се събира на един ред — къси
+     tagline-ове просто стоят статични, без анимация. */
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+  position: relative;
+}
+
+.footer-brand-tagline-inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Преизползва СЪЩИТЕ @keyframes promoTitleMarquee (дефинирани по-горе
+   за .mobile-nav-promo-title) — идентична плъзгаща анимация, не
+   дублиран код. */
+.footer-brand-tagline.is-overflowing .footer-brand-tagline-inner {
+  /* 11s вместо 14s — леко по-бързо темпо само тук; promo slider-ът
+     (същите @keyframes promoTitleMarquee) си остава на своите 14s,
+     duration-ът е отделен по rule, не част от самите keyframes. */
+  animation: promoTitleMarquee 7s ease-in-out infinite;
+  animation-delay: 0.1s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-brand-tagline.is-overflowing .footer-brand-tagline-inner {
+    animation: none;
+  }
+}
+
+.footer-desc {
+  max-width: 32rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0 0 1.3rem;
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.footer-social-link {
+  width: 2.6rem;
+  height: 2.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  color: #fff;
+  transition: transform 220ms ease, background-color 220ms ease;
+}
+
+.footer-social-link:hover {
+  transform: translateY(-2px);
+  background: var(--accent);
+}
+
+.footer-social-link svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* --- Panel: quick links + contact --- */
+.footer-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem 1.2rem;
+  padding: 1.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-soft);
+}
+
+.footer-col-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.9rem;
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.footer-col-icon {
+  display: inline-flex;
+  color: var(--accent);
+}
+
+.footer-col-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.footer-quicklinks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer-quicklinks li {
+  border-bottom: 1px solid var(--line);
+}
+
+.footer-quicklinks li:last-child {
+  border-bottom: 0;
+}
+
+.footer-quicklinks a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.6rem 0.1rem;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.88rem;
+  transition: color 200ms ease, padding-left 200ms ease;
+}
+
+/* icon + label групирани заедно вляво (space-between на .footer-quicklinks a
+   само разделя тази група от стрелката вдясно) — икони, взети от
+   .mobile-nav-link-icon в hamburger менюто, за визуална консистентност. */
+.footer-quicklink-main {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.footer-quicklink-icon {
+  flex: none;
+  display: inline-flex;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+.footer-quicklink-icon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.footer-quicklink-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.footer-quicklink-arrow {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: none;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+.footer-quicklinks a:hover {
+  color: #fff;
+  padding-left: 0.35rem;
+}
+
+.footer-contact-list {
+  list-style: none;
+  margin: 0 0 1.1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.footer-contact-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.footer-contact-icon {
+  flex: none;
+  display: inline-flex;
+  color: var(--accent);
+}
+
+.footer-contact-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.footer-org-note {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(255, 54, 54, 0.04);
+  overflow: hidden;
+}
+
+.footer-org-note::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  height: 2px;
+  background: radial-gradient(ellipse at center, var(--accent), transparent 80%);
+  opacity: 0.7;
+}
+
+.footer-org-icon {
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+}
+
+.footer-org-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.footer-org-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+/* --- Legal row + copyright --- */
+.footer-legal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.4rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+}
+
+.footer-legal-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  transition: color 200ms ease;
+}
+
+.footer-legal-link svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--accent);
+}
+
+.footer-legal-link:hover {
+  color: #fff;
+}
+
+.footer-copyright {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+/* --- Desktop ("по въображение" разгъване на layout-а) --- */
+@media (min-width: 981px) {
+  .footer-cta-row {
+    flex-direction: row;
+  }
+
+  .footer-cta-card {
+    flex: 1 1 0;
+  }
+
+  .footer-intro-content {
+    max-width: 34rem;
+  }
+
+  .footer-intro {
+    min-height: 13.5rem;
+    padding: 2.2rem 2.4rem;
+  }
+
+  .footer-intro-art-frame {
+    width: 33rem;
+  }
+
+  .footer-panel {
+    padding: 2.2rem 2.4rem;
+    gap: 2rem 3rem;
+  }
+
+  .footer-legal {
+    justify-content: flex-start;
+    gap: 2.8rem;
+  }
+
+  .footer-copyright {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-intro {
+    padding: 1.1rem;
+  }
+
+  .footer-panel {
+    padding: 1.1rem;
+    gap: 1.2rem 0.8rem;
+  }
+
+  .footer-col-title {
+    font-size: 0.8rem;
+  }
+
+  .footer-quicklinks a,
+  .footer-contact-list li {
+    font-size: 0.8rem;
+  }
+
+  .footer-legal {
+    gap: 1.4rem;
+  }
+}
+
+@media (max-width: 640px) {
+  /* "Organized by ICBI..." кутийката не се събира прегледно на телефон
+     (виж заявка на клиента) — маха се изцяло на мобилна ширина; Contact
+     колоната остава само с адрес/имейл/телефон. Същото важи и за bit
+     rain рамката — на тясна ширина просто няма прегледно място за нея
+     до текста, затова се крие изцяло вместо да се смалява до нечетимост. */
+  .footer-org-note {
+    display: none;
+  }
+
+  .footer-intro-art-frame {
+    display: none;
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.hero-ready .hero {
+  animation: heroZoom 14s ease-in-out infinite alternate;
+}
+
+body.nav-open,
+body.mobile-nav-open {
+  overflow: hidden;
+}
+
+/* ====================================================================
+   Full-screen mobile навигация (≤1240px)
+   ==================================================================== */
+
+/* Overlay-ят стои в DOM-а постоянно (display: flex), видимостта се
+   управлява с visibility + transform, за да може плъзгането отляво
+   надясно реално да се анимира (display: none не се анимира). При
+   затваряне visibility се забавя с transition-delay, за да изчезне
+   чак СЛЕД като transform-ът приключи плъзгането навън — иначе
+   съдържанието просто ще "изчезне" рязко по средата на анимацията.
+   z-index е ПОД topbar-а (20) нарочно — истинският topbar (лого,
+   BG/EN, Register/Login) остава видим и кликаем НАД панела, само
+   избутан надясно (виж body.mobile-nav-open .topbar по-долу) — не се
+   дублира вътре в менюто. */
+.mobile-nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  visibility: hidden;
+  /* height: 100% + inset:0 покрива повечето браузъри коректно; 100dvh
+     е допълнителен, по-точен слой специално за Safari, където адрес
+     барът динамично се крие/показва — dvh следи РЕАЛНИЯ видим viewport
+     в реално време, вместо статична стойност, която бърка размера с
+     "адрес барът скрит" state-а. Каскадата (100% първо, после 100dvh)
+     означава: браузъри без dvh поддръжка просто ползват 100%. */
+  height: 100%;
+  height: 100dvh;
+  background: var(--bg);
+  transform: translateX(-100%);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 420ms;
+}
+
+.mobile-nav-overlay.is-open {
+  visibility: visible;
+  transform: translateX(0);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
+}
+
+/* Декоративната вертикална лента отляво — частиците (mobileNavParticles
+   в scriptMain.js) седят вътре в нея. Ширината идва от общата
+   променлива --mobile-nav-strip-width (виж :root), за да съвпада
+   ТОЧНО с колкото се избутва topbar-ът — иначе лесно се разминават. */
+.mobile-nav-decor {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--mobile-nav-strip-width);
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+/* Границата вече не е плътен border-right, а вертикален градиент —
+   леко по-дебел от преди (1.5px), тръгва видим горе и постепенно
+   изчезва до почти невидим долу, вместо да е еднакво плътен по цялата
+   височина. */
+.mobile-nav-decor::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 54, 54, 0.14) 10%,
+    rgba(255, 54, 54, 0.5) 26%,
+    rgba(255, 54, 54, 0.5) 33%,
+    rgba(255, 54, 54, 0.1) 100%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.mobile-nav-decor canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* padding-top се задава inline от JS (мери реалната височина на
+   topbar-а в момента на отваряне — виж scriptMain.js), защото тя се
+   променя между breakpoint-ите (единичен ред срещу grid с 2 реда под
+   640px). Стойността тук е само разумен fallback, ако JS не хване. */
+/* Панелът вече е flex колона с два региона: .mobile-nav-scroll (гъвкав,
+   скролира вътрешно ако линковете не се събират) и .mobile-nav-footer
+   (промо картата + social редът) — той винаги остава на екрана долу,
+   не се скролва заедно с линковете. padding-top остава inline от JS
+   (мери реалната височина на topbar-а). */
+.mobile-nav-panel {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: 5.5rem; /* fallback, ако JS не хване навреме */
+  background: var(--bg);
+}
+
+.mobile-nav-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem 1.1rem 1rem;
+}
+
+/* margin-top: auto е допълнителна гаранция footer-ът винаги да е
+   най-отдолу — работи независимо от flex:1 на .mobile-nav-scroll,
+   класическа техника за "избутай последния елемент до края". */
+.mobile-nav-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 1.3rem 1.1rem 0;
+}
+
+/* min-height: 100% + justify-content: space-between: ако линковете не
+   запълват цялата видима височина на .mobile-nav-scroll, разликата се
+   разпределя РАВНОМЕРНО между тях (по-щедро дишане между бутоните),
+   вместо да остане като едно голямо черно празно пространство точно
+   преди промо елемента. Ако линковете реално преливат (напр. много
+   повече от админ панела по-късно), overflow-y: auto на родителя си
+   осигурява нормален скрол — justify-content не пречи на това. */
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  justify-content: space-between;
+  gap: 0.42rem;
+}
+
+/* Още веднъж по-малки — padding/gap намалени за втори път. */
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.56rem 0.72rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+  color: #fff;
+  transition: border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.mobile-nav-link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 4px;
+  background: rgba(255, 54, 54, 0.08);
+  color: var(--accent);
+}
+
+.mobile-nav-link-icon svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.mobile-nav-link-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mobile-nav-link-arrow {
+  flex-shrink: 0;
+  display: flex;
+  color: var(--muted);
+}
+
+.mobile-nav-link-arrow svg {
+  width: 0.92rem;
+  height: 0.92rem;
+}
+
+/* Двете стрелки (active/inactive) седят и двете в markup-а — CSS-ът
+   решава коя се вижда, спрямо .active на родителския .mobile-nav-link.
+   По-просто от да дублираме Razor условието за всеки от 8-те линка. */
+.mobile-nav-arrow-active {
+  display: none;
+  color: var(--accent);
+}
+
+.mobile-nav-arrow-inactive {
+  display: block;
+}
+
+/* Вътрешността на активния бутон остава същия тъмен фон като
+   неактивните (наследява от .mobile-nav-link, не тук) — неоновото
+   усещане е само от бордера + сиянието около него, не от tint фон. */
+.mobile-nav-link.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(255, 54, 54, 0.4);
+}
+
+.mobile-nav-link.active .mobile-nav-arrow-active {
+  display: block;
+}
+
+.mobile-nav-link.active .mobile-nav-arrow-inactive {
+  display: none;
+}
+
+/* Слайдер вместо статична карта — визуалният "рамка/glow" стил живее
+   тук (на контейнера), не на всеки слайд поотделно. touch-action:
+   pan-y пуска вертикалния скрол на страницата да минава през пръста,
+   докато JS-ът (виж scriptMain.js) поема хоризонталния swipe. */
+.mobile-nav-promo-slider {
+  position: relative;
+  margin: 0.6rem 0.3rem 0;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 54, 54, 0.4);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 54, 54, 0.14), transparent 60%),
+    var(--panel);
+  box-shadow: 0 0 24px rgba(255, 54, 54, 0.13);
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.mobile-nav-promo-track {
+  display: flex;
+}
+
+.mobile-nav-promo-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem 1rem 0.65rem;
+  color: #fff;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Изображението отстрани е по-малко от преди (беше 6rem) — повече
+   място за текст, по-компактна композиция на слайда. */
+/* Фиксирана квадратна кутия — важно за бъдещите снимки от admin
+   панела: каквито и да са реалните размери/пропорции на качената
+   снимка (портрет, пейзаж, огромна резолюция), кутията тук винаги
+   остава еднаква. overflow: hidden реже излишното, background дава
+   тъмен fallback цвят, докато снимката се зарежда (или ако не се
+   зареди изобщо) — никога няма "скочило" разположение или счупена
+   икона да зейне грозно. */
+/* Фиксирана кутия (3.3×3.3rem) — гарантира постоянен размер/подредба,
+   независимо какво влиза от admin панела по-късно. НО без overflow:
+   hidden и без плътен фон — снимките там ще са прозрачни PNG/SVG, а
+   не пълнокадрови снимки, затова тук просто центрираме съдържанието
+   и го оставяме да се вмести (max-width/max-height), без да режем
+   нищо. Точно затова glow-ефектът (drop-shadow) си остава непокътнат
+   — той естествено "изтича" извън контура на самата фигура; overflow:
+   hidden би го отрязал точно на ръба на кутията. */
+.mobile-nav-promo-art {
+  flex-shrink: 0;
+  width: 3.3rem;
+  height: 3.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 7px rgba(255, 54, 54, 0.55));
+}
+
+/* max-width/max-height (не width/height: 100%) — снимката/SVG-то се
+   вписва в кутията, вместо да я запълва принудително. Малка снимка си
+   остава естествения размер (до тавана), голяма се смалява да се
+   вмести — винаги запазва пропорциите си, никога не се изкривява. */
+.mobile-nav-promo-art svg,
+.mobile-nav-promo-art img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+}
+
+.mobile-nav-promo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  margin-top: 0.2rem;
+}
+
+/* Без eyebrow label вече ("ICBI"/"SCHEDULE" махнати) — заглавието
+   пое малко по-голяма тежест, за да оползотвори освободеното място.
+   font-size намален с ~2px (беше 1.12rem = 17.92px). */
+.mobile-nav-promo-title {
+  font-size: 0.995rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+  position: relative;
+}
+
+.mobile-nav-promo-title-inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* .is-overflowing се слага от JS само когато заглавието реално не се
+   събира на един ред (scrollWidth > clientWidth) — късите заглавия
+   просто си стоят статични, без анимация. --marquee-distance се
+   изчислява индивидуално за всеки слайд (точния overflow в px), не е
+   фиксиран процент. */
+.mobile-nav-promo-title.is-overflowing .mobile-nav-promo-title-inner {
+  animation: promoTitleMarquee 14s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+@keyframes promoTitleMarquee {
+  0%, 10%   { transform: translateX(0); }
+  45%, 55%  { transform: translateX(var(--marquee-distance, 0)); }
+  90%, 100% { transform: translateX(0); }
+}
+
+.mobile-nav-promo-desc {
+  font-size: 0.8rem;
+  line-height: 1.42;
+  color: var(--muted);
+}
+
+/* "Infinity-proof" индикатор: ФИКСИРАНА ширина на самата лента,
+   независимо колко слайда има — само thumb сегментът (ширина +
+   позиция) се преизчислява спрямо общия им брой (виж scriptMain.js).
+   С 2 слайда thumb-ът е 50% от лентата; с 10 — 10%; лентата никога не
+   расте/не се пренася на нов ред, каквото и да добави админ панелът
+   по-късно. Далеч по-стабилно от N отделни dots. */
+.mobile-nav-promo-dots {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 0.9rem 0.6rem 0;
+}
+
+.mobile-nav-promo-progress-track {
+  position: relative;
+  width: 4.5rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.mobile-nav-promo-progress-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 6px rgba(255, 54, 54, 0.6);
+  transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1), width 0.35s ease;
+}
+
+/* Всяка иконка е flex: 1 — четирите заедно винаги запълват цялата
+   налична ширина, равномерно, каквато и да е ширината на екрана.
+   Разделителите вече са РЕАЛНИ елементи (не ::after с фиксиран offset,
+   който се разминаваше щом gap-ът стане динамичен) — просто седят
+   между иконките в самия flex ред. */
+.mobile-nav-social {
+  display: flex;
+  align-items: center;
+  margin-top: 0.4rem;
+}
+
+.mobile-nav-social-link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0;
+  color: var(--muted);
+  transition: color 200ms ease;
+}
+
+.mobile-nav-social-link:hover {
+  color: var(--accent);
+}
+
+.mobile-nav-social-divider {
+  flex-shrink: 0;
+  width: 2px;
+  height: 1.15rem;
+  background: var(--line);
+}
+
+.mobile-nav-social svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+/* На среден tier и десктоп (≥641px) целият overlay механизъм е
+   ирелевантен — гарантираме, че никога не може да прихване кликове/
+   да заема място, дори ако някой JS бъг му сложи .is-open по грешка.
+   Елаборираният overlay (частици, промо слайдър) вече е изключително
+   за тесния (≤640px) tier — средният ползва простия dropdown вместо
+   него (виж @media (min-width: 641px) and (max-width: 1240px)). */
+@media (min-width: 641px) {
+  .mobile-nav-overlay {
+    display: none !important;
+  }
+}
+
+@keyframes heroZoom {
+  from {
+    background-size: 100%;
+  }
+
+  to {
+    background-size: 106%;
+  }
+}
+
+
+/* Mobile Responsive Part */
+
+@media (max-width: 1380px) {
+  .nav {
+    font-size: 0.56rem;
+  }
+}
+
+@media (max-width: 1240px) {
+  .topbar {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0.9rem 1rem;
+    /* Дефиниран тук (не само в .mobile-nav-open варианта по-долу), за
+       да анимира плавно И в двете посоки — при отваряне (добавя се
+       margin-left/width) И при затваряне (маха се). Ако transition-ът
+       седеше само в .mobile-nav-open .topbar, затварянето щеше да
+       "скочи" рязко назад, защото новото (базовото) състояние няма
+       собствен transition. */
+    transition: margin-left 420ms cubic-bezier(0.22, 1, 0.36, 1), width 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  .topbar-actions {
+    margin-left: auto;
+  }
+}
+
+/* ====================================================================
+   Среден tier (641px–1240px): таблети, landscape телефони, тесни
+   desktop прозорци. Пълноекранният .mobile-nav-overlay (частици,
+   промо слайдър, вертикален стек карти) е проектиран специално за
+   тесни portrait пропорции — на тази ширина изглежда разтеглен и
+   грозен (оттам и landscape бъгът с частиците). Вместо него: много
+   по-прост dropdown, преизползващ СЪЩИЯ .nav markup, който desktop-ът
+   вече ползва — просто стилизиран като вертикален списък при клик,
+   без декоративна лента, без промо карта. Управлява се от СЪЩИЯ
+   body.mobile-nav-open клас, който вече превключва hamburger-а —
+   никаква нова JS логика не е нужна за самото показване/скриване. */
+@media (min-width: 641px) and (max-width: 1240px) {
+  .nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+    background: rgb(0, 0, 0);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.75rem;
+    z-index: 25;
+    /* Landscape телефон може да е само ~350-400px висок — 8 линка
+       едно под друго лесно преливат извън видимата височина. Таван +
+       вътрешен скрол вместо да разчитаме, че винаги ще се събере. */
+    max-height: calc(100vh - 70px);
+    max-height: calc(100dvh - 70px);
+    overflow-y: auto;
+  }
+
+  body.mobile-nav-open .nav {
+    display: flex;
+  }
+
+  .nav a {
+    padding: 0.85rem 1rem;
+    border-radius: 6px;
+    text-align: left;
+  }
+}
+
+/* ====================================================================
+   Тесен tier (≤640px): истински portrait телефони — тук остава
+   пълноекранният .mobile-nav-overlay с целия си дизайн.
+   ==================================================================== */
+@media (max-width: 640px) {
+  /* .nav не се ползва тук изобщо — .mobile-nav-overlay поема
+     навигацията вместо dropdown-а от средния tier. */
+  .nav {
+    display: none;
+  }
+
+  /* Тук е ключовото поведение: не спаунваме ново лого/бутони в менюто —
+     буквално местим РЕАЛНИЯ topbar надясно, за да направим място за
+     лентата с ефекта отляво. transition-ът съвпада по timing с
+     .mobile-nav-overlay по-горе, за да се движат синхронно. Само в
+     тесния tier — средният dropdown няма декоративна лента, така че
+     топбар-а не трябва да се мести там. */
+  body.mobile-nav-open .topbar {
+    margin-left: var(--mobile-nav-strip-width);
+    width: calc(100% - var(--mobile-nav-strip-width));
+  }
+}
+
+/* --- Hamburger → X анимация ---
+   JS слага .is-open на самия .menu-toggle (не само на .nav, както
+   преди) — трите чертички се завъртат в класическо "X", вместо да
+   стоят статични, докато менюто се отваря. */
+.menu-toggle.is-open span:nth-child(1) {
+  transform: translateY(0.28rem) rotate(45deg);
+}
+
+.menu-toggle.is-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.is-open span:nth-child(3) {
+  transform: translateY(-0.28rem) rotate(-45deg);
+}
+
+@media (max-width: 980px) {
+  .hero {
+    min-height: 52vh;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar,
+  .section-inner,
+  .cta-inner,
+  .footer-inner {
+    width: min(calc(100% - 1.5rem), var(--max-width));
+  }
+
+  .topbar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 0.85rem 0.75rem;
+    border-bottom: 0;
+    backdrop-filter: none;
+    gap: 0.65rem;
+  }
+
+ .brand,
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1; /* 👈 прави line box точно колкото шрифта */
+}
+
+  .brand {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .brand span:last-child {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .menu-toggle {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .topbar-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    gap: 0.45rem;
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .lang-switch {
+    padding: 0.4rem 0.5rem;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .register-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .hero {
+    min-height: 40vh;
+    background-position: center;
+    margin-top: -1px;
+  }
+
+  .cta-section {
+    padding: 3rem 0;
+  }
+
+  .cta-inner h2 {
+    font-size: clamp(2rem, 11vw, 2.6rem);
+    line-height: 1.05;
+  }
+
+  .cta-inner h2 br {
+    display: none;
+  }
+
+  .cta-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .cta-primary,
+  .cta-secondary {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .footer {
+    padding-top: 2.6rem;
+  }
+
+  .footer-copy,
+  .footer-contact p,
+  .footer-links {
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-width: 425px) {
+  .topbar,
+  .section-inner,
+  .cta-inner,
+  .footer-inner {
+    width: calc(100% - 1.1rem);
+  }
+
+  .topbar {
+    width: 100%;
+    padding: 0.7rem 0.55rem;
+  }
+
+  .brand {
+    max-width: 100%;
+  }
+
+  .brand,
+  .footer-brand {
+    font-size: 0.88rem;
+  }
+
+  .menu-toggle {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .topbar-actions {
+    gap: 0.35rem;
+  }
+
+  .lang-switch,
+  .register-btn {
+    min-height: 2.2rem;
+  }
+
+  .register-btn {
+    padding: 0.48rem 0.68rem;
+    font-size: 0.82rem;
+  }
+
+  .hero {
+    min-height: 34vh;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+  }
+
+  .cta-inner h2 {
+    font-size: 1.9rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .topbar {
+    width: 100%;
+    padding: 0.65rem 0.45rem;
+  }
+
+  .brand {
+    max-width: 100%;
+  }
+
+  .brand,
+  .footer-brand {
+    font-size: 0.82rem;
+    gap: 0.45rem;
+  }
+
+  .brand-mark {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  .topbar-actions {
+    gap: 0.28rem;
+  }
+
+  .lang-switch {
+    padding: 0.34rem 0.42rem;
+    font-size: 0.62rem;
+  }
+
+  .register-btn {
+    padding: 0.44rem 0.58rem;
+    font-size: 0.76rem;
+  }
+
+  .hero {
+    min-height: 31vh;
+  }
+
+  .cta-section {
+    padding: 2.4rem 0;
+  }
+
+  .cta-inner h2 {
+    font-size: 1.72rem;
+  }
+
+  .cta-primary,
+  .cta-secondary {
+    padding: 0.82rem 1rem;
+    font-size: 0.98rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .topbar,
+  .section-inner,
+  .cta-inner,
+  .footer-inner {
+    width: calc(100% - 0.8rem);
+  }
+
+  .topbar {
+    width: 100%;
+    padding: 0.55rem 0.35rem;
+    gap: 0.45rem;
+  }
+
+  .brand {
+    max-width: 100%;
+  }
+
+  .brand,
+  .footer-brand {
+    font-size: 0.76rem;
+  }
+
+  .menu-toggle {
+    width: 2.15rem;
+    height: 2.15rem;
+  }
+
+  .menu-toggle span {
+    width: 0.9rem;
+  }
+
+  .lang-switch {
+    padding: 0.3rem 0.34rem;
+    font-size: 0.56rem;
+  }
+
+  .register-btn {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  .hero {
+    min-height: 28vh;
+  }
+
+  .cta-inner h2 {
+    font-size: 1.5rem;
+  }
+
+  .cta-primary,
+  .cta-secondary {
+    padding: 0.76rem 0.9rem;
+    font-size: 0.92rem;
+  }
+
+  .footer-copy,
+  .footer-contact p,
+  .footer-links,
+  .copyright {
+    font-size: 0.84rem;
+  }
+}

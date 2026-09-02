@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Pay_PageTitle" xml:space="preserve"><value>Плащане</value></data>
+
+  <data name="Pay_HeaderLabel" xml:space="preserve"><value>ФИНАЛИЗИРАНЕ НА РЕГИСТРАЦИЯТА</value></data>
+  <data name="Pay_HeaderTitle" xml:space="preserve"><value>Плащане</value></data>
+  <data name="Pay_HeaderSub" xml:space="preserve"><value>Изберете как ви е удобно да платите. Всички плащания минават криптирани.</value></data>
+  <data name="Pay_Closed_Sub" xml:space="preserve"><value>Временно спряхме приемането на плащания, докато оправим нещо от наша страна. С регистрацията ви всичко е наред.</value></data>
+
+  <data name="Pay_TabsAriaLabel" xml:space="preserve"><value>Методи на плащане</value></data>
+  <data name="Pay_Tab_Card" xml:space="preserve"><value>Банкова карта</value></data>
+  <data name="Pay_Tab_Crypto" xml:space="preserve"><value>Криптовалута</value></data>
+  <data name="Pay_Tab_Iban" xml:space="preserve"><value>Банков превод</value></data>
+  <data name="Pay_Tab_Digital" xml:space="preserve"><value>Apple / Google</value></data>
+
+  <data name="Pay_Card_NameLabel" xml:space="preserve"><value>Име на картодържателя</value></data>
+  <data name="Pay_Card_NamePlaceholder" xml:space="preserve"><value>напр. ИВАН ПЕТРОВ</value></data>
+  <data name="Pay_Card_NumberLabel" xml:space="preserve"><value>Номер на картата</value></data>
+  <data name="Pay_Card_ExpiryLabel" xml:space="preserve"><value>Валидност</value></data>
+  <data name="Pay_Card_CurrencyLabel" xml:space="preserve"><value>Валута на плащане</value></data>
+  <data name="Pay_Card_PayBtn" xml:space="preserve"><value>Потвърждаване на плащането</value></data>
+  <data name="Pay_Card_PayBtnPrefix" xml:space="preserve"><value>Плащане на</value></data>
+  <data name="Pay_Card_SecureNote" xml:space="preserve"><value>256-битово SSL криптиране · Трансакциите се обработват от Stripe</value></data>
+  <data name="Pay_Card_InfoText" xml:space="preserve"><value>Прехвърляме ви към защитената страница на Stripe — карта, &lt;strong&gt;Apple Pay&lt;/strong&gt; или &lt;strong&gt;Google Pay&lt;/strong&gt;.</value></data>
+  <data name="Pay_Card_Method_CreditDebit" xml:space="preserve"><value>Кредитна / Дебитна карта</value></data>
+  <data name="Pay_Card_AmountLabel" xml:space="preserve"><value>Сума за плащане</value></data>
+  <data name="Pay_Card_ProcessorLabel" xml:space="preserve"><value>Процесор</value></data>
+  <data name="Pay_Card_Redirecting" xml:space="preserve"><value>Пренасочване към Stripe...</value></data>
+
+  <data name="Pay_Crypto_InfoText" xml:space="preserve"><value>Изберете валута и преведете &lt;strong&gt;точната сума&lt;/strong&gt; на адреса. QR кодът е за по-бързо сканиране.</value></data>
+  <data name="Pay_Crypto_GridAriaLabel" xml:space="preserve"><value>Избор на криптовалута</value></data>
+  <data name="Pay_Crypto_EurcName" xml:space="preserve"><value>Euro Coin</value></data>
+  <data name="Pay_Crypto_UsdcName" xml:space="preserve"><value>USD Coin</value></data>
+  <data name="Pay_Crypto_SelectPrompt" xml:space="preserve"><value>Моля, изберете криптовалута, за да генерирате адрес за плащане</value></data>
+  <data name="Pay_Crypto_AmountLabel" xml:space="preserve"><value>Сума за превод</value></data>
+  <data name="Pay_Crypto_AddressLabel" xml:space="preserve"><value>Адрес на крипто портфейла</value></data>
+  <data name="Pay_Crypto_CopyAddress" xml:space="preserve"><value>Копиране на адреса</value></data>
+  <data name="Pay_Crypto_QrLabel" xml:space="preserve"><value>Сканирайте за плащане</value></data>
+  <data name="Pay_Crypto_QrUnavailable" xml:space="preserve"><value>QR кодът не е наличен</value></data>
+  <data name="Pay_Crypto_QrHint" xml:space="preserve"><value>Система, задвижвана от go28.io</value></data>
+
+  <data name="Pay_Iban_InfoText" xml:space="preserve"><value>Наредете превод с точната сума по данните долу. Впишете &lt;strong&gt;референтния си номер&lt;/strong&gt; в основанието — по него разпознаваме плащането.</value></data>
+  <data name="Pay_Iban_ImportantNote" xml:space="preserve"><value>&lt;strong&gt;Важно&lt;/strong&gt; Запазете платежното нареждане. Референтният номер в основанието е това, което свързва превода с регистрацията ви.</value></data>
+  <data name="Pay_Iban_Beneficiary" xml:space="preserve"><value>Получател</value></data>
+  <data name="Pay_Iban_CopyBeneficiary" xml:space="preserve"><value>Копиране на името на получателя</value></data>
+  <data name="Pay_Iban_CopyIban" xml:space="preserve"><value>Копиране на IBAN сметката</value></data>
+  <data name="Pay_Iban_CopyBic" xml:space="preserve"><value>Копиране на BIC / SWIFT</value></data>
+  <data name="Pay_Iban_Bank" xml:space="preserve"><value>Обслужваща банка</value></data>
+  <data name="Pay_Iban_BankName" xml:space="preserve"><value>Българска народна банка</value></data>
+  <data name="Pay_Iban_Amount" xml:space="preserve"><value>Дължима сума</value></data>
+  <data name="Pay_Iban_Reference" xml:space="preserve"><value>Основание (Реф. номер)</value></data>
+  <data name="Pay_Iban_CopyRef" xml:space="preserve"><value>Копиране на референтния номер</value></data>
+  <data name="Pay_Iban_DoneBtn" xml:space="preserve"><value>Потвърждавам наредения банков превод</value></data>
+  <data name="Pay_Iban_SubmittedTitle" xml:space="preserve"><value>✓ Заявката е регистрирана</value></data>
+  <data name="Pay_Iban_SubmittedText" xml:space="preserve"><value>Благодарим! Записахме заявката за банков превод.&lt;br&gt;&lt;br&gt;Обработката отнема &lt;strong&gt;1–3 работни дни&lt;/strong&gt;. Ще ви уведомим по имейл.</value></data>
+  <data name="Pay_Iban_ProfileLink" xml:space="preserve"><value>Профил</value></data>
+
+  <data name="Pay_Digital_InfoText" xml:space="preserve"><value>Плащане направо от дигиталния ви портфейл. &lt;strong&gt;Без въвеждане на картови данни&lt;/strong&gt; — потвърждавате с отпечатък или лице.</value></data>
+  <data name="Pay_Digital_AppleBtn" xml:space="preserve"><value>Плащане с Apple Pay</value></data>
+  <data name="Pay_Digital_Or" xml:space="preserve"><value>или</value></data>
+  <data name="Pay_Digital_GoogleBtn" xml:space="preserve"><value>Плащане с Google Pay</value></data>
+  <data name="Pay_Digital_BiometricNote" xml:space="preserve"><value>Изисква се биометрична идентификация на устройството</value></data>
+
+  <data name="Pay_Summary_AriaLabel" xml:space="preserve"><value>Детайли на плащането</value></data>
+  <data name="Pay_Summary_Title" xml:space="preserve"><value>Детайли на плащането</value></data>
+  <data name="Pay_Summary_TypeLabel" xml:space="preserve"><value>Форма на участие</value></data>
+  <data name="Pay_Summary_TotalLabel" xml:space="preserve"><value>Обща дължима сума</value></data>
+  <data name="Pay_Summary_RefLabel" xml:space="preserve"><value>Референтен номер</value></data>
+  <data name="Pay_Summary_ContactNote" xml:space="preserve"><value>Ако нещо не върви, пишете ни на&lt;br&gt;{0}</value></data>
+
+  <data name="Pay_JS_CryptoErr_NotSupported" xml:space="preserve"><value>Тази валута временно не се поддържа. Изберете друга.</value></data>
+  <data name="Pay_JS_CryptoErr_LimitReached" xml:space="preserve"><value>Имате твърде много активни заявки за тази валута. Изчакайте да изтекат или изберете друга.</value></data>
+  <data name="Pay_JS_CryptoErr_MinAmount" xml:space="preserve"><value>Сумата за плащане е под минимално изискуемия праг за тази валута.</value></data>
+  <data name="Pay_JS_CryptoErr_Network" xml:space="preserve"><value>Няма връзка. Проверете интернета и опитайте пак.</value></data>
+  <data name="Pay_JS_CryptoErr_Expired" xml:space="preserve"><value>Заявката изтече. Генерирайте нов адрес.</value></data>
+  <data name="Pay_JS_CryptoErr_Confirmed" xml:space="preserve"><value>Вашето плащане вече е успешно верифицирано.</value></data>
+  <data name="Pay_JS_CryptoErr_Default" xml:space="preserve"><value>Нещо се обърка при създаването на заявката. Опитайте по-късно.</value></data>
+
+  <data name="Pay_JS_CryptoTitle_NotAvail" xml:space="preserve"><value>Валутата е временно недостъпна</value></data>
+  <data name="Pay_JS_CryptoTitle_LimitReached" xml:space="preserve"><value>Достигнат лимит на заявките</value></data>
+  <data name="Pay_JS_CryptoTitle_MinAmount" xml:space="preserve"><value>Сумата е под минималния праг</value></data>
+  <data name="Pay_JS_CryptoTitle_ConnErr" xml:space="preserve"><value>Проблем със свързаноста</value></data>
+  <data name="Pay_JS_CryptoTitle_Expired" xml:space="preserve"><value>Изтекло време на заявката</value></data>
+  <data name="Pay_JS_CryptoTitle_Confirmed" xml:space="preserve"><value>Успешно верифицирано</value></data>
+  <data name="Pay_JS_CryptoTitle_PayErr" xml:space="preserve"><value>Грешка при обработката</value></data>
+
+  <data name="Pay_JS_CryptoHint_TryOther" xml:space="preserve"><value>Тази валута е временно недостъпна. Изберете друга.</value></data>
+  <data name="Pay_JS_CryptoHint_WaitExpiry" xml:space="preserve"><value>Изчакайте активните заявки да изтекат (до 120 мин. за BTC, 60 мин. за останалите) или изберете друга валута.</value></data>
+  <data name="Pay_JS_CryptoHint_NewAddress" xml:space="preserve"><value>Изберете валута по-горе, за да получите нов адрес.</value></data>
+  <data name="Pay_JS_CryptoHint_TryAgain" xml:space="preserve"><value>Моля, проверете Вашата интернет свързаност и опитайте отново.</value></data>
+  <data name="Pay_JS_CryptoHint_SelectAgain" xml:space="preserve"><value>Моля, изберете желаната криптовалута и опитайте отново.</value></data>
+
+  <data name="Pay_JS_CryptoLimitTitle" xml:space="preserve"><value>Достигнат лимит на заявките</value></data>
+  <data name="Pay_JS_CryptoLimitMsg" xml:space="preserve"><value>Достигнахте максимума от 2 активни заявки. Изчакайте да изтекат, преди да създадете нова.</value></data>
+  <data name="Pay_JS_CryptoUnlocksIn" xml:space="preserve"><value>Възможност за нова заявка след</value></data>
+  <data name="Pay_JS_CryptoCopied" xml:space="preserve"><value>Адресът е копиран!</value></data>
+
+  <data name="Pay_JS_ConfirmedTitle" xml:space="preserve"><value>Плащането е успешно потвърдено!</value></data>
+  <data name="Pay_JS_ConfirmedSub" xml:space="preserve"><value>Преводът е потвърден. Регистрацията ви е &lt;strong style="color:#4ea86b;"&gt;окончателна&lt;/strong&gt;.</value></data>
+  <data name="Pay_JS_ConfirmedRedirect" xml:space="preserve"><value>Пренасочване към Uашия профил...</value></data>
+
+  <data name="Pay_JS_CardErrName" xml:space="preserve"><value>Въведете името точно както е изписано върху картата.</value></data>
+  <data name="Pay_JS_CardErrNumber" xml:space="preserve"><value>Номерът на картата трябва да съдържа точно 16 цифри.</value></data>
+  <data name="Pay_JS_CardErrExpiry" xml:space="preserve"><value>Моля, въведете валидна дата на валидност във формат (ММ / ГГ).</value></data>
+  <data name="Pay_JS_CardErrCvv" xml:space="preserve"><value>Кодът за сигурност (CVV) трябва да съдържа 3 или 4 цифри.</value></data>
+
+  <!-- ── Stripe & Digital Pay ── -->
+  <data name="Pay_JS_StripeProcessing" xml:space="preserve"><value>Обработва се плащането...</value></data>
+  <data name="Pay_JS_StripeSuccess" xml:space="preserve"><value>Плащането е успешно!</value></data>
+  <data name="Pay_JS_StripeError" xml:space="preserve"><value>Възникна грешка. Моля, опитайте отново.</value></data>
+  <data name="Pay_Digital_Unavailable" xml:space="preserve"><value>Apple Pay / Google Pay не е наличен на това устройство. Използвайте карта.</value></data>
+  <data name="Pay_Digital_UseCard" xml:space="preserve"><value>ПЛАТИ С КАРТА</value></data>
+
+  <!-- ── Stripe Success Overlay ── -->
+  <data name="Pay_Success_Label" xml:space="preserve"><value>Плащането е потвърдено</value></data>
+  <data name="Pay_Success_Title" xml:space="preserve"><value>Благодарим Ви за плащането!</value></data>
+  <data name="Pay_Success_Msg" xml:space="preserve"><value>Плащането мина. Изпращаме потвърждение по имейл — участието ви е сигурно.</value></data>
+  <data name="Pay_Success_Redirect" xml:space="preserve"><value>Пренасочване към профила Ви след</value></data>
+  <data name="Pay_Success_ProfileBtn" xml:space="preserve"><value>Към профила сега</value></data>
+
+
+  <data name="Pay_Iban_TrackInProfile" xml:space="preserve"><value>Следете статуса в профила</value></data>
+</root>

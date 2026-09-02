@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Nav_Conference" xml:space="preserve"><value>За конференцията</value></data>
+  <data name="Conf_SofiaLabel" xml:space="preserve"><value>София 2026</value></data>
+  <data name="Conf_AboutTitle" xml:space="preserve"><value>За конференцията</value></data>
+  <data name="Conf_AboutPara1" xml:space="preserve"><value>Бързото развитие на блокчейн технологиите и криптоикономиката изпревари академичните рамки и междууниверситетската координация в цяла Европа. Образователните програми остават фрагментирани, вариращи в дълбочина и без общи критерии за качество.</value></data>
+  <data name="Conf_AboutPara2" xml:space="preserve"><value>Тази международна конференция, организирана от Института по криптоикономика, блокчейн и иновации (ICBI) към УНСС в партньорство с Националната асоциация за блокчейн и иновации, създава платформа за систематичен диалог. Нашата цел е да обединим академичните среди, регулаторите и бизнеса в споделено пространство с фокус върху качественото образование, изследванията и иновациите.</value></data>
+  <data name="Conf_GoalsLabel" xml:space="preserve"><value>ЦЕЛИ</value></data>
+  <data name="Conf_GoalsTitle" xml:space="preserve"><value>Какво си поставяме за цел</value></data>
+  <data name="Conf_Goal1_Title" xml:space="preserve"><value>Установяване на академични стандарти</value></data>
+  <data name="Conf_Goal1_Desc" xml:space="preserve"><value>Дискусия и приемане на "Софийската декларация за академични стандарти в образованието по криптоикономика и блокчейн" — обвързваща рамка за европейските университети.</value></data>
+  <data name="Conf_Goal2_Title" xml:space="preserve"><value>Синхронизиране на учебните програми</value></data>
+  <data name="Conf_Goal2_Desc" xml:space="preserve"><value>Модернизиране на университетските модели въз основа на световните тенденции и най-добрите практики от ЕС, САЩ и Азия — създаване на съгласувани, сравними образователни пътища.</value></data>
+  <data name="Conf_Goal3_Title" xml:space="preserve"><value>Адаптиране към регулаторните рамки</value></data>
+  <data name="Conf_Goal3_Desc" xml:space="preserve"><value>Задълбочен анализ на европейските регулации (MiCA) и тяхното пряко влияние върху инфраструктурата за академично обучение и съдържанието на програмите.</value></data>
+  <data name="Conf_Goal4_Title" xml:space="preserve"><value>Сътрудничество между академията и индустрията</value></data>
+  <data name="Conf_Goal4_Desc" xml:space="preserve"><value>Създаване на устойчива международна академична мрежа и стартиране на съвместни проекти между институциите за висше образование и Web3 бизнеса.</value></data>
+  <data name="Conf_OutcomesLabel" xml:space="preserve"><value>ОЧАКВАНИ РЕЗУЛТАТИ</value></data>
+  <data name="Conf_DeliverablesTitle" xml:space="preserve"><value>Конкретни резултати</value></data>
+  <data name="Conf_Deliv1_Title" xml:space="preserve"><value>Софийската декларация</value></data>
+  <data name="Conf_Deliv1_Desc" xml:space="preserve"><value>Официално приемане на знаков документ, определящ споделени академични стандарти за образование по криптоикономика и блокчейн в цяла Европа.</value></data>
+  <data name="Conf_Deliv2_Title" xml:space="preserve"><value>Международна мрежа</value></data>
+  <data name="Conf_Deliv2_Desc" xml:space="preserve"><value>Създаване на устойчив трансграничен консорциум от университети за продължаващи изследвания, обмен на преподаватели и съвместни европейски проекти.</value></data>
+  <data name="Conf_Deliv3_Title" xml:space="preserve"><value>Рамки на учебните програми</value></data>
+  <data name="Conf_Deliv3_Desc" xml:space="preserve"><value>Предоставяне на конкретни модели за модерни университетски програми, интегриращи утвърдени европейски образователни рамки, и създаване на специализирани академични блокчейн лаборатории.</value></data>
+  <data name="Conf_Deliv4_Title" xml:space="preserve"><value>Трансфер на знания</value></data>
+  <data name="Conf_Deliv4_Desc" xml:space="preserve"><value>Полагане на основите за стратегически трансфер на технологии и финансирани съвместни инициативи между висшите училища и Web3 сектора.</value></data>
+  <data name="Conf_ThemesLabel" xml:space="preserve"><value>ТЕМИ</value></data>
+  <data name="Conf_ThemesTitle" xml:space="preserve"><value>Тематични направления</value></data>
+  <data name="Conf_Theme1_Title" xml:space="preserve"><value>Образование и академични стандарти</value></data>
+  <data name="Conf_Theme2_Title" xml:space="preserve"><value>Регулаторни политики и право (MiCA)</value></data>
+  <data name="Conf_Theme3_Title" xml:space="preserve"><value>Web3 технологии и токеномика</value></data>
+  <data name="Conf_Theme4_Title" xml:space="preserve"><value>Синергия между наука и бизнес</value></data>
+  <data name="Conf_StructureLabel" xml:space="preserve"><value>СТРУКТУРА</value></data>
+  <data name="Conf_StructureTitle" xml:space="preserve"><value>Тридневна програма</value></data>
+  <data name="Conf_Day1" xml:space="preserve"><value>ДЕН 1</value></data>
+  <data name="Conf_Day1_Title" xml:space="preserve"><value>ОБРАЗОВАНИЕ И РЕГУЛАЦИИ</value></data>
+  <data name="Conf_Day1_List" xml:space="preserve"><value>&lt;p&gt;→ Глобални тенденции в образованието&lt;br&gt;→ Модели на учебни програми и умения&lt;br&gt;→ MiCA и академично въздействие&lt;br&gt;→ Работилници по криптоикономика&lt;br&gt;→ Нетуъркинг коктейл&lt;/p&gt;</value></data>
+  <data name="Conf_Day2" xml:space="preserve"><value>ДЕН 2</value></data>
+  <data name="Conf_Day2_Title" xml:space="preserve"><value>ТЕХНОЛОГИИ И ИЗСЛЕДВАНИЯ</value></data>
+  <data name="Conf_Day2_List" xml:space="preserve"><value>&lt;p&gt;→ Ключови бележки за Web3 иновации&lt;br&gt;→ Панели за DeFi и токеномика&lt;br&gt;→ Фокус върху токенизация на реални активи (RWA)&lt;br&gt;→ Блокчейн изследователска сесия&lt;br&gt;→ Синергия между индустрия и университет&lt;/p&gt;</value></data>
+  <data name="Conf_Day3" xml:space="preserve"><value>ДЕН 3</value></data>
+  <data name="Conf_Day3_Title" xml:space="preserve"><value>ДЕКЛАРАЦИЯ И ЗАКРИВАНЕ</value></data>
+  <data name="Conf_Day3_List" xml:space="preserve"><value>&lt;p&gt;→ Стратегия за бъдещо сътрудничество&lt;br&gt;→ Глобална академична мрежа&lt;br&gt;→ Приемане на Софийската декларация&lt;br&gt;→ Официално закриване&lt;br&gt;→ Прощален нетуъркинг обяд&lt;/p&gt;</value></data>
+  <data name="Conf_ResourcesLabel" xml:space="preserve"><value>РЕСУРСИ ЗА АВТОРИ</value></data>
+  <data name="Conf_ResourcesTitle" xml:space="preserve"><value>Важни документи и шаблони</value></data>
+  <data name="Conf_Doc1_Title" xml:space="preserve"><value>Официален шаблон за доклад</value></data>
+  <data name="Conf_Doc1_Desc" xml:space="preserve"><value>Изтеглете &lt;br&gt; шаблона за форматиране (DOCX)</value></data>
+  <data name="Conf_Doc2_Title" xml:space="preserve"><value>Декларация за авторство</value></data>
+  <data name="Conf_Doc2_Desc" xml:space="preserve"><value>Изтеглете декларацията &lt;br&gt; за всички доклади (DOCX)</value></data>
+  <data name="Conf_Doc3_Title" xml:space="preserve"><value>Лицензионно споразумение CEEOL</value></data>
+  <data name="Conf_Doc3_Desc" xml:space="preserve"><value>Изтеглете лицензионното споразумение за индексиране в базата данни CEEOL.</value></data>
+  <data name="Conf_LeadershipLabel" xml:space="preserve"><value>РЪКОВОДСТВО</value></data>
+  <data name="Conf_OrgCommittee" xml:space="preserve"><value>Организационен комитет</value></data>
+  <data name="Conf_ReviewLabel" xml:space="preserve"><value>АКАДЕМИЧЕН ПРЕГЛЕД</value></data>
+  <data name="Conf_ProgCommittee" xml:space="preserve"><value>Програмен комитет</value></data>
+  <data name="Conf_StuCommittee" xml:space="preserve"><value>Студентски комитет</value></data>
+  <data name="Conf_PartnersLabel" xml:space="preserve"><value>ПАРТНЬОРИ</value></data>
+  <data name="Conf_PartnersTitle" xml:space="preserve"><value>Нашите партньори</value></data>
+  <data name="Conf_InstPartners" xml:space="preserve"><value>ИНСТИТУЦИОНАЛНИ ПАРТНЬОРИ</value></data>
+  <data name="Conf_BusPartners" xml:space="preserve"><value>БИЗНЕС ПАРТНЬОРИ</value></data>
+  <data name="Conf_MediaPartners" xml:space="preserve"><value>МЕДИЙНИ ПАРТНЬОРИ</value></data>
+</root>

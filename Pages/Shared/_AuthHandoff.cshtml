@@ -1,0 +1,64 @@
+@* Преход след последната стъпка на auth потока.
+
+   Целта: последната стъпка (вход с парола, потвърждаване на код, финал на
+   регистрацията) вече не изглежда празна. Overlay-ът се показва при submit и
+   стои, докато сървърът отговори с redirect към /Profile.
+
+   Използване: сложи <partial name="_AuthHandoff" /> точно преди </main> на
+   страницата и добави data-auth-handoff="true" на формата, чийто submit води
+   до профила. Скриптът не показва overlay, ако формата е невалидна. *@
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+<div class="auth-handoff" id="auth-handoff" aria-hidden="true">
+    <div class="auth-handoff-inner" role="status" aria-live="polite">
+        <img src="~/images/logos/mainLogo.png" alt="">
+        <p class="auth-handoff-eyebrow">@Localizer["handoff_eyebrow"]</p>
+        <h2 class="auth-handoff-title">@Localizer["handoff_title"]</h2>
+        <span class="auth-handoff-bar" aria-hidden="true"><i></i></span>
+        <span class="auth-handoff-note">@Localizer["handoff_note"]</span>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var overlay = document.getElementById('auth-handoff');
+        if (!overlay) return;
+
+        function hide() {
+            overlay.classList.remove('is-visible');
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+
+        // БЪГ ФИКС: слушателят беше на capture фазата (`true`), тоест се
+        // изпълняваше ПРЕДИ validation.js (който е закачен на самата форма и
+        // работи в bubble фазата). Затова overlay-ът се вдигаше още преди
+        // валидацията да е казала думата си — а после validation.js правеше
+        // preventDefault() и формата изобщо не тръгваше, докато overlay-ът
+        // оставаше залепен на екрана завинаги.
+        //
+        // Сега слушаме в bubble фазата — след като всички останали слушатели
+        // са минали — и проверяваме дали някой вече не е спрял submit-а.
+        document.addEventListener('submit', function (e) {
+            var form = e.target.closest('form[data-auth-handoff]');
+            if (!form) return;
+
+            // Някой (validation.js, browser validation) е спрял submit-а.
+            if (e.defaultPrevented) return;
+            if (typeof form.checkValidity === 'function' && !form.checkValidity()) return;
+            if (form.querySelector('.input-validation-error, .is-invalid')) return;
+
+            overlay.classList.add('is-visible');
+            overlay.setAttribute('aria-hidden', 'false');
+
+            // Предпазна мрежа: ако по някаква причина навигацията не се
+            // случи (мрежова грешка, прекъснат отговор), overlay-ът не бива
+            // да остане да блокира страницата за неопределено време.
+            setTimeout(function () {
+                if (document.visibilityState !== 'hidden') hide();
+            }, 20000);
+        }, false);
+
+        // Връщане назад в историята не трябва да оставя overlay-а отгоре.
+        window.addEventListener('pageshow', hide);
+    })();
+</script>

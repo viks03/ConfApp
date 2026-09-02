@@ -1,0 +1,71 @@
+﻿@page
+@model TermsModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Terms_PageTitle"];
+}
+
+@* Съдържанието (Model.ContentHtml) идва от базата (TermsOfUseContent),
+   редактируемо от Admin -> Terms of Use таба с Quill rich-text editor.
+   Огледално на /Privacy 1:1 — преизползва privacyStyle.css/privacyPage.js
+   (същия прецедент, по който /Cookies вече преизползва privacy-* стила),
+   вместо да дублира отделни terms-специфични файлове. TOC-ът вдясно/отгоре
+   се строи изцяло динамично от каквито H2 headings админът реши да сложи —
+   виж privacyPage.js. *@
+@section Styles {
+    <link rel="stylesheet" href="~/css/privacyStyle.css" asp-append-version="true" />
+}
+
+<div class="privacy-progress-bar" id="privacyProgressBar"></div>
+
+<main>
+    <section class="privacy-section">
+        <div class="privacy-container">
+            <div class="privacy-layout">
+
+                <div class="privacy-main">
+                    <div class="privacy-header">
+                        <div class="privacy-header-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        </div>
+                        <div class="privacy-header-text">
+                            <h1>@Localizer["Terms_PageTitle"]</h1>
+                            @if (Model.LastUpdatedAt.HasValue)
+                            {
+                                <p class="privacy-updated">
+                                    @Localizer["Terms_LastUpdated"] @(Model.LastUpdatedAt.Value.ToString("dd MMMM yyyy"))
+                                    <span class="privacy-meta-dot">·</span>
+                                    <span id="privacyReadingTime" data-template="@Localizer["Terms_MinRead"]"></span>
+                                </p>
+                            }
+                        </div>
+                        <button type="button" class="privacy-print-btn" id="privacyPrintBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            <span class="privacy-print-label">@Localizer["Terms_Print"]</span>
+                        </button>
+                    </div>
+
+                    <div class="privacy-content" id="privacyContent">
+                        @Html.Raw(Model.ContentHtml)
+                    </div>
+                </div>
+
+                <aside class="privacy-toc-wrapper" id="privacyTocWrapper">
+                    <details class="privacy-toc-details" open>
+                        <summary>@Localizer["Terms_OnThisPage"]</summary>
+                        <nav class="privacy-toc-nav" id="privacyTocNav"></nav>
+                    </details>
+                </aside>
+
+            </div>
+        </div>
+    </section>
+
+    <button type="button" class="privacy-back-to-top" id="privacyBackToTop" aria-label="Back to top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+    </button>
+</main>
+
+@section Scripts {
+    <script src="~/js/privacyPage.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Nav_Conference" xml:space="preserve"><value>Conference</value></data>
+  <data name="Nav_ICBI" xml:space="preserve"><value>About ICBI</value></data>
+  <data name="Nav_Lecturers" xml:space="preserve"><value>Lecturers</value></data>
+  <data name="Nav_Schedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Nav_Attend" xml:space="preserve"><value>Attend</value></data>
+  <data name="Nav_FAQ" xml:space="preserve"><value>FAQ</value></data>
+  <data name="Nav_Travel" xml:space="preserve"><value>Travel</value></data>
+  <data name="Nav_Register" xml:space="preserve"><value>Register</value></data>
+  <data name="Nav_Login" xml:space="preserve"><value>Login</value></data>
+  <data name="Nav_AdminPanel" xml:space="preserve"><value>Admin Panel</value></data>
+  <data name="Nav_Profile" xml:space="preserve"><value>My Profile</value></data>
+  <data name="Nav_Logout" xml:space="preserve"><value>Logout</value></data>
+  <data name="Nav_OpenMenu" xml:space="preserve"><value>Open menu</value></data>
+  <data name="Nav_CloseMenu" xml:space="preserve"><value>Close menu</value></data>
+
+  <data name="Home_JoinTitle" xml:space="preserve"><value>Join the Conversation That Shapes the Future of Finance Education</value></data>
+  <data name="Global_BtnRegisterAttend" xml:space="preserve"><value>Register to Attend</value></data>
+
+  <data name="Footer_Desc" xml:space="preserve"><value>International scientific conference on academic education and science in the field of cryptoeconomics, blockchain and financial innovations</value></data>
+  <data name="Footer_QuickLinks" xml:space="preserve"><value>Quick Links</value></data>
+  <data name="Footer_Privacy" xml:space="preserve"><value>Privacy Policy</value></data>
+  <data name="Footer_Terms" xml:space="preserve"><value>Terms of Use</value></data>
+  <data name="Footer_Contact" xml:space="preserve"><value>Contact</value></data>
+
+  <data name="Footer_Copyright" xml:space="preserve"><value>© 2026 Institute of Cryptoeconomics, Blockchain and Innovations (ICBI). All rights reserved</value></data>
+</root>

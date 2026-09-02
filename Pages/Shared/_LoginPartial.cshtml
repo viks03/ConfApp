@@ -1,0 +1,46 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@using Microsoft.AspNetCore.Identity
+@using ConferenceApp.Models 
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-items nav-buttons">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <form class="form-inline" asp-page="/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })" method="post">
+                <button type="submit" class="logout-btn">Logout</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li id="register-link">
+            <a id="register-btn" class="nav-link" asp-page="/Register">@Localizer["Registration"]</a>
+        </li>
+
+        <li class="nav-item">
+            <a id="login-btn" class="nav-link" asp-page="/Login">@Localizer["Login"]</a>
+        </li>
+    }
+    
+    <li>
+        <div class="language-switcher">
+            <form asp-controller="Language" asp-action="SetLanguage" method="post" class="lang-form">
+                <input type="hidden" name="culture" value="bg" />
+                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                <button type="submit" class="lang-btn" title="switch to Bulgarian">
+                    <span>BG</span>
+                </button>
+            </form>
+
+            <form asp-controller="Language" asp-action="SetLanguage" method="post" class="lang-form">
+                <input type="hidden" name="culture" value="en" />
+                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                <button type="submit" class="lang-btn" title="switch to English">
+                    <span>EN</span>
+                </button>
+            </form>
+        </div>
+    </li>
+</ul>

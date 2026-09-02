@@ -1,0 +1,149 @@
+@* ═══════════════════════════════════════════════════════════════════════
+   Bug report widget — floating button + modal. Included once from
+   _Layout.cshtml inside an @if (User.IsInRole("Admin")) block, so it shows
+   up on EVERY page (public site + admin panel) for logged-in admins only.
+   Submits to Controllers/BugReportController.cs via bugReport.js.
+
+   Category/Severity use a custom dropdown (not a native <select>) because
+   plain HTML <option> elements cannot render an <svg> icon inside them —
+   see bugReport.js for the generic open/close/select wiring.
+   ═══════════════════════════════════════════════════════════════════════ *@
+
+<button type="button" class="brw-fab" id="brwFab">
+    <span class="brw-fab-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="8" y="9" width="8" height="10" rx="4"></rect>
+            <line x1="8" y1="13" x2="4" y2="11"></line>
+            <line x1="8" y1="16" x2="4" y2="17"></line>
+            <line x1="16" y1="13" x2="20" y2="11"></line>
+            <line x1="16" y1="16" x2="20" y2="17"></line>
+            <line x1="10" y1="9" x2="9" y2="5"></line>
+            <line x1="14" y1="9" x2="15" y2="5"></line>
+        </svg>
+    </span>
+    <span class="brw-fab-label">Report Bug</span>
+</button>
+
+<div class="brw-overlay" id="brwOverlay">
+    <div class="brw-panel" role="dialog" aria-modal="true" aria-labelledby="brwPanelTitle">
+        <div class="brw-panel-header">
+            <div class="brw-panel-header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="8" y="9" width="8" height="10" rx="4"></rect>
+                    <line x1="8" y1="13" x2="4" y2="11"></line>
+                    <line x1="8" y1="16" x2="4" y2="17"></line>
+                    <line x1="16" y1="13" x2="20" y2="11"></line>
+                    <line x1="16" y1="16" x2="20" y2="17"></line>
+                    <line x1="10" y1="9" x2="9" y2="5"></line>
+                    <line x1="14" y1="9" x2="15" y2="5"></line>
+                </svg>
+            </div>
+            <div class="brw-panel-header-text">
+                <h3 id="brwPanelTitle">Report a Bug</h3>
+                <p>Help Viktor fix what's broken</p>
+            </div>
+            <button type="button" class="brw-panel-close" id="brwCloseBtn" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <form id="brwForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="pageUrl" id="brwPageUrl">
+            <input type="hidden" name="userAgent" id="brwUserAgent">
+            <input type="hidden" name="category" id="brwCategoryValue" value="Bug">
+            <input type="hidden" name="severity" id="brwSeverityValue" value="Medium">
+
+            <div class="brw-panel-body">
+                <div class="brw-status-msg" id="brwStatusMsg"></div>
+
+                <div class="brw-field">
+                    <label for="brwTitle">Title</label>
+                    <input type="text" name="title" id="brwTitle" maxlength="200" placeholder="Short summary of what's wrong" required>
+                </div>
+
+                <div class="brw-field">
+                    <label for="brwDescription">Description</label>
+                    <textarea name="description" id="brwDescription" placeholder="What happened? Steps to reproduce, expected vs. actual..." required></textarea>
+                </div>
+
+                <div class="brw-field-row">
+                    <div class="brw-field">
+                        <label>Category</label>
+                        <div class="brw-select" data-hidden-input="brwCategoryValue" id="brwCategorySelect">
+                            <button type="button" class="brw-select-trigger">
+                                <span class="brw-select-icon-slot">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="9" width="8" height="10" rx="4"></rect><line x1="8" y1="13" x2="4" y2="11"></line><line x1="8" y1="16" x2="4" y2="17"></line><line x1="16" y1="13" x2="20" y2="11"></line><line x1="16" y1="16" x2="20" y2="17"></line><line x1="10" y1="9" x2="9" y2="5"></line><line x1="14" y1="9" x2="15" y2="5"></line></svg>
+                                </span>
+                                <span class="brw-select-label">Bug / not working</span>
+                                <svg class="brw-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </button>
+                            <div class="brw-select-menu">
+                                <button type="button" class="brw-select-option is-selected" data-value="Bug" data-label="Bug / not working">
+                                    <span class="brw-select-icon-slot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="9" width="8" height="10" rx="4"></rect><line x1="8" y1="13" x2="4" y2="11"></line><line x1="8" y1="16" x2="4" y2="17"></line><line x1="16" y1="13" x2="20" y2="11"></line><line x1="16" y1="16" x2="20" y2="17"></line><line x1="10" y1="9" x2="9" y2="5"></line><line x1="14" y1="9" x2="15" y2="5"></line></svg></span>
+                                    Bug / not working
+                                </button>
+                                <button type="button" class="brw-select-option" data-value="UI" data-label="UI / visual">
+                                    <span class="brw-select-icon-slot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></span>
+                                    UI / visual
+                                </button>
+                                <button type="button" class="brw-select-option" data-value="Content" data-label="Content / text">
+                                    <span class="brw-select-icon-slot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="13" y2="17"></line></svg></span>
+                                    Content / text
+                                </button>
+                                <button type="button" class="brw-select-option" data-value="Performance" data-label="Performance">
+                                    <span class="brw-select-icon-slot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span>
+                                    Performance
+                                </button>
+                                <button type="button" class="brw-select-option" data-value="Other" data-label="Other">
+                                    <span class="brw-select-icon-slot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>
+                                    Other
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="brw-field">
+                        <label>Severity</label>
+                        <div class="brw-select" data-hidden-input="brwSeverityValue" id="brwSeveritySelect">
+                            <button type="button" class="brw-select-trigger">
+                                <span class="brw-select-icon-slot brw-sev-medium"><span class="brw-dot"></span></span>
+                                <span class="brw-select-label">Medium</span>
+                                <svg class="brw-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </button>
+                            <div class="brw-select-menu">
+                                <button type="button" class="brw-select-option brw-sev-low" data-value="Low" data-label="Low">
+                                    <span class="brw-select-icon-slot"><span class="brw-dot"></span></span>Low
+                                </button>
+                                <button type="button" class="brw-select-option brw-sev-medium is-selected" data-value="Medium" data-label="Medium">
+                                    <span class="brw-select-icon-slot"><span class="brw-dot"></span></span>Medium
+                                </button>
+                                <button type="button" class="brw-select-option brw-sev-high" data-value="High" data-label="High">
+                                    <span class="brw-select-icon-slot"><span class="brw-dot"></span></span>High
+                                </button>
+                                <button type="button" class="brw-select-option brw-sev-critical" data-value="Critical" data-label="Critical">
+                                    <span class="brw-select-icon-slot"><span class="brw-dot"></span></span>Critical
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="brw-hint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <span>The current page, browser, and IP address are attached automatically — you don't need to include them.</span>
+                </p>
+            </div>
+
+            <div class="brw-panel-footer">
+                <button type="button" class="brw-btn-secondary" id="brwCancelBtn">Cancel</button>
+                <button type="submit" class="brw-btn-primary" id="brwSubmitBtn">
+                    <span class="brw-btn-icon-slot">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </span>
+                    <span class="brw-btn-label">Submit Report</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Pay_PageTitle" xml:space="preserve"><value>Payment</value></data>
+
+  <data name="Pay_HeaderLabel" xml:space="preserve"><value>FINALIZE YOUR REGISTRATION</value></data>
+  <data name="Pay_HeaderTitle" xml:space="preserve"><value>Payment</value></data>
+  <data name="Pay_HeaderSub" xml:space="preserve"><value>Choose whatever is easiest for you. Every payment is encrypted.</value></data>
+  <data name="Pay_Closed_Sub" xml:space="preserve"><value>We have temporarily stopped taking payments while we sort something out on our side. Nothing is wrong with your registration.</value></data>
+
+  <data name="Pay_TabsAriaLabel" xml:space="preserve"><value>Payment methods</value></data>
+  <data name="Pay_Tab_Card" xml:space="preserve"><value>Bank Card</value></data>
+  <data name="Pay_Tab_Crypto" xml:space="preserve"><value>Cryptocurrency</value></data>
+  <data name="Pay_Tab_Iban" xml:space="preserve"><value>Bank Transfer</value></data>
+  <data name="Pay_Tab_Digital" xml:space="preserve"><value>Apple / Google</value></data>
+
+  <data name="Pay_Card_NameLabel" xml:space="preserve"><value>Cardholder Name</value></data>
+  <data name="Pay_Card_NamePlaceholder" xml:space="preserve"><value>e.g., JOHN DOE</value></data>
+  <data name="Pay_Card_NumberLabel" xml:space="preserve"><value>Card Number</value></data>
+  <data name="Pay_Card_ExpiryLabel" xml:space="preserve"><value>Expiry Date</value></data>
+  <data name="Pay_Card_CurrencyLabel" xml:space="preserve"><value>Payment Currency</value></data>
+  <data name="Pay_Card_PayBtn" xml:space="preserve"><value>Confirm Payment</value></data>
+  <data name="Pay_Card_PayBtnPrefix" xml:space="preserve"><value>Pay</value></data>
+  <data name="Pay_Card_SecureNote" xml:space="preserve"><value>256-bit SSL encryption · Transactions processed securely by Stripe</value></data>
+  <data name="Pay_Card_InfoText" xml:space="preserve"><value>We will take you to Stripe's secure page — card, &lt;strong&gt;Apple Pay&lt;/strong&gt; or &lt;strong&gt;Google Pay&lt;/strong&gt;.</value></data>
+  <data name="Pay_Card_Method_CreditDebit" xml:space="preserve"><value>Credit / Debit Card</value></data>
+  <data name="Pay_Card_AmountLabel" xml:space="preserve"><value>Amount Due</value></data>
+  <data name="Pay_Card_ProcessorLabel" xml:space="preserve"><value>Processor</value></data>
+  <data name="Pay_Card_Redirecting" xml:space="preserve"><value>Redirecting to Stripe...</value></data>
+
+  <data name="Pay_Crypto_InfoText" xml:space="preserve"><value>Pick a currency and send the &lt;strong&gt;exact amount&lt;/strong&gt; to the address. The QR code is there to save you typing.</value></data>
+  <data name="Pay_Crypto_GridAriaLabel" xml:space="preserve"><value>Select cryptocurrency</value></data>
+  <data name="Pay_Crypto_EurcName" xml:space="preserve"><value>Euro Coin</value></data>
+  <data name="Pay_Crypto_UsdcName" xml:space="preserve"><value>USD Coin</value></data>
+  <data name="Pay_Crypto_SelectPrompt" xml:space="preserve"><value>Please select a cryptocurrency above to generate a payment address</value></data>
+  <data name="Pay_Crypto_AmountLabel" xml:space="preserve"><value>Amount to Transfer</value></data>
+  <data name="Pay_Crypto_AddressLabel" xml:space="preserve"><value>Wallet Address</value></data>
+  <data name="Pay_Crypto_CopyAddress" xml:space="preserve"><value>Copy Address</value></data>
+  <data name="Pay_Crypto_QrLabel" xml:space="preserve"><value>Scan to Pay</value></data>
+  <data name="Pay_Crypto_QrUnavailable" xml:space="preserve"><value>QR code unavailable</value></data>
+  <data name="Pay_Crypto_QrHint" xml:space="preserve"><value>System powered by go28.io</value></data>
+
+  <data name="Pay_Iban_InfoText" xml:space="preserve"><value>Transfer the exact amount using the details below. Put your &lt;strong&gt;reference number&lt;/strong&gt; in the payment description — that is how we match it to you.</value></data>
+  <data name="Pay_Iban_ImportantNote" xml:space="preserve"><value>&lt;strong&gt;Important&lt;/strong&gt; Keep your payment confirmation. The reference number in the description is what links the transfer to your registration.</value></data>
+  <data name="Pay_Iban_Beneficiary" xml:space="preserve"><value>Beneficiary</value></data>
+  <data name="Pay_Iban_CopyBeneficiary" xml:space="preserve"><value>Copy Beneficiary Name</value></data>
+  <data name="Pay_Iban_CopyIban" xml:space="preserve"><value>Copy IBAN</value></data>
+  <data name="Pay_Iban_CopyBic" xml:space="preserve"><value>Copy BIC / SWIFT</value></data>
+  <data name="Pay_Iban_Bank" xml:space="preserve"><value>Bank Name</value></data>
+  <data name="Pay_Iban_BankName" xml:space="preserve"><value>Bulgarian National Bank</value></data>
+  <data name="Pay_Iban_Amount" xml:space="preserve"><value>Amount Due</value></data>
+  <data name="Pay_Iban_Reference" xml:space="preserve"><value>Reference Number</value></data>
+  <data name="Pay_Iban_CopyRef" xml:space="preserve"><value>Copy Reference Code</value></data>
+  <data name="Pay_Iban_DoneBtn" xml:space="preserve"><value>Confirm Bank Transfer</value></data>
+  <data name="Pay_Iban_SubmittedTitle" xml:space="preserve"><value>✓ Request Registered</value></data>
+  <data name="Pay_Iban_SubmittedText" xml:space="preserve"><value>Thank you! We have logged your bank transfer.&lt;br&gt;&lt;br&gt;Processing takes &lt;strong&gt;1–3 working days&lt;/strong&gt;. We will email you.</value></data>
+  <data name="Pay_Iban_ProfileLink" xml:space="preserve"><value>Profile</value></data>
+
+  <data name="Pay_Digital_InfoText" xml:space="preserve"><value>Pay straight from your digital wallet. &lt;strong&gt;No card details needed&lt;/strong&gt; — you confirm with your fingerprint or face.</value></data>
+  <data name="Pay_Digital_AppleBtn" xml:space="preserve"><value>Pay with Apple Pay</value></data>
+  <data name="Pay_Digital_Or" xml:space="preserve"><value>or</value></data>
+  <data name="Pay_Digital_GoogleBtn" xml:space="preserve"><value>Pay with Google Pay</value></data>
+  <data name="Pay_Digital_BiometricNote" xml:space="preserve"><value>Biometric / device authentication required</value></data>
+
+  <data name="Pay_Summary_AriaLabel" xml:space="preserve"><value>Payment Details</value></data>
+  <data name="Pay_Summary_Title" xml:space="preserve"><value>Payment Details</value></data>
+  <data name="Pay_Summary_TypeLabel" xml:space="preserve"><value>Form of Participation</value></data>
+  <data name="Pay_Summary_TotalLabel" xml:space="preserve"><value>Total Amount Due</value></data>
+  <data name="Pay_Summary_RefLabel" xml:space="preserve"><value>Reference Number</value></data>
+  <data name="Pay_Summary_ContactNote" xml:space="preserve"><value>If anything goes wrong, write to us at&lt;br&gt;{0}</value></data>
+
+  <data name="Pay_JS_CryptoErr_NotSupported" xml:space="preserve"><value>This currency is temporarily unavailable. Please pick another.</value></data>
+  <data name="Pay_JS_CryptoErr_LimitReached" xml:space="preserve"><value>You have too many active orders for this currency. Wait for them to expire or choose another.</value></data>
+  <data name="Pay_JS_CryptoErr_MinAmount" xml:space="preserve"><value>The payment amount is below the minimum required threshold for this currency.</value></data>
+  <data name="Pay_JS_CryptoErr_Network" xml:space="preserve"><value>No connection. Check your internet and try again.</value></data>
+  <data name="Pay_JS_CryptoErr_Expired" xml:space="preserve"><value>This order expired. Generate a new address.</value></data>
+  <data name="Pay_JS_CryptoErr_Confirmed" xml:space="preserve"><value>Your payment has already been successfully verified.</value></data>
+  <data name="Pay_JS_CryptoErr_Default" xml:space="preserve"><value>Something went wrong creating the order. Please try later.</value></data>
+
+  <data name="Pay_JS_CryptoTitle_NotAvail" xml:space="preserve"><value>Currency Temporarily Unavailable</value></data>
+  <data name="Pay_JS_CryptoTitle_LimitReached" xml:space="preserve"><value>Request Limit Reached</value></data>
+  <data name="Pay_JS_CryptoTitle_MinAmount" xml:space="preserve"><value>Amount Below Minimum</value></data>
+  <data name="Pay_JS_CryptoTitle_ConnErr" xml:space="preserve"><value>Connectivity Issue</value></data>
+  <data name="Pay_JS_CryptoTitle_Expired" xml:space="preserve"><value>Request Time Expired</value></data>
+  <data name="Pay_JS_CryptoTitle_Confirmed" xml:space="preserve"><value>Successfully Verified</value></data>
+  <data name="Pay_JS_CryptoTitle_PayErr" xml:space="preserve"><value>Processing Error</value></data>
+
+  <data name="Pay_JS_CryptoHint_TryOther" xml:space="preserve"><value>This currency is temporarily unavailable. Please pick another.</value></data>
+  <data name="Pay_JS_CryptoHint_WaitExpiry" xml:space="preserve"><value>Wait for your active orders to expire (up to 120 min for BTC, 60 min for the rest) or choose another currency.</value></data>
+  <data name="Pay_JS_CryptoHint_NewAddress" xml:space="preserve"><value>Pick a currency above to get a new address.</value></data>
+  <data name="Pay_JS_CryptoHint_TryAgain" xml:space="preserve"><value>Please verify your internet connection and try again.</value></data>
+  <data name="Pay_JS_CryptoHint_SelectAgain" xml:space="preserve"><value>Please select the desired cryptocurrency and try again.</value></data>
+
+  <data name="Pay_JS_CryptoLimitTitle" xml:space="preserve"><value>Request Limit Reached</value></data>
+  <data name="Pay_JS_CryptoLimitMsg" xml:space="preserve"><value>You have reached the maximum of 2 active orders. Wait for them to expire before creating a new one.</value></data>
+  <data name="Pay_JS_CryptoUnlocksIn" xml:space="preserve"><value>New request available in</value></data>
+  <data name="Pay_JS_CryptoCopied" xml:space="preserve"><value>Address Copied!</value></data>
+
+  <data name="Pay_JS_ConfirmedTitle" xml:space="preserve"><value>Payment Successfully Confirmed!</value></data>
+  <data name="Pay_JS_ConfirmedSub" xml:space="preserve"><value>Your transfer is confirmed. Your registration is &lt;strong style="color:#4ea86b;"&gt;final&lt;/strong&gt;.</value></data>
+  <data name="Pay_JS_ConfirmedRedirect" xml:space="preserve"><value>Redirecting to your profile...</value></data>
+
+  <data name="Pay_JS_CardErrName" xml:space="preserve"><value>Enter the name exactly as it appears on your card.</value></data>
+  <data name="Pay_JS_CardErrNumber" xml:space="preserve"><value>The card number must contain exactly 16 digits.</value></data>
+  <data name="Pay_JS_CardErrExpiry" xml:space="preserve"><value>Please enter a valid expiry date in the format (MM / YY).</value></data>
+  <data name="Pay_JS_CardErrCvv" xml:space="preserve"><value>The security code (CVV) must contain 3 or 4 digits.</value></data>
+
+  <!-- ── Stripe & Digital Pay ── -->
+  <data name="Pay_JS_StripeProcessing" xml:space="preserve"><value>Processing payment...</value></data>
+  <data name="Pay_JS_StripeSuccess" xml:space="preserve"><value>Payment successful!</value></data>
+  <data name="Pay_JS_StripeError" xml:space="preserve"><value>An error occurred. Please try again.</value></data>
+  <data name="Pay_Digital_Unavailable" xml:space="preserve"><value>Apple Pay / Google Pay is not available on this device. Please use a card.</value></data>
+  <data name="Pay_Digital_UseCard" xml:space="preserve"><value>PAY WITH CARD INSTEAD</value></data>
+
+  <!-- ── Stripe Success Overlay ── -->
+  <data name="Pay_Success_Label" xml:space="preserve"><value>Payment Confirmed</value></data>
+  <data name="Pay_Success_Title" xml:space="preserve"><value>Thank You for Your Payment!</value></data>
+  <data name="Pay_Success_Msg" xml:space="preserve"><value>Payment went through. A confirmation email is on its way — your spot is secured.</value></data>
+  <data name="Pay_Success_Redirect" xml:space="preserve"><value>Redirecting to your profile in</value></data>
+  <data name="Pay_Success_ProfileBtn" xml:space="preserve"><value>Go to Profile Now</value></data>
+
+
+  <data name="Pay_Iban_TrackInProfile" xml:space="preserve"><value>Track the status in your profile</value></data>
+</root>

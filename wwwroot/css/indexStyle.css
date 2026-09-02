@@ -1,0 +1,1312 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   INDEX PAGE — redesigned for visual synergy with the rest of the site.
+
+   What was actually causing the "doesn't feel cohesive" problem, found by
+   comparing this file against mainStyle.css line by line:
+
+   1. COLOR: this file defined its own isolated palette (--accent-red:
+      #8b0000, a dark maroon) instead of the site's real --accent
+      (#FF3636, bright red) used everywhere else — nav, footer CTA,
+      cookie banner. The Index page was quite literally the wrong red.
+      Fixed by dropping the local tokens entirely and using the shared
+      ones from mainStyle.css (--bg, --panel, --panel-soft, --text,
+      --muted, --line, --accent, --accent-soft, --max-width).
+
+   2. RADIUS: cards mixed 4px / 6px / 8px / 50% with no logic. Standardized
+      on 10px for every card-like surface — that's not an arbitrary new
+      number, it's the exact radius mainStyle.css already uses for
+      .mobile-nav-link, so it matches a value already established
+      elsewhere on the site rather than inventing a new one. Buttons stay
+      sharp (0 radius), matching .register-btn / .cta-primary / .cta-
+      secondary — every button on this site is sharp-cornered; a rounded
+      button here would itself be the inconsistency.
+
+   3. LIGHT SECTIONS: two sections flipped to a pure white background with
+      black text, breaking the otherwise consistently dark, red-accented
+      mood the rest of the site keeps everywhere (nav, hero, footer,
+      cookie notice). Retired — every section now stays dark, using
+      --panel-soft for card surfaces instead of full white blocks for
+      contrast.
+
+   4. TYPOGRAPHY: several elements used font-weight: 900, but the only
+      Oswald weights actually loaded (see mainStyle.css @font-face) top
+      out at 700 — 900 was silently triggering the browser's synthetic
+      "fake bold" instead of rendering the real typeface. Capped at 700
+      throughout. Section h2s also had no shared rule at all, so they were
+      falling back to the browser's default heading style instead of the
+      site's Oswald/letter-spaced heading language — added one.
+
+   5. ICONS: the four domain-card icons were PNG images pushed through a
+      CSS `filter: invert()/sepia()/hue-rotate()` chain to fake a red
+      tint — fragile, and tuned to the wrong red to begin with. Replaced
+      with inline SVGs (same stroke style as the cookie notice's icons),
+      which take their color for free from `currentColor`.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Фонов "chain flow" canvas (chainFlow.js) — споделен, site-wide ефект.
+   position: fixed + GPU layer promotion — същата доказана техника
+   като на Schedule страницата (iOS Safari fixed-position scroll jank
+   фикс). Canvas-ът покрива само viewport-а, не цялата скролируема
+   височина.
+
+   ВАЖНО: main и всяка нейна секция получават изричен z-index: 1 —
+   без това, position: fixed елемент с z-index: 0/auto реално се
+   рисува НАД нормалния (non-positioned) поток по CSS stacking
+   правилата, не под него, колкото и контраинтуитивно да звучи. */
+#site-particles-bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    transform: translateZ(0);
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+main {
+    position: relative;
+}
+
+main > section {
+    position: relative;
+    z-index: 1;
+}
+
+.center-section {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+}
+
+.mt-4 { margin-top: 1.9rem; }
+.mb-3 { margin-bottom: 1rem; }
+
+/* ── Section rhythm ────────────────────────────────────────────────────
+   One consistent vertical padding scale for every content section,
+   replacing the old mix of arbitrary margin:20px/padding:10px values.
+   The hero and the thin partners-marquee strip opt out with their own
+   rule further down — everything else gets this. */
+.intro-section,
+.outcomes-section,
+.domains-section,
+.faculty-section,
+.timeline-section,
+.agenda-preview-section,
+.home-cta-section {
+    padding: 5.5rem 0;
+}
+
+/* ── Section heading language ─────────────────────────────────────────
+   Previously unstyled — section <h2>s were falling back to the browser
+   default heading style instead of the site's Oswald/letter-spaced
+   language used everywhere else (nav, footer CTA). This is that
+   language, just at body-content scale rather than the footer CTA's
+   much larger one. */
+main section h2 {
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: 0.01em;
+    font-size: clamp(1.9rem, 3.2vw, 2.5rem);
+    color: var(--text);
+    margin: 0 0 1.5rem;
+}
+
+/* The hero's eyebrow already used its own class — kept for the markup,
+   but now shares the exact same treatment as .section-label instead of
+   its own separate (and wrong-colored) rule. */
+.hero-subtitle {
+    margin: 0 0 0.7rem;
+    color: var(--accent-soft);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    /* Лек "kicker" елемент — къса хоризонтална чертичка преди текста,
+       вместо дълга вертикална линия през целия hero-content блок (усещаше
+       се натрапчиво). Само тук, само пред eyebrow-а — не докосва
+       .section-label другаде в сайта, тъй като .hero-subtitle си е
+       отделно, самостоятелно правило, не споделен селектор. */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+.hero-subtitle::before {
+    content: '';
+    display: inline-block;
+    width: 22px;
+    height: 2px;
+    background: var(--accent);
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────
+   Пропуск за залата: твърдо разсечен екран + билетна лента.
+
+   Снимката вече НЕ е background на секцията, а <img> в .hero-visual —
+   държи се като съдържание (кадрира се с object-fit, има свой градиент
+   към панела) вместо да се мащабира с cover под текста. Затова тук няма
+   background-image и .hero-overlay вече не е нужен.
+
+   Височината се дели на три: .hero-split заема наличното (flex: 1), а
+   .hero-pass е с фиксирана височина — така лентата винаги стои на
+   долния ръб на екрана, независимо от дължината на заглавието. */
+.index-hero {
+    background: var(--bg);
+    min-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-split {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
+/* ── Ляв панел ──────────────────────────────────────────────────────── */
+.hero-panel {
+    /* Плътно черно, малко по-светло от --bg, за да се чете като отделна
+       плоскост, а не като продължение на фона на страницата. */
+    background: #0a0a0a;
+    width: clamp(24rem, 43%, 39rem);
+    flex: none;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 3.25rem clamp(1.5rem, 3vw, 3.5rem) 0 clamp(1.25rem, 4vw, 4rem);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Растер от седалки — наклонена решетка от точки в акцентния цвят, на
+   ниска непрозрачност. Само декор, затова pointer-events: none. */
+.hero-seatmap {
+    position: absolute;
+    right: -2.5rem;
+    bottom: 7.5rem;
+    width: 26rem;
+    height: 19rem;
+    transform: skewY(-8deg);
+    opacity: 0.16;
+    background-image: radial-gradient(var(--accent) 1.6px, transparent 1.7px);
+    background-size: 15px 13px;
+    pointer-events: none;
+}
+
+/* Всичко в панела трябва да стои НАД растера. */
+.hero-panel > *:not(.hero-seatmap) { position: relative; }
+
+/* Много тихо акцентно сияние в горния десен ъгъл на панела — дава дълбочина
+   на плоскостта и връзва панела със снимката до него. */
+.hero-panel::after {
+    content: '';
+    position: absolute;
+    right: -6rem;
+    top: -8rem;
+    width: 26rem;
+    height: 26rem;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 54, 54, 0.13), rgba(255, 54, 54, 0));
+    pointer-events: none;
+}
+
+.hero-title {
+    /* Версално + Oswald 600: на два-три реда кондензираните главни букви
+       държат панела като плакат. auto горен margin бута заглавието в
+       оптичния център, без да е зависимо от височината на екрана. */
+    margin: auto 0 0;
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: clamp(1.9rem, 4.3vw, 3.9rem);
+    line-height: 1.02;
+    font-weight: 600;
+    letter-spacing: 0.004em;
+    text-wrap: balance;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+.hero-conference-name {
+    /* Без ::first-line (зависеше от line-wrap → изглеждаше произволно) и
+       без "glow над линия" експеримента (blur върху малка кутия рендира
+       като мъгливо петно, не като светлина) — вместо това една проста,
+       права акцентна линия отляво, класически "pull-quote" маркер.
+       Права линия физически не може да изглежда размазана/блокова,
+       затова е сигурният избор тук. Ключовите теми се открояват през
+       <strong> директно в .resx съдържанието — детерминирано, не зависи
+       от viewport-a. */
+    position: relative;
+    margin: 2.15rem 0 0;
+    padding: 0.1rem 0 0.1rem 1.3rem;
+    border-left: 2px solid var(--accent);
+    font-family: "Barlow", Arial, sans-serif;
+    font-size: clamp(1.05rem, 1.4vw, 1.26rem);
+    font-weight: 300;
+    line-height: 1.72;
+    letter-spacing: 0.006em;
+    color: color-mix(in srgb, var(--text) 68%, transparent);
+    max-width: 38ch;
+    text-wrap: pretty;
+}
+
+/* Ключовите теми на конференцията, откроени директно в съдържанието
+   (.resx-а носи <strong> около тях) — по-плътни, в основния текстов
+   цвят, без промяна на шрифта, за да остане параграфът един цялостен
+   визуален блок, не два различни стила един до друг. */
+.hero-conference-name strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.hero-organisers {
+    margin: auto 0 2.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.hero-foot-label {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+/* Логата вече са тънък ред в панела, не централен блок под текста. */
+.hero-organisers .partners-bar {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+/* Уголемени от 30px: на плътния черен панел логата поемат ролята на
+   подпис на конференцията, затова трябва да се четат, не да се гадаят. */
+.hero-organisers .partner-logo img {
+    height: 48px;
+    width: auto;
+    opacity: 0.82;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+.hero-organisers .partner-logo:hover img { opacity: 1; }
+.hero-organisers .partner-logo:hover img { opacity: 1; }
+
+/* ── Дясна страна: снимката ─────────────────────────────────────────── */
+.hero-visual {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.hero-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Градиент, който слива снимката с левия панел — без него ръбът между
+   двете плоскости реже снимката твърде рязко. Многостъпков (eased),
+   не плосък 2-цветен linear-gradient — редицата от stop-ове следва
+   приблизителна ease-out крива, затова окото не усеща "стена", а
+   постепенно, естествено потъмняване. Работи в тандем с
+   .hero-visual-blur (истински backdrop-filter blur) отдолу. */
+.hero-visual-fade {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 24rem;
+    background: linear-gradient(90deg,
+        #0a0a0a 0%,
+        rgba(10, 10, 10, 0.94) 14%,
+        rgba(10, 10, 10, 0.78) 30%,
+        rgba(10, 10, 10, 0.52) 48%,
+        rgba(10, 10, 10, 0.26) 68%,
+        rgba(10, 10, 10, 0.08) 86%,
+        rgba(10, 10, 10, 0) 100%);
+    pointer-events: none;
+}
+
+/* Реално размиване на снимката там, където тя се приближава до панела —
+   не просто по-тъмен overlay. backdrop-filter замъглява каквото стои
+   ЗАД този елемент (самата снимка); mask-image заглажда силата на
+   замъгляването по същата ease крива, затова преходът се усеща като
+   плавно "разфокусиране", а не като допълнителен твърд слой отгоре. */
+.hero-visual-blur {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 16rem;
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    mask-image: linear-gradient(90deg,
+        rgba(0, 0, 0, 0.95) 0%,
+        rgba(0, 0, 0, 0.6) 45%,
+        rgba(0, 0, 0, 0) 100%);
+    -webkit-mask-image: linear-gradient(90deg,
+        rgba(0, 0, 0, 0.95) 0%,
+        rgba(0, 0, 0, 0.6) 45%,
+        rgba(0, 0, 0, 0) 100%);
+    pointer-events: none;
+}
+
+.hero-venue {
+    position: absolute;
+    right: 1.6rem;
+    top: 2.5rem;
+    transform: rotate(90deg);
+    transform-origin: right top;
+    white-space: nowrap;
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: rgba(244, 242, 236, 0.66);
+    pointer-events: none;
+}
+
+/* ── Пропускът (лентата с данните) ──────────────────────────────────── */
+.hero-pass {
+    flex: none;
+    background: #0a0a0a;
+    position: relative;
+    display: flex;
+}
+
+/* border-top не може да получи собствена box-shadow (сянката би обхванала
+   цялата кутия) — затова лентата е отделен ::before, което ѝ позволява
+   мек glow над самата линия вместо твърд рязък ръб. */
+.hero-pass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 16px 1px var(--accent-soft), 0 -6px 20px -4px var(--accent-soft);
+}
+
+.hero-pass-fields {
+    flex: 1;
+    display: flex;
+    box-sizing: border-box;
+    padding-left: clamp(1.25rem, 4vw, 4rem);
+    min-width: 0;
+}
+
+.hero-pass-cell {
+    flex: 1;
+    box-sizing: border-box;
+    padding: 1.85rem 1.6rem;
+    border-left: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    min-width: 0;
+}
+.hero-pass-cell:first-child { padding-left: 0; border-left: none; }
+
+/* .meta-label / .meta-value са същите класове като в стария hero — сега
+   живеят само в пропуска, затова етикетът е приведен към езика на
+   останалите малки надписи тук (Oswald, разредено, версално). */
+.meta-label {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.meta-value {
+    font-weight: 500;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: var(--text);
+}
+
+.hero-pass-cell .meta-value {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: clamp(1.2rem, 1.8vw, 1.7rem);
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+/* Перфорация: пунктирана линия + две „изрязани" кръгчета в цвета на
+   фона на страницата. Елементът е с нулева ширина, за да не отваря
+   празнина в лентата. */
+.hero-pass-perf {
+    position: relative;
+    flex: none;
+    align-self: stretch;
+    box-sizing: border-box;
+    width: 2px;
+    margin: 0 -1px;
+    padding: 0.9rem 0;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 55%, transparent 0);
+    background-size: 2px 9px;
+    background-repeat: repeat-y;
+    background-clip: content-box;
+    background-origin: content-box;
+}
+
+/* Двете „изрязани" кръгчета в цвета на фона на страницата. */
+.hero-pass-perf::before,
+.hero-pass-perf::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--bg);
+}
+.hero-pass-perf::before { top: -9px; }
+.hero-pass-perf::after { bottom: -9px; }
+
+/* Червеният талон — единственият плътен обект в hero-то, и входната
+   точка към регистрацията. */
+.hero-pass-stub {
+    width: 14.5rem;
+    flex: none;
+    box-sizing: border-box;
+    padding: 0 1.75rem;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: background-color 0.22s ease;
+}
+.hero-pass-stub:hover { background: #e02b2b; }
+.hero-pass-stub:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: -6px;
+}
+
+.hero-pass-stub-label {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.hero-pass-stub-value {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: clamp(1.7rem, 2.5vw, 2.5rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.02em;
+}
+
+/* scroll-margin-top — пази разстояние, равно на височината на топбара,
+   когато се скача към секцията с анкер. */
+#partners-marquee-section {
+    scroll-margin-top: 90px;
+}
+
+/* ── Hero responsive ────────────────────────────────────────────────── */
+
+/* Тесен десктоп: талонът се свива, полетата стават по-плътни. */
+@media (max-width: 1240px) {
+    .hero-panel { width: 46%; }
+    .hero-pass-cell { padding: 1.5rem 1.1rem; }
+    .hero-pass-stub { width: 11rem; }
+    .hero-venue { display: none; }
+}
+
+/* Под 1024px разсеченият екран се разгъва вертикално: снимката отгоре,
+   панелът под нея, пропускът остава последен. */
+@media (max-width: 1024px) {
+    .hero-split { flex-direction: column; }
+
+    .hero-visual {
+        flex: none;
+        /* Малко по-висока плочка от преди: bannerHomeMobile.png е портретен,
+           затова при object-fit: cover ниска кутия отрязва твърде много. */
+        height: clamp(16rem, 38vh, 24rem);
+        order: -1;
+    }
+    /* Кадриране към горната част на портретния банер, където е и залата,
+       и синият блокчейн мотив. Ако предпочитате друг кадър, движете само
+       втората стойност (0% = горе, 50% = център). */
+    .hero-visual img { object-position: center 38%; }
+    /* Градиентът вече не слива хоризонтално, а надолу към панела. */
+    .hero-visual-fade {
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 0;
+        width: auto;
+        height: 7rem;
+        background: linear-gradient(180deg,
+            rgba(10, 10, 10, 0) 0%,
+            rgba(10, 10, 10, 0.08) 14%,
+            rgba(10, 10, 10, 0.26) 32%,
+            rgba(10, 10, 10, 0.52) 52%,
+            rgba(10, 10, 10, 0.78) 70%,
+            rgba(10, 10, 10, 0.94) 86%,
+            #0a0a0a 100%);
+    }
+    .hero-visual-blur {
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 0;
+        width: auto;
+        height: 5rem;
+        mask-image: linear-gradient(180deg,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.6) 55%,
+            rgba(0, 0, 0, 0.95) 100%);
+        -webkit-mask-image: linear-gradient(180deg,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.6) 55%,
+            rgba(0, 0, 0, 0.95) 100%);
+    }
+
+    .hero-panel {
+        width: 100%;
+        flex: 1;
+        padding: 1.75rem clamp(1.25rem, 4vw, 2.5rem) 0;
+    }
+    .hero-seatmap { right: -4rem; bottom: auto; top: 3rem; width: 18rem; height: 13rem; }
+    .hero-title { margin-top: 1.1rem; font-size: clamp(1.85rem, 6.2vw, 2.6rem); }
+    .hero-conference-name { max-width: none; }
+    .hero-organisers { margin: 1.6rem 0 1.75rem; }
+}
+
+@media (max-width: 768px) {
+    .index-hero {
+        min-height: calc(100vh - 64px);
+        min-height: calc(100dvh - 64px);
+    }
+
+    .hero-organisers .partner-logo img { height: 40px; }
+
+    /* Пропускът се пренарежда: 2×2 полета, талонът минава на цял ред
+       под тях, с перфорацията между двете части. */
+    .hero-pass {
+        flex-direction: column;
+        padding: 0 1.25rem 1.25rem;
+    }
+    .hero-pass-fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding-left: 0;
+    }
+    .hero-pass-cell { padding: 1rem 0.9rem; }
+    .hero-pass-cell:nth-child(odd) { padding-left: 0; border-left: none; }
+    .hero-pass-cell:nth-child(even) { padding-right: 0; }
+    .hero-pass-cell:nth-child(n + 3) { border-top: 1px solid var(--line); }
+
+    /* Хоризонтално легнала перфорация: пунктирът минава по ширината на
+       лентата, а кръгчетата излизат в двата ѝ края. */
+    .hero-pass-perf {
+        width: auto;
+        height: 2px;
+        align-self: auto;
+        margin: 0.55rem 0;
+        padding: 0 1.25rem;
+        background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.42) 55%, transparent 0);
+        background-size: 9px 2px;
+        background-repeat: repeat-x;
+    }
+    .hero-pass-perf::before {
+        top: -8px;
+        left: calc(-1.25rem - 9px);
+    }
+    .hero-pass-perf::after {
+        top: -8px;
+        bottom: auto;
+        left: auto;
+        right: calc(-1.25rem - 9px);
+    }
+
+    .hero-pass-stub {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        height: 3.85rem;
+        padding: 0 1.25rem;
+    }
+    .hero-pass-stub-label {
+        font-size: 0.8rem;
+        letter-spacing: 0.14em;
+        color: #fff;
+    }
+    .hero-pass-stub-value { font-size: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+    .hero-title { font-size: 1.9rem; }
+    .hero-conference-name { font-size: 0.95rem; }
+    .hero-organisers { gap: 0.9rem; }
+    .hero-organisers .partners-bar { gap: 1.35rem; }
+    .hero-conference-name { margin-top: 1.5rem; }
+    .hero-organisers .partner-logo img { height: 34px; }
+    .hero-pass-cell .meta-value { font-size: 1.05rem; }
+}
+
+/* ── Partners marquee ─────────────────────────────────────────────────
+   A thin strip, not a full content section — opts out of the standard
+   section padding above and uses its own, much smaller one instead. */
+.partherAnimation-section {
+    padding: 2.6rem 0;
+}
+
+.partners-marquee {
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+}
+
+.marquee-group {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4rem;
+    padding-right: 4rem; /* трябва да е абсолютно същото като gap-а */
+    min-width: 100%;
+    animation: scrollLeftToRight 20s linear infinite;
+}
+
+.marquee-logo img {
+    height: 64px;
+    width: auto;
+    object-fit: contain;
+    filter: grayscale(100%);
+    opacity: 0.55;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.marquee-logo img:hover {
+    filter: grayscale(0%);
+    opacity: 1;
+}
+
+@keyframes scrollLeftToRight {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(0); }
+}
+
+/* ── Grid layouts ──────────────────────────────────────────────────── */
+.grid-4-col {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.grid-3-col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────
+   Matches the .register-btn / .cta-primary / .cta-secondary language
+   already established in mainStyle.css instead of inventing a third,
+   differently-sized/rounded button system: sharp corners, Oswald,
+   uppercase-free (those two are set in title case already), a translateY
+   lift on hover. .btn-outline-dark has been retired along with the white
+   "light section" backgrounds it existed for — .btn-outline now covers
+   every non-primary case, light or dark background alike. */
+.btn {
+    display: inline-block;
+    padding: 0.85rem 1.8rem;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    border-radius: 0;
+    border: 1px solid transparent;
+    font-size: 0.95rem;
+    transition: transform 220ms ease, background-color 220ms ease, border-color 220ms ease, color 220ms ease;
+}
+
+.btn-red {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.btn-red:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.08);
+}
+
+.btn-outline {
+    border-color: var(--line);
+    color: var(--text);
+    background: transparent;
+}
+
+.btn-outline:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-soft);
+    color: var(--accent);
+}
+
+.btn-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.full-width {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* ── Intro section ─────────────────────────────────────────────────── */
+.intro-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.intro-text p {
+    color: var(--muted);
+    margin-bottom: 20px;
+    line-height: 1.7;
+}
+
+/* Faux-italic was quietly skewing Oswald with a synthetic slant (no
+   italic weight is loaded, same underlying issue as the 900 font-weight
+   above) — dropped in favor of a slightly larger, more spaced-out
+   treatment that plays to the typeface's own geometric character
+   instead of fighting it. */
+.intro-quote blockquote {
+    font-size: 1.5rem;
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+    color: var(--text);
+    border-left: 3px solid var(--accent);
+    padding-left: 25px;
+    margin: 0;
+}
+
+/* ── Outcomes — editorial divided row, not another card grid ───────────
+   Deliberately NOT styled like the domain/faculty cards below it — five
+   near-identical "grid of boxed cards" sections stacked down the page
+   was itself part of the problem. A big numeral + vertical-divider
+   treatment reads as a confident, editorial list of deliverables rather
+   than a fifth copy of the same card component. */
+.outcomes-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    text-align: left;
+}
+
+.outcome-item {
+    padding: 0 1.7rem;
+}
+
+.outcome-item:not(:first-child) {
+    border-left: 1px solid var(--line);
+}
+
+.outcome-item .number {
+    display: block;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 700; /* was 900 — see note at top of file */
+    font-size: 2.6rem;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 1.1rem;
+    transition: transform 0.25s ease;
+}
+
+.outcome-item:hover .number {
+    transform: translateX(4px);
+}
+
+.outcome-item h4 {
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.outcome-item p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ── Cards — shared surface for domain & faculty ────────────────────────
+   These two genuinely are browsable-item cards (an icon, a photo) — the
+   background/border/radius combination matches "panel" surfaces already
+   established elsewhere on the site (see .mobile-nav-link in
+   mainStyle.css: --panel-soft fill, --line border, 10px radius) instead
+   of a hardcoded #141414 that had no relationship to anything else on
+   the page. Faculty cards get a little more vertical room below — five
+   lines of content (name/role/org/bio) need more breathing space than a
+   domain card's title + one line. */
+.domain-card, .faculty-card {
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 2rem 1.7rem;
+    text-align: left;
+    transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.faculty-card { padding: 2.3rem 1.8rem; }
+
+.domain-card:hover, .faculty-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-soft);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: var(--shadow);
+}
+
+.domain-card h4 {
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.domain-card p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ── Domain card icons ─────────────────────────────────────────────────
+   Inline SVG now (see Index.cshtml) instead of a PNG run through a CSS
+   color-filter hack — same stroke-based icon language as the cookie
+   notice's icons, and gets its color for free via currentColor instead
+   of a fragile, hand-tuned filter chain. */
+.icon-box {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 20px;
+    color: var(--accent);
+    transition: transform 0.3s ease;
+}
+
+.icon-box svg {
+    width: 100%;
+    height: 100%;
+}
+
+.domain-card:hover .icon-box {
+    transform: scale(1.12) rotate(4deg);
+}
+
+/* ── Faculty cards ─────────────────────────────────────────────────── */
+.avatar-lg {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--panel);
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+}
+
+.avatar-lg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.faculty-card {
+    transition: transform 0.36s cubic-bezier(0.4, 0, 1, 1),
+                opacity 0.36s ease,
+                border-color 0.3s ease,
+                background-color 0.3s ease;
+    will-change: transform, opacity;
+}
+
+.faculty-card.rotating-out {
+    transform: perspective(800px) rotateY(90deg) scale(0.94);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.faculty-card.rotating-in {
+    animation: cardFlipIn 0.44s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+@keyframes cardFlipIn {
+    from { transform: perspective(800px) rotateY(-90deg) scale(0.94); opacity: 0; }
+    to   { transform: perspective(800px) rotateY(0deg) scale(1); opacity: 1; }
+}
+
+.faculty-card:hover .avatar-lg img {
+    transform: scale(1.1);
+}
+
+.faculty-card h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.faculty-card .role {
+    color: var(--accent);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.faculty-card .org {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0 0 15px 0;
+}
+
+.faculty-card .bio {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.view-all-link {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    font-family: "Oswald", Arial, sans-serif;
+    letter-spacing: 0.02em;
+    transition: color 0.3s;
+    display: inline-block;
+}
+
+.view-all-link:hover { color: var(--accent); }
+
+/* ── Agenda days ───────────────────────────────────────────────────────
+   Same divided-column language as the Outcomes section above (padding +
+   a vertical rule between items, no box) rather than a third copy of the
+   domain/faculty card treatment — Outcomes and Agenda are both
+   structured lists, so sharing that language is a deliberate rhyme, not
+   an accident. */
+.day-col {
+    padding: 0 1.7rem;
+    text-align: left;
+}
+
+.agenda-days .day-col:not(:first-child) {
+    border-left: 1px solid var(--line);
+}
+
+.day-header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+}
+
+.day-header .number {
+    color: var(--accent);
+    font-weight: 700; /* was 900 — see note at top of file */
+    font-size: 1.5rem;
+    font-family: "Oswald", Arial, sans-serif;
+}
+
+.day-header h4 {
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0;
+}
+
+.day-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.day-col li {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    color: var(--muted);
+    position: relative;
+    padding-left: 15px;
+    line-height: 1.5;
+}
+
+.day-col li::before {
+    content: "•";
+    color: var(--accent);
+    position: absolute;
+    left: 0;
+}
+
+/* ── Home CTA section (mid-page) ──────────────────────────────────────
+   Kept as the one deliberately accent-colored card on the page — that's
+   the point of it, a highlight — just brought onto the same 10px radius
+   as every other card instead of its own one-off 8px. */
+.cta-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.cta-text h2 { margin-bottom: 20px; }
+
+.cta-text p {
+    color: var(--muted);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.cta-card {
+    background: var(--accent);
+    padding: 2.6rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(255, 54, 54, 0.22);
+}
+
+.cta-card h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.7rem;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 600;
+    color: #fff;
+}
+
+.cta-card p {
+    margin-bottom: 25px;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.cta-card .btn-outline {
+    border-color: #ffffff;
+    color: #fff;
+}
+
+.cta-card .btn-outline:hover {
+    border-color: #fff;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.cta-card .btn-red {
+    background-color: #ffffff;
+    border-color: #ffffff;
+    color: var(--accent);
+}
+
+.cta-card .btn-red:hover {
+    filter: none;
+    background-color: #f2f2f2;
+}
+
+/* ── Timeline section ─────────────────────────────────────────────────
+   A real line-and-node timeline, not a 4th copy of the card grid. The
+   previous version was a rounded box with a plain top border that
+   turned accent-colored on hover — a flat-colored edge sitting right at
+   a rounded corner always looks slightly broken, since the two colors
+   have to meet exactly on the curve. Removing the box and using a
+   connecting line with circular nodes sidesteps that clash entirely and
+   reads as an actual timeline rather than three generic cards in a row. */
+.timeline-track {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+    margin-top: 3.4rem;
+}
+
+.timeline-track::before {
+    content: '';
+    position: absolute;
+    top: 27px; /* centers on the 56px node below */
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--line);
+    z-index: 0;
+}
+
+.timeline-item {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.timeline-node {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--accent);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    margin-bottom: 1.5rem;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.timeline-item:hover .timeline-node {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    transform: scale(1.08);
+    box-shadow: 0 0 26px rgba(255, 54, 54, 0.4);
+}
+
+.timeline-content { max-width: 240px; }
+
+.item-label {
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 10px;
+    font-family: "Oswald", Arial, sans-serif;
+}
+
+.item-date {
+    font-size: 1.4rem;
+    font-weight: 700; /* was 900 — see note at top of file */
+    margin: 0 0 10px 0;
+    color: var(--text);
+    font-family: "Oswald", Arial, sans-serif;
+}
+
+.item-desc {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Mobile Responsiveness
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+    .grid-4-col { grid-template-columns: repeat(2, 1fr); }
+    .intro-grid { grid-template-columns: 1fr; gap: 40px; }
+    .cta-grid { grid-template-columns: 1fr; }
+    .marquee-group {
+        animation-duration: 14s;
+    }
+
+    .intro-section,
+    .outcomes-section,
+    .domains-section,
+    .faculty-section,
+    .timeline-section,
+    .agenda-preview-section,
+    .home-cta-section {
+        padding: 4rem 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid-4-col, .grid-3-col { grid-template-columns: 1fr; }
+
+    /* Timeline flips to a vertical line running down the left, with each
+       node sitting on it and its content to the right — the standard,
+       readable pattern for a timeline once there's no room to lay nodes
+       out side by side. */
+    .timeline-track {
+        grid-template-columns: 1fr;
+        gap: 2.2rem;
+        margin-top: 2.6rem;
+    }
+    .timeline-track::before {
+        top: 0;
+        bottom: 0;
+        left: 27px;
+        right: auto;
+        width: 1px;
+        height: auto;
+    }
+    .timeline-item {
+        flex-direction: row;
+        align-items: flex-start;
+        text-align: left;
+        gap: 1.2rem;
+    }
+    .timeline-node { margin-bottom: 0; }
+    .timeline-content { max-width: none; }
+
+    /* Outcomes/Agenda: the vertical dividers between side-by-side items
+       only make sense in a row — stacked on mobile, they'd run down each
+       item's left edge for no reason. A horizontal rule above each item
+       (after the first) reads correctly once everything is one column. */
+    .outcomes-row, .agenda-days {
+        grid-template-columns: 1fr;
+        gap: 1.8rem;
+    }
+    .outcome-item, .agenda-days .day-col {
+        padding: 0;
+    }
+    .outcome-item:not(:first-child),
+    .agenda-days .day-col:not(:first-child) {
+        border-left: none;
+        border-top: 1px solid var(--line);
+        padding-top: 1.8rem;
+    }
+
+    .marquee-group {
+        animation-duration: 10s;
+    }
+
+    .intro-section,
+    .outcomes-section,
+    .domains-section,
+    .faculty-section,
+    .timeline-section,
+    .agenda-preview-section,
+    .home-cta-section {
+        padding: 3.2rem 0;
+    }
+
+    main section h2 { margin-bottom: 1.1rem; }
+}
+
+@media (max-width: 480px) {
+    .outcome-card, .domain-card, .faculty-card, .day-col { padding: 1.7rem 1.4rem; }
+}

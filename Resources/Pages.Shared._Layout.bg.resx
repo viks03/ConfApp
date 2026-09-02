@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <data name="Nav_Home" xml:space="preserve"><value>Начало</value></data>
+  <data name="Nav_Conference" xml:space="preserve"><value>За конференцията</value></data>
+  <data name="Nav_ICBI" xml:space="preserve"><value>За ICBI</value></data>
+  <data name="Nav_Lecturers" xml:space="preserve"><value>Лектори</value></data>
+  <data name="Nav_Schedule" xml:space="preserve"><value>Програма</value></data>
+  <data name="Nav_Attend" xml:space="preserve"><value>Билети</value></data>
+  <data name="Nav_FAQ" xml:space="preserve"><value>ЧЗВ</value></data>
+  <data name="Nav_Travel" xml:space="preserve"><value>Пътуване</value></data>
+  <data name="Nav_Register" xml:space="preserve"><value>Регистрация</value></data>
+  <data name="Nav_Login" xml:space="preserve"><value>Вход</value></data>
+  <data name="Nav_AdminPanel" xml:space="preserve"><value>Админ панел</value></data>
+  <data name="Nav_Profile" xml:space="preserve"><value>Моят профил</value></data>
+  <data name="Nav_Logout" xml:space="preserve"><value>Изход</value></data>
+  <data name="Nav_OpenMenu" xml:space="preserve"><value>Отвори менюто</value></data>
+  <data name="Nav_CloseMenu" xml:space="preserve"><value>Затвори менюто</value></data>
+
+  <data name="Home_JoinTitle" xml:space="preserve"><value>Присъединете се към разговора, който оформя бъдещето на финансовото образование</value></data>
+  <data name="Global_BtnRegisterAttend" xml:space="preserve"><value>Регистрирай се за участие</value></data>
+
+  <data name="Footer_Desc" xml:space="preserve"><value>Международна научна конференция за академично образование и наука в областта на криптоикономиката, блокчейн технологиите и финансовите иновации</value></data>
+  <data name="Footer_QuickLinks" xml:space="preserve"><value>Бързи връзки</value></data>
+  <data name="Footer_Privacy" xml:space="preserve"><value>Политика за поверителност</value></data>
+  <data name="Footer_Terms" xml:space="preserve"><value>Общи условия</value></data>
+  <data name="Footer_Contact" xml:space="preserve"><value>Контакт</value></data>
+
+  <data name="Footer_Copyright" xml:space="preserve"><value>© 2026 Институт по криптоикономика, блокчейн и иновации (ICBI). Всички права запазени.</value></data>
+</root>

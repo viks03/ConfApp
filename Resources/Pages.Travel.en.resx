@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Travel_PageTitle" xml:space="preserve"><value>Venue &amp; Travel</value></data>
+  <data name="Venue_Label" xml:space="preserve"><value>VENUE</value></data>
+  <data name="Venue_Title" xml:space="preserve"><value>University of National and World Economy</value></data>
+  <data name="Venue_Item_VenueTitle" xml:space="preserve"><value>CONFERENCE VENUE</value></data>
+  <data name="Venue_Item_VenueAddress" xml:space="preserve"><value>UNWE, 19, 8-mi Dekemvri St. 1700 Sofia, Bulgaria</value></data>
+  <data name="Venue_Item_HoursTitle" xml:space="preserve"><value>CONFERENCE HOURS</value></data>
+  <data name="Venue_Item_HoursValue" xml:space="preserve"><value>Day 1-3: 09:00 - 20:00&lt;br&gt;Registration from 08:30 each day</value></data>
+  <data name="Venue_Item_EmailTitle" xml:space="preserve"><value>EMAIL</value></data>
+  <data name="Transport_Label" xml:space="preserve"><value>GETTING HERE</value></data>
+  <data name="Transport_Title" xml:space="preserve"><value>Transportation Options</value></data>
+  <data name="Transport_Air_Title" xml:space="preserve"><value>By Air</value></data>
+  <data name="Transport_Air_Desc" xml:space="preserve"><value>Sofia Airport (SOF) is the main international gateway with 40+ direct routes.</value></data>
+  <data name="Transport_Metro_Title" xml:space="preserve"><value>By Metro and Bus</value></data>
+  <data name="Transport_Metro_Desc" xml:space="preserve"><value>Take the metro from the airport to G.M. Dimitrov Station. From there, transfer to bus line 280 or 294 and get off at the UNWE stop. Price: 0.80€</value></data>
+  <data name="Transport_Transfer_Title" xml:space="preserve"><value>Transfer Service</value></data>
+  <data name="Transport_Transfer_Desc" xml:space="preserve"><value>We offer airport-hotel transfers. Book via Extra Package during registration.</value></data>
+  <data name="Hotels_Label" xml:space="preserve"><value>ACCOMMODATION</value></data>
+  <data name="Hotels_Title" xml:space="preserve"><value>Recommended Hotels</value></data>
+  <data name="Hotels_FooterNote" xml:space="preserve"><value>To access preferential delegate rates, please contact conference.education@unwe.bg with the subject line 'Hotel Booking'.</value></data>
+</root>

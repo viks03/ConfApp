@@ -1,0 +1,110 @@
+@page
+@model ConferenceApp.Pages.LoginModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["login_title"].Value;
+
+    // Стълбицата отдясно е Вход → Код / Парола → Профил.
+    // RequirePassword е true само за админ — обикновеният потребител
+    // получава код на имейла и отива на /Verification.
+    ViewData["AuthFlowIsLogin"] = true;
+    ViewData["AuthAdminPath"] = Model.RequirePassword;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/authStyle.css" asp-append-version="true">
+}
+
+<main class="auth-page">
+    <div class="auth-split">
+
+        <div class="auth-col">
+            <div class="auth-form-wrap auth-step-in">
+
+                <span class="auth-ghost" aria-hidden="true">@(Model.RequirePassword ? "02" : "01")</span>
+
+                <div class="auth-brand">
+                    <img src="~/images/logos/mainLogo.png" alt="">
+                    <span class="auth-brand-rule"></span>
+                    <span class="auth-step">@(Model.RequirePassword ? "02 / 03" : "01 / 03")</span>
+                </div>
+
+                <p class="auth-eyebrow">@Localizer["login_subtitle"]</p>
+                <h1 class="auth-title">@Localizer["login_title"]</h1>
+                <span class="auth-title-rule"></span>
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="auth-alert" role="alert">@Model.ErrorMessage</div>
+                }
+
+                @if (!Model.IsBlocked && !string.IsNullOrEmpty(Model.AdminWarningMessage))
+                {
+                    <div class="auth-notice">@Model.AdminWarningMessage</div>
+                }
+
+                <form class="auth-form @(Model.IsBlocked ? "is-blocked" : "")" method="post" novalidate
+                      data-auth-handoff="@(Model.RequirePassword ? "true" : null)">
+                    <div class="auth-field">
+                        <label asp-for="Email">@Localizer["label_email"]</label>
+                        @if (Model.RequirePassword)
+                        {
+                            <input type="hidden" asp-for="Email" />
+                            <input type="email" value="@Model.Email" readonly class="auth-input is-locked" />
+                        }
+                        else
+                        {
+                            <input asp-for="Email" type="email" class="auth-input" placeholder="email@example.com" required
+                                   disabled="@(Model.IsBlocked ? "disabled" : null)" />
+                        }
+                    </div>
+
+                    @if (Model.RequirePassword)
+                    {
+                        <div class="auth-field">
+                            <div class="auth-field-head">
+                                <label asp-for="Password">@Localizer["label_password"]</label>
+                                <button type="button" class="auth-reveal" data-reveal-for="login-password"
+                                        data-label-show="@Localizer["reveal_show"]" data-label-hide="@Localizer["reveal_hide"]">@Localizer["reveal_show"]</button>
+                            </div>
+                            <input asp-for="Password" id="login-password" type="password" class="auth-input is-secret" placeholder="••••••••" required autofocus
+                                   disabled="@(Model.IsBlocked ? "disabled" : null)" />
+                        </div>
+                    }
+
+                    <div class="auth-actions-row">
+                        <button type="submit" class="auth-submit" disabled="@(Model.IsBlocked ? "disabled" : null)">
+                            <span>@(Model.RequirePassword ? Localizer["btn_login"] : Localizer["btn_next"])</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="auth-footer">
+                    <p>@Localizer["text_no_account"] <a href="/Register">@Localizer["link_register"]</a></p>
+                </div>
+
+            </div>
+        </div>
+
+        <partial name="_AuthVisual" model="@(Model.RequirePassword ? 2 : 1)" />
+
+    </div>
+
+    <partial name="_AuthHandoff" />
+</main>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.auth-reveal').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(btn.dataset.revealFor);
+                if (!input) return;
+                var shown = input.type === 'text';
+                input.type = shown ? 'password' : 'text';
+                input.classList.toggle('is-secret', shown);
+                btn.textContent = shown ? btn.dataset.labelShow : btn.dataset.labelHide;
+            });
+        });
+    </script>
+}

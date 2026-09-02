@@ -1,0 +1,87 @@
+﻿@page
+@model CookiesModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Cookies_PageTitle"];
+}
+
+@* Отделна страница само за бисквитките (не част от /Privacy) — категориите
+   се теглят директно от базата (същия CookieCategory, който захранва
+   preferences модала), така тази страница автоматично е в синхрон с каквото
+   админът конфигурира в /Admin -> Cookie Notice. "Manage Cookie Preferences"
+   отваря същия глобален модал, рендиран от _DataNotice.cshtml на всяка
+   страница (виж window.openCookiePreferencesModal в dataNotice.js). *@
+@section Styles {
+    <link rel="stylesheet" href="~/css/privacyStyle.css" asp-append-version="true" />
+}
+
+<main>
+    <section class="privacy-section">
+        <div class="privacy-container" style="max-width:780px;">
+
+            <div class="privacy-header">
+                <div class="privacy-header-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5Z"></path>
+                        <circle cx="8.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"></circle>
+                        <circle cx="15" cy="15.5" r="1" fill="currentColor" stroke="none"></circle>
+                        <circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"></circle>
+                        <circle cx="10" cy="16" r="0.9" fill="currentColor" stroke="none"></circle>
+                        <circle cx="7" cy="13" r="0.8" fill="currentColor" stroke="none"></circle>
+                    </svg>
+                </div>
+                <div class="privacy-header-text">
+                    <h1>@Localizer["Cookies_PageTitle"]</h1>
+                </div>
+            </div>
+
+            <div class="privacy-content">
+                @if (string.IsNullOrWhiteSpace(Model.PolicyHtml))
+                {
+                    <p>@Localizer["Cookies_Intro"]</p>
+                }
+                else
+                {
+                    @Html.Raw(Model.PolicyHtml)
+                }
+            </div>
+
+            <h2 class="cookie-policy-heading">@Localizer["Cookies_CategoriesHeading"]</h2>
+
+            <div class="cookie-policy-categories">
+                @if (!Model.Categories.Any())
+                {
+                    <p style="color:var(--muted);">@Localizer["Cookies_NoCategories"]</p>
+                }
+                else
+                {
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <div class="cookie-policy-category">
+                            <div class="cookie-policy-category-head">
+                                <h3>@(Model.IsBg ? cat.NameBg : cat.NameEn)</h3>
+                                @if (!cat.IsToggleable)
+                                {
+                                    <span class="cookie-policy-badge is-required">@Localizer["Cookies_RequiredBadge"]</span>
+                                }
+                                else
+                                {
+                                    <span class="cookie-policy-badge is-optional">@Localizer["Cookies_OptionalBadge"]</span>
+                                }
+                            </div>
+                            <div class="cookie-policy-category-desc">
+                                @Html.Raw(Model.IsBg ? cat.DescriptionBg : cat.DescriptionEn)
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <button type="button" class="cookie-policy-manage-btn" onclick="window.openCookiePreferencesModal && window.openCookiePreferencesModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 9.54 13.14 1 1 0 0 0-1.3-1.22 6 6 0 0 1-7.65-7.79A1 1 0 0 0 11.4 4.4 4 4 0 0 1 12 2z"></path></svg>
+                @Localizer["Cookies_ManageButton"]
+            </button>
+
+        </div>
+    </section>
+</main>

@@ -1,0 +1,714 @@
+﻿@page
+@model ConferenceApp.Pages.ScheduleModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Nav_Schedule"].Value ?? "Schedule";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/scheduleStyle.css" asp-append-version="true" />
+}
+
+<main>
+    <canvas id="particles-bg" aria-hidden="true"></canvas>
+
+    <section class="hero schedule-hero">
+      <div class="hero-overlay"></div>
+
+      <a href="#tickets-section" class="scroll-down-arrow" aria-label="@Localizer["Sched_ScrollDown"]">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </a>
+    </section>
+
+    <section class="schedule-section" id="tickets-section">
+      <div class="section-inner schedule-container">
+
+
+        <!-- Резерва --->
+        @* <header class="schedule-header center-section">
+            <h2>@Localizer["Sched_DownloadSubtitle"]</h2>
+            <h1>@Html.Raw(Localizer["Sched_DownloadTitle"].Value)</h1>
+            <div class="download-buttons">
+                <a href="/uploads/program/unwe-crypto-2026-bg.pdf" download="unwe-crypto-2026-bg.pdf" class="btn btn-outline">@Localizer["Sched_BtnBg"]</a>
+                <a href="/uploads/program/unwe-crypto-2026-en.pdf" download="unwe-crypto-2026-en.pdf" class="btn btn-solid">@Localizer["Sched_BtnEn"]</a>
+            </div>
+            
+            <div class="separator"></div>
+            
+            <h3>@Localizer["Sched_DeadlinesTitle"]</h3>
+            <ul class="deadlines-list">
+                @Html.Raw(Localizer["Sched_DeadlinesList"].Value)
+            </ul>
+
+            <div class="day-toggles">
+                <button class="day-btn active" data-target="day1">@Localizer["Sched_Day1_Date"]</button>
+                <button class="day-btn" data-target="day2">@Localizer["Sched_Day2_Date"]</button>
+                <button class="day-btn" data-target="day3">@Localizer["Sched_Day3_Date"]</button>
+            </div>
+        </header> *@
+
+        <header class="schedule-header center-section">
+            <h1>@Html.Raw(Localizer["Sched_h1Title"].Value)</h1>
+            
+            <div class="separator"></div>
+
+            <div class="day-toggles">
+                <button class="day-btn active" data-target="day1">@Localizer["Sched_Day1_Date"]</button>
+                <button class="day-btn" data-target="day2">@Localizer["Sched_Day2_Date"]</button>
+                <button class="day-btn" data-target="day3">@Localizer["Sched_Day3_Date"]</button>
+                <span class="day-toggle-indicator" aria-hidden="true"></span>
+            </div>
+        </header>
+
+        <div class="schedule-content">
+
+            <div id="day1" class="tab-pane active">
+                <div class="timeline">
+                    @if (Model.Day1Events != null && Model.Day1Events.Any())
+                    {
+                        var day1Groups = Model.Day1Events.GroupBy(e => e.StartTime).ToList();
+                        foreach (var group in day1Groups)
+                        {
+                            var groupList = group.ToList();
+                            if (groupList.Count == 1)
+                            {
+                                var item = groupList[0];
+                                var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                var title = isBulgarian ? (string.IsNullOrWhiteSpace(item.TitleBg) ? item.TitleEn : item.TitleBg) : item.TitleEn;
+                                var desc = isBulgarian ? (string.IsNullOrWhiteSpace(item.DescriptionBg) ? item.DescriptionEn : item.DescriptionBg) : item.DescriptionEn;
+                                var speaker = isBulgarian ? (string.IsNullOrWhiteSpace(item.SpeakerBg) ? item.SpeakerEn : item.SpeakerBg) : item.SpeakerEn;
+                                var location = isBulgarian ? (string.IsNullOrWhiteSpace(item.LocationBg) ? item.LocationEn : item.LocationBg) : item.LocationEn;
+
+                                <div class="timeline-item">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-meta">
+                                        <span class="time">@item.StartTime – @item.EndTime</span>
+                                        @if(!string.IsNullOrEmpty(item.SessionType)) {
+                                            <span class="badge">@Localizer[item.SessionType]</span>
+                                        }
+                                    </div>
+                                    <div class="timeline-card">
+                                        <div class="card-main">
+                                            <h4>@title</h4>
+                                            @if(!string.IsNullOrWhiteSpace(desc)) {
+                                                <p class="session-desc">@desc</p>
+                                                <button type="button" class="read-more-btn" data-expanded="false" data-label-more="@Localizer["Sched_ReadMore"]" data-label-less="@Localizer["Sched_ShowLess"]">
+                                                    <span class="read-more-label">@Localizer["Sched_ReadMore"]</span>
+                                                    <svg class="read-more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                                    </svg>
+                                                </button>
+                                            }
+                                            @if(!string.IsNullOrWhiteSpace(speaker)) {
+                                                <div class="speaker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>@speaker</div>
+                                            }
+                                        </div>
+                                        <div class="card-side">
+                                            <div class="card-side-info">
+                                                @if(!string.IsNullOrWhiteSpace(location)) {
+                                                    <div class="location">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"></path>
+                                                            <circle cx="12" cy="10" r="3"></circle>
+                                                        </svg>
+                                                        @location
+                                                    </div>
+                                                }
+                                                @* TODO: временен нефункционален layout — venue/livestream ще станат динамични (данни + resx) в следваща задача *@
+                                                <div class="session-modes">
+                                                    <span class="mode-badge mode-venue active">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <line x1="3" y1="22" x2="21" y2="22"></line>
+                                                            <line x1="6" y1="18" x2="6" y2="11"></line>
+                                                            <line x1="10" y1="18" x2="10" y2="11"></line>
+                                                            <line x1="14" y1="18" x2="14" y2="11"></line>
+                                                            <line x1="18" y1="18" x2="18" y2="11"></line>
+                                                            <polygon points="12 2 21 8 3 8"></polygon>
+                                                        </svg>
+                                                        @Localizer["Sched_InVenue"]
+                                                    </span>
+                                                    @if (!string.IsNullOrWhiteSpace(item.LiveStreamUrl))
+                                                    {
+                                                        <a href="@item.LiveStreamUrl" target="_blank" rel="noopener" class="mode-badge mode-livestream is-live">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="2"></circle>
+                                                            <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                            <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                            <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                            <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                        </svg>
+                                                        @Localizer["Sched_Livestream"]
+                                                        <svg class="mode-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="mode-badge mode-livestream" aria-disabled="true">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="2"></circle>
+                                                            <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                            <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                            <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                            <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                        </svg>
+                                                        @Localizer["Sched_Livestream"]
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="timeline-item">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-meta">
+                                        <span class="time">@group.Key</span>
+                                        <span class="badge badge-parallel">@Localizer["Sched_ParallelLabel"]</span>
+                                    </div>
+                                    <div class="parallel-group">
+                                        <div class="parallel-group-grid">
+                                            @for (int i = 0; i < groupList.Count; i++)
+                                            {
+                                                var item = groupList[i];
+                                                var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                                var title = isBulgarian ? (string.IsNullOrWhiteSpace(item.TitleBg) ? item.TitleEn : item.TitleBg) : item.TitleEn;
+                                                var desc = isBulgarian ? (string.IsNullOrWhiteSpace(item.DescriptionBg) ? item.DescriptionEn : item.DescriptionBg) : item.DescriptionEn;
+                                                var speaker = isBulgarian ? (string.IsNullOrWhiteSpace(item.SpeakerBg) ? item.SpeakerEn : item.SpeakerBg) : item.SpeakerEn;
+                                                var location = isBulgarian ? (string.IsNullOrWhiteSpace(item.LocationBg) ? item.LocationEn : item.LocationBg) : item.LocationEn;
+
+                                                <div class="timeline-card parallel-session">
+                                                    <div class="card-main">
+                                                        <div class="parallel-session-header">
+                                                            <h4>@title</h4>
+                                                            @if(!string.IsNullOrEmpty(item.SessionType)) {
+                                                                <span class="badge">@Localizer[item.SessionType]</span>
+                                                            }
+                                                        </div>
+                                                        @if(!string.IsNullOrWhiteSpace(desc)) {
+                                                            <p class="session-desc">@desc</p>
+                                                            <button type="button" class="read-more-btn" data-expanded="false" data-label-more="@Localizer["Sched_ReadMore"]" data-label-less="@Localizer["Sched_ShowLess"]">
+                                                                <span class="read-more-label">@Localizer["Sched_ReadMore"]</span>
+                                                                <svg class="read-more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                                                </svg>
+                                                            </button>
+                                                        }
+                                                        @if(!string.IsNullOrWhiteSpace(speaker)) {
+                                                            <div class="speaker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>@speaker</div>
+                                                        }
+                                                    </div>
+                                                    <div class="card-side">
+                                                        <div class="card-side-info">
+                                                            @if(!string.IsNullOrWhiteSpace(location)) {
+                                                                <div class="location">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"></path>
+                                                                        <circle cx="12" cy="10" r="3"></circle>
+                                                                    </svg>
+                                                                    @location
+                                                                </div>
+                                                            }
+                                                            @* TODO: временен нефункционален layout — venue/livestream ще станат динамични (данни + resx) в следваща задача *@
+                                                            <div class="session-modes">
+                                                                <span class="mode-badge mode-venue active">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <line x1="3" y1="22" x2="21" y2="22"></line>
+                                                                        <line x1="6" y1="18" x2="6" y2="11"></line>
+                                                                        <line x1="10" y1="18" x2="10" y2="11"></line>
+                                                                        <line x1="14" y1="18" x2="14" y2="11"></line>
+                                                                        <line x1="18" y1="18" x2="18" y2="11"></line>
+                                                                        <polygon points="12 2 21 8 3 8"></polygon>
+                                                                    </svg>
+                                                                    @Localizer["Sched_InVenue"]
+                                                                </span>
+                                                                @if (!string.IsNullOrWhiteSpace(item.LiveStreamUrl))
+                                                                {
+                                                                    <a href="@item.LiveStreamUrl" target="_blank" rel="noopener" class="mode-badge mode-livestream is-live">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="2"></circle>
+                                                                        <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                                        <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                                        <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                                        <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                                    </svg>
+                                                                    @Localizer["Sched_Livestream"]
+                                                                    <svg class="mode-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                                                    </a>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="mode-badge mode-livestream" aria-disabled="true">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="2"></circle>
+                                                                        <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                                        <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                                        <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                                        <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                                    </svg>
+                                                                    @Localizer["Sched_Livestream"]
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="parallel-disclaimer">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path>
+                                            </svg>
+                                            <span>@Localizer["Sched_ParallelDisclaimer"]</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <p style="text-align: center;">@Localizer["Sched_NoEvents"]</p>
+                    }
+                </div>
+            </div>
+
+            <div id="day2" class="tab-pane">
+                <div class="timeline">
+                    @if (Model.Day2Events != null && Model.Day2Events.Any())
+                    {
+                        var day2Groups = Model.Day2Events.GroupBy(e => e.StartTime).ToList();
+                        foreach (var group in day2Groups)
+                        {
+                            var groupList = group.ToList();
+                            if (groupList.Count == 1)
+                            {
+                                var item = groupList[0];
+                                var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                var title = isBulgarian ? (string.IsNullOrWhiteSpace(item.TitleBg) ? item.TitleEn : item.TitleBg) : item.TitleEn;
+                                var desc = isBulgarian ? (string.IsNullOrWhiteSpace(item.DescriptionBg) ? item.DescriptionEn : item.DescriptionBg) : item.DescriptionEn;
+                                var speaker = isBulgarian ? (string.IsNullOrWhiteSpace(item.SpeakerBg) ? item.SpeakerEn : item.SpeakerBg) : item.SpeakerEn;
+                                var location = isBulgarian ? (string.IsNullOrWhiteSpace(item.LocationBg) ? item.LocationEn : item.LocationBg) : item.LocationEn;
+
+                                <div class="timeline-item">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-meta">
+                                        <span class="time">@item.StartTime – @item.EndTime</span>
+                                        @if(!string.IsNullOrEmpty(item.SessionType)) {
+                                            <span class="badge">@Localizer[item.SessionType]</span>
+                                        }
+                                    </div>
+                                    <div class="timeline-card">
+                                        <div class="card-main">
+                                            <h4>@title</h4>
+                                            @if(!string.IsNullOrWhiteSpace(desc)) {
+                                                <p class="session-desc">@desc</p>
+                                                <button type="button" class="read-more-btn" data-expanded="false" data-label-more="@Localizer["Sched_ReadMore"]" data-label-less="@Localizer["Sched_ShowLess"]">
+                                                    <span class="read-more-label">@Localizer["Sched_ReadMore"]</span>
+                                                    <svg class="read-more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                                    </svg>
+                                                </button>
+                                            }
+                                            @if(!string.IsNullOrWhiteSpace(speaker)) {
+                                                <div class="speaker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>@speaker</div>
+                                            }
+                                        </div>
+                                        <div class="card-side">
+                                            <div class="card-side-info">
+                                                @if(!string.IsNullOrWhiteSpace(location)) {
+                                                    <div class="location">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"></path>
+                                                            <circle cx="12" cy="10" r="3"></circle>
+                                                        </svg>
+                                                        @location
+                                                    </div>
+                                                }
+                                                @* TODO: временен нефункционален layout — venue/livestream ще станат динамични (данни + resx) в следваща задача *@
+                                                <div class="session-modes">
+                                                    <span class="mode-badge mode-venue active">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <line x1="3" y1="22" x2="21" y2="22"></line>
+                                                            <line x1="6" y1="18" x2="6" y2="11"></line>
+                                                            <line x1="10" y1="18" x2="10" y2="11"></line>
+                                                            <line x1="14" y1="18" x2="14" y2="11"></line>
+                                                            <line x1="18" y1="18" x2="18" y2="11"></line>
+                                                            <polygon points="12 2 21 8 3 8"></polygon>
+                                                        </svg>
+                                                        @Localizer["Sched_InVenue"]
+                                                    </span>
+                                                    @if (!string.IsNullOrWhiteSpace(item.LiveStreamUrl))
+                                                    {
+                                                        <a href="@item.LiveStreamUrl" target="_blank" rel="noopener" class="mode-badge mode-livestream is-live">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="2"></circle>
+                                                            <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                            <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                            <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                            <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                        </svg>
+                                                        @Localizer["Sched_Livestream"]
+                                                        <svg class="mode-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="mode-badge mode-livestream" aria-disabled="true">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="2"></circle>
+                                                            <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                            <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                            <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                            <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                        </svg>
+                                                        @Localizer["Sched_Livestream"]
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="timeline-item">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-meta">
+                                        <span class="time">@group.Key</span>
+                                        <span class="badge badge-parallel">@Localizer["Sched_ParallelLabel"]</span>
+                                    </div>
+                                    <div class="parallel-group">
+                                        <div class="parallel-group-grid">
+                                            @for (int i = 0; i < groupList.Count; i++)
+                                            {
+                                                var item = groupList[i];
+                                                var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                                var title = isBulgarian ? (string.IsNullOrWhiteSpace(item.TitleBg) ? item.TitleEn : item.TitleBg) : item.TitleEn;
+                                                var desc = isBulgarian ? (string.IsNullOrWhiteSpace(item.DescriptionBg) ? item.DescriptionEn : item.DescriptionBg) : item.DescriptionEn;
+                                                var speaker = isBulgarian ? (string.IsNullOrWhiteSpace(item.SpeakerBg) ? item.SpeakerEn : item.SpeakerBg) : item.SpeakerEn;
+                                                var location = isBulgarian ? (string.IsNullOrWhiteSpace(item.LocationBg) ? item.LocationEn : item.LocationBg) : item.LocationEn;
+
+                                                <div class="timeline-card parallel-session">
+                                                    <div class="card-main">
+                                                        <div class="parallel-session-header">
+                                                            <h4>@title</h4>
+                                                            @if(!string.IsNullOrEmpty(item.SessionType)) {
+                                                                <span class="badge">@Localizer[item.SessionType]</span>
+                                                            }
+                                                        </div>
+                                                        @if(!string.IsNullOrWhiteSpace(desc)) {
+                                                            <p class="session-desc">@desc</p>
+                                                            <button type="button" class="read-more-btn" data-expanded="false" data-label-more="@Localizer["Sched_ReadMore"]" data-label-less="@Localizer["Sched_ShowLess"]">
+                                                                <span class="read-more-label">@Localizer["Sched_ReadMore"]</span>
+                                                                <svg class="read-more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                                                </svg>
+                                                            </button>
+                                                        }
+                                                        @if(!string.IsNullOrWhiteSpace(speaker)) {
+                                                            <div class="speaker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>@speaker</div>
+                                                        }
+                                                    </div>
+                                                    <div class="card-side">
+                                                        <div class="card-side-info">
+                                                            @if(!string.IsNullOrWhiteSpace(location)) {
+                                                                <div class="location">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"></path>
+                                                                        <circle cx="12" cy="10" r="3"></circle>
+                                                                    </svg>
+                                                                    @location
+                                                                </div>
+                                                            }
+                                                            @* TODO: временен нефункционален layout — venue/livestream ще станат динамични (данни + resx) в следваща задача *@
+                                                            <div class="session-modes">
+                                                                <span class="mode-badge mode-venue active">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <line x1="3" y1="22" x2="21" y2="22"></line>
+                                                                        <line x1="6" y1="18" x2="6" y2="11"></line>
+                                                                        <line x1="10" y1="18" x2="10" y2="11"></line>
+                                                                        <line x1="14" y1="18" x2="14" y2="11"></line>
+                                                                        <line x1="18" y1="18" x2="18" y2="11"></line>
+                                                                        <polygon points="12 2 21 8 3 8"></polygon>
+                                                                    </svg>
+                                                                    @Localizer["Sched_InVenue"]
+                                                                </span>
+                                                                @if (!string.IsNullOrWhiteSpace(item.LiveStreamUrl))
+                                                                {
+                                                                    <a href="@item.LiveStreamUrl" target="_blank" rel="noopener" class="mode-badge mode-livestream is-live">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="2"></circle>
+                                                                        <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                                        <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                                        <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                                        <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                                    </svg>
+                                                                    @Localizer["Sched_Livestream"]
+                                                                    <svg class="mode-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                                                    </a>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="mode-badge mode-livestream" aria-disabled="true">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="2"></circle>
+                                                                        <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                                        <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                                        <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                                        <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                                    </svg>
+                                                                    @Localizer["Sched_Livestream"]
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="parallel-disclaimer">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path>
+                                            </svg>
+                                            <span>@Localizer["Sched_ParallelDisclaimer"]</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <p style="text-align: center;">@Localizer["Sched_NoEvents"]</p>
+                    }
+                </div>
+            </div>
+
+            <div id="day3" class="tab-pane">
+                <div class="timeline">
+                    @if (Model.Day3Events != null && Model.Day3Events.Any())
+                    {
+                        var day3Groups = Model.Day3Events.GroupBy(e => e.StartTime).ToList();
+                        foreach (var group in day3Groups)
+                        {
+                            var groupList = group.ToList();
+                            if (groupList.Count == 1)
+                            {
+                                var item = groupList[0];
+                                var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                var title = isBulgarian ? (string.IsNullOrWhiteSpace(item.TitleBg) ? item.TitleEn : item.TitleBg) : item.TitleEn;
+                                var desc = isBulgarian ? (string.IsNullOrWhiteSpace(item.DescriptionBg) ? item.DescriptionEn : item.DescriptionBg) : item.DescriptionEn;
+                                var speaker = isBulgarian ? (string.IsNullOrWhiteSpace(item.SpeakerBg) ? item.SpeakerEn : item.SpeakerBg) : item.SpeakerEn;
+                                var location = isBulgarian ? (string.IsNullOrWhiteSpace(item.LocationBg) ? item.LocationEn : item.LocationBg) : item.LocationEn;
+
+                                <div class="timeline-item">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-meta">
+                                        <span class="time">@item.StartTime – @item.EndTime</span>
+                                        @if(!string.IsNullOrEmpty(item.SessionType)) {
+                                            <span class="badge">@Localizer[item.SessionType]</span>
+                                        }
+                                    </div>
+                                    <div class="timeline-card">
+                                        <div class="card-main">
+                                            <h4>@title</h4>
+                                            @if(!string.IsNullOrWhiteSpace(desc)) {
+                                                <p class="session-desc">@desc</p>
+                                                <button type="button" class="read-more-btn" data-expanded="false" data-label-more="@Localizer["Sched_ReadMore"]" data-label-less="@Localizer["Sched_ShowLess"]">
+                                                    <span class="read-more-label">@Localizer["Sched_ReadMore"]</span>
+                                                    <svg class="read-more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                                    </svg>
+                                                </button>
+                                            }
+                                            @if(!string.IsNullOrWhiteSpace(speaker)) {
+                                                <div class="speaker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>@speaker</div>
+                                            }
+                                        </div>
+                                        <div class="card-side">
+                                            <div class="card-side-info">
+                                                @if(!string.IsNullOrWhiteSpace(location)) {
+                                                    <div class="location">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"></path>
+                                                            <circle cx="12" cy="10" r="3"></circle>
+                                                        </svg>
+                                                        @location
+                                                    </div>
+                                                }
+                                                @* TODO: временен нефункционален layout — venue/livestream ще станат динамични (данни + resx) в следваща задача *@
+                                                <div class="session-modes">
+                                                    <span class="mode-badge mode-venue active">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <line x1="3" y1="22" x2="21" y2="22"></line>
+                                                            <line x1="6" y1="18" x2="6" y2="11"></line>
+                                                            <line x1="10" y1="18" x2="10" y2="11"></line>
+                                                            <line x1="14" y1="18" x2="14" y2="11"></line>
+                                                            <line x1="18" y1="18" x2="18" y2="11"></line>
+                                                            <polygon points="12 2 21 8 3 8"></polygon>
+                                                        </svg>
+                                                        @Localizer["Sched_InVenue"]
+                                                    </span>
+                                                    @if (!string.IsNullOrWhiteSpace(item.LiveStreamUrl))
+                                                    {
+                                                        <a href="@item.LiveStreamUrl" target="_blank" rel="noopener" class="mode-badge mode-livestream is-live">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="2"></circle>
+                                                            <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                            <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                            <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                            <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                        </svg>
+                                                        @Localizer["Sched_Livestream"]
+                                                        <svg class="mode-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="mode-badge mode-livestream" aria-disabled="true">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="2"></circle>
+                                                            <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                            <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                            <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                            <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                        </svg>
+                                                        @Localizer["Sched_Livestream"]
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="timeline-item">
+                                    <div class="timeline-marker"></div>
+                                    <div class="timeline-meta">
+                                        <span class="time">@group.Key</span>
+                                        <span class="badge badge-parallel">@Localizer["Sched_ParallelLabel"]</span>
+                                    </div>
+                                    <div class="parallel-group">
+                                        <div class="parallel-group-grid">
+                                            @for (int i = 0; i < groupList.Count; i++)
+                                            {
+                                                var item = groupList[i];
+                                                var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                                                var title = isBulgarian ? (string.IsNullOrWhiteSpace(item.TitleBg) ? item.TitleEn : item.TitleBg) : item.TitleEn;
+                                                var desc = isBulgarian ? (string.IsNullOrWhiteSpace(item.DescriptionBg) ? item.DescriptionEn : item.DescriptionBg) : item.DescriptionEn;
+                                                var speaker = isBulgarian ? (string.IsNullOrWhiteSpace(item.SpeakerBg) ? item.SpeakerEn : item.SpeakerBg) : item.SpeakerEn;
+                                                var location = isBulgarian ? (string.IsNullOrWhiteSpace(item.LocationBg) ? item.LocationEn : item.LocationBg) : item.LocationEn;
+
+                                                <div class="timeline-card parallel-session">
+                                                    <div class="card-main">
+                                                        <div class="parallel-session-header">
+                                                            <h4>@title</h4>
+                                                            @if(!string.IsNullOrEmpty(item.SessionType)) {
+                                                                <span class="badge">@Localizer[item.SessionType]</span>
+                                                            }
+                                                        </div>
+                                                        @if(!string.IsNullOrWhiteSpace(desc)) {
+                                                            <p class="session-desc">@desc</p>
+                                                            <button type="button" class="read-more-btn" data-expanded="false" data-label-more="@Localizer["Sched_ReadMore"]" data-label-less="@Localizer["Sched_ShowLess"]">
+                                                                <span class="read-more-label">@Localizer["Sched_ReadMore"]</span>
+                                                                <svg class="read-more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                                                </svg>
+                                                            </button>
+                                                        }
+                                                        @if(!string.IsNullOrWhiteSpace(speaker)) {
+                                                            <div class="speaker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>@speaker</div>
+                                                        }
+                                                    </div>
+                                                    <div class="card-side">
+                                                        <div class="card-side-info">
+                                                            @if(!string.IsNullOrWhiteSpace(location)) {
+                                                                <div class="location">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"></path>
+                                                                        <circle cx="12" cy="10" r="3"></circle>
+                                                                    </svg>
+                                                                    @location
+                                                                </div>
+                                                            }
+                                                            @* TODO: временен нефункционален layout — venue/livestream ще станат динамични (данни + resx) в следваща задача *@
+                                                            <div class="session-modes">
+                                                                <span class="mode-badge mode-venue active">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <line x1="3" y1="22" x2="21" y2="22"></line>
+                                                                        <line x1="6" y1="18" x2="6" y2="11"></line>
+                                                                        <line x1="10" y1="18" x2="10" y2="11"></line>
+                                                                        <line x1="14" y1="18" x2="14" y2="11"></line>
+                                                                        <line x1="18" y1="18" x2="18" y2="11"></line>
+                                                                        <polygon points="12 2 21 8 3 8"></polygon>
+                                                                    </svg>
+                                                                    @Localizer["Sched_InVenue"]
+                                                                </span>
+                                                                @if (!string.IsNullOrWhiteSpace(item.LiveStreamUrl))
+                                                                {
+                                                                    <a href="@item.LiveStreamUrl" target="_blank" rel="noopener" class="mode-badge mode-livestream is-live">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="2"></circle>
+                                                                        <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                                        <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                                        <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                                        <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                                    </svg>
+                                                                    @Localizer["Sched_Livestream"]
+                                                                    <svg class="mode-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                                                    </a>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="mode-badge mode-livestream" aria-disabled="true">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                        <circle cx="12" cy="12" r="2"></circle>
+                                                                        <path d="M8.5 8.5a5 5 0 0 0 0 7"></path>
+                                                                        <path d="M15.5 8.5a5 5 0 0 1 0 7"></path>
+                                                                        <path d="M5.5 5.5a9 9 0 0 0 0 13"></path>
+                                                                        <path d="M18.5 5.5a9 9 0 0 1 0 13"></path>
+                                                                    </svg>
+                                                                    @Localizer["Sched_Livestream"]
+                                                                    </span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="parallel-disclaimer">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path>
+                                            </svg>
+                                            <span>@Localizer["Sched_ParallelDisclaimer"]</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <p style="text-align: center;">@Localizer["Sched_NoEvents"]</p>
+                    }
+                </div>
+            </div>
+
+        </div>
+      </div>
+    </section>
+</main>
+
+@section Scripts {
+    <script src="~/js/scriptSchedule.js" asp-append-version="true"></script>
+    <script src="~/js/particlesBg.js" asp-append-version="true"></script>
+}

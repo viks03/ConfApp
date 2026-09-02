@@ -1,0 +1,48 @@
+@page
+@model ConferenceApp.Pages.AccessDeniedModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["denied_title"].Value;
+    ViewData["AuthDenied"] = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/authStyle.css" asp-append-version="true">
+}
+
+<main class="auth-page">
+    <div class="auth-split">
+
+        <div class="auth-col">
+            <div class="auth-form-wrap auth-step-in">
+
+                <span class="auth-ghost" aria-hidden="true">403</span>
+
+                <div class="auth-brand">
+                    <img src="~/images/logos/mainLogo.png" alt="">
+                    <span class="auth-brand-rule"></span>
+                    <span class="auth-step">403</span>
+                </div>
+
+                <p class="auth-eyebrow">@Localizer["denied_subtitle"]</p>
+                <h1 class="auth-title">@Localizer["denied_title"]</h1>
+                <span class="auth-title-rule"></span>
+
+                <p class="auth-body">@Localizer["denied_body"]</p>
+
+                <div class="auth-actions">
+                    <a href="/Login" class="auth-btn">@Localizer["denied_btn_login"]</a>
+                    <a href="/" class="auth-btn-outline">@Localizer["denied_btn_home"]</a>
+                </div>
+
+                <div class="auth-footer">
+                    <p>@Localizer["denied_help_text"] <a href="/BugReports">@Localizer["denied_help_link"]</a></p>
+                </div>
+
+            </div>
+        </div>
+
+        <partial name="_AuthVisual" model="3" />
+
+    </div>
+</main>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Home_PageTitle" xml:space="preserve"><value>Начало</value></data>
+  <data name="Home_HeroSubtitle" xml:space="preserve"><value>София, България - 2026</value></data>
+  <data name="Home_HeroTitle" xml:space="preserve"><value>Blockchain Education 2026</value></data>
+  <data name="Home_HeroConferenceName" xml:space="preserve"><value>Международна конференция по &lt;strong&gt;криптоикономика&lt;/strong&gt;, &lt;strong&gt;блокчейн технологии&lt;/strong&gt; и &lt;strong&gt;финансови иновации&lt;/strong&gt;</value></data>
+  <data name="Global_Date" xml:space="preserve"><value>Дата</value></data>
+  <data name="Home_HeroDateValue" xml:space="preserve"><value>29-31 октомври 2026 г.</value></data>
+  <data name="Global_Location" xml:space="preserve"><value>Място</value></data>
+  <data name="Home_HeroLocValue" xml:space="preserve"><value>УНСС, София, България</value></data>
+  <data name="Global_Duration" xml:space="preserve"><value>Продължителност</value></data>
+  <data name="Home_HeroDurationValue" xml:space="preserve"><value>3 дни</value></data>
+  <data name="Global_Language" xml:space="preserve"><value>Работен език</value></data>
+  <data name="Home_HeroLangValue" xml:space="preserve"><value>Английски</value></data>
+  <data name="Home_AboutLabel" xml:space="preserve"><value>ЗА КОНФЕРЕНЦИЯТА</value></data>
+  <data name="Home_GapTitle" xml:space="preserve"><value>Структурна празнина в сърцето на европейските академични среди</value></data>
+  <data name="Home_GapDesc1" xml:space="preserve"><value>Бързото развитие на блокчейн технологиите и криптоикономиката изпревари академичните рамки, оставяйки критична празнина в европейското висше образование.</value></data>
+  <data name="Home_GapDesc2" xml:space="preserve"><value>Тази конференция служи като платформа за систематичен диалог между академичните среди, регулаторите и индустрията за преодоляване на това разминаване.</value></data>
+  <data name="Global_BtnLearnMore" xml:space="preserve"><value>НАУЧЕТЕ ПОВЕЧЕ</value></data>
+  <data name="Global_BtnViewAgenda" xml:space="preserve"><value>ВИЖТЕ ПРОГРАМАТА</value></data>
+  <data name="Home_Quote" xml:space="preserve"><value>"Ние не се събираме просто за да обсъждаме блокчейн. Събираме се, за да изградим академичната архитектура, която ще управлява интегрирането му в една реална, структурирана и призната нова европейска образователна сфера."</value></data>
+  <data name="Home_DelivLabel" xml:space="preserve"><value>ОСНОВНИ РЕЗУЛТАТИ</value></data>
+  <data name="Home_DelivTitle" xml:space="preserve"><value>Какви цели ще постигне тази конференция</value></data>
+  <data name="Home_Deliv1_Title" xml:space="preserve"><value>СОФИЙСКАТА ДЕКЛАРАЦИЯ</value></data>
+  <data name="Home_Deliv1_Desc" xml:space="preserve"><value>Утвърждаване на общи академични стандарти за обучение по криптоикономика, официално приети от европейските университети.</value></data>
+  <data name="Home_Deliv2_Title" xml:space="preserve"><value>АКАДЕМИЧНА РАМКА</value></data>
+  <data name="Home_Deliv2_Desc" xml:space="preserve"><value>Постоянен международен консорциум, позволяващ непрекъснат изследователски обмен и сътрудничество между преподавателите.</value></data>
+  <data name="Home_Deliv3_Title" xml:space="preserve"><value>РАМКИ ЗА УЧЕБНИ ПРОГРАМИ</value></data>
+  <data name="Home_Deliv3_Desc" xml:space="preserve"><value>Готови за внедряване модели за нови университетски програми, блокчейн лаборатории и рамки за регулаторно съответствие.</value></data>
+  <data name="Home_Deliv4_Title" xml:space="preserve"><value>ПАРТНЬОРСТВО С ИНДУСТРИЯТА</value></data>
+  <data name="Home_Deliv4_Desc" xml:space="preserve"><value>Основи за финансирано сътрудничество между институциите за висше образование и водещи представители на Web3 индустрията в сферата на DeFi и токенизацията на активи.</value></data>
+  <data name="Home_DomainsLabel" xml:space="preserve"><value>ОСНОВНИ НАПРАВЛЕНИЯ</value></data>
+  <data name="Home_DomainsTitle" xml:space="preserve"><value>Четири области на изследване</value></data>
+  <data name="Home_Dom1_Title" xml:space="preserve"><value>Образование и академични стандарти</value></data>
+  <data name="Home_Dom1_Desc" xml:space="preserve"><value>Дизайн на учебни програми, критерии за качество, междуинституционално съгласуване и рамката на Софийската декларация.</value></data>
+  <data name="Home_Dom2_Title" xml:space="preserve"><value>Регулаторни рамки (MiCA)</value></data>
+  <data name="Home_Dom2_Desc" xml:space="preserve"><value>Европейските регулаторни рамки и тяхното пряко въздействие върху академичните програми и инфраструктурата.</value></data>
+  <data name="Home_Dom3_Title" xml:space="preserve"><value>Web3 технологии и токеномика</value></data>
+  <data name="Home_Dom3_Desc" xml:space="preserve"><value>DeFi, токенизация на реални активи (RWA), синергия между блокчейн и AI и възникващи парадигми в дигиталните финанси.</value></data>
+  <data name="Home_Dom4_Title" xml:space="preserve"><value>Синергия между наука и бизнес</value></data>
+  <data name="Home_Dom4_Desc" xml:space="preserve"><value>Трансфер на академичните изследвания в практиката, съвместни проекти и иновационни лаборатории.</value></data>
+  <data name="Speakers_Subtitle" xml:space="preserve"><value>ЛЕКТОРИ</value></data>
+  <data name="Speakers_Title" xml:space="preserve"><value>Международен лекторски състав</value></data>
+  <data name="Home_ViewAllLecturers" xml:space="preserve"><value>Вижте всички лектори →</value></data>
+  <data name="Home_TimelineLabel" xml:space="preserve"><value>ВАЖНИ СРОКОВЕ</value></data>
+  <data name="Home_TimelineTitle" xml:space="preserve"><value>Хронограма на конференцията</value></data>
+  <data name="Home_Time1_Label" xml:space="preserve"><value>РАННО ЗАПИСВАНЕ</value></data>
+  <data name="Home_Time1_Date" xml:space="preserve"><value>31 август 2026 г.</value></data>
+  <data name="Home_Time1_Desc" xml:space="preserve"><value>Краен срок за билети с отстъпка</value></data>
+  <data name="Home_Time4_Label" xml:space="preserve"><value>ПЛАЩАНИЯ</value></data>
+  <data name="Home_Time4_Date" xml:space="preserve"><value>20 октомври 2026 г.</value></data>
+  <data name="Home_Time4_Desc" xml:space="preserve"><value>Краен срок за плащане на такси</value></data>
+  <data name="Home_Time5_Label" xml:space="preserve"><value>КОНФЕРЕНЦИЯ</value></data>
+  <data name="Home_Time5_Date" xml:space="preserve"><value>29–31 октомври 2026 г.</value></data>
+  <data name="Home_Time5_Desc" xml:space="preserve"><value>Кампус на УНСС, София, България</value></data>
+  <data name="Home_AgendaLabel" xml:space="preserve"><value>ПРОГРАМАТА НАКРАТКО</value></data>
+  <data name="Home_AgendaTitle" xml:space="preserve"><value>Три дни на задълбочени дискусии</value></data>
+  <data name="Day01Title" xml:space="preserve"><value>ОБРАЗОВАНИЕ И РЕГУЛАЦИИ</value></data>
+  <data name="Home_Day01List_Html" xml:space="preserve"><value>&lt;ul&gt;&lt;li&gt;Откриваща пленарна сесия&lt;/li&gt;&lt;li&gt;Глобални тенденции в блокчейн образованието&lt;/li&gt;&lt;li&gt;Анализ на регулаторната рамка MiCA&lt;/li&gt;&lt;li&gt;Модели на учебни програми и компетенции&lt;/li&gt;&lt;li&gt;Вечерна нетуъркинг среща&lt;/li&gt;&lt;/ul&gt;</value></data>
+  <data name="Day02Title" xml:space="preserve"><value>ТЕХНОЛОГИИ И ИЗСЛЕДВАНИЯ</value></data>
+  <data name="Home_Day02List_Html" xml:space="preserve"><value>&lt;ul&gt;&lt;li&gt;Нови хоризонти в Web3 изследванията&lt;/li&gt;&lt;li&gt;Сесии с рецензирани доклади&lt;/li&gt;&lt;li&gt;Токенизация на реални активи (RWA)&lt;/li&gt;&lt;li&gt;DeFi и устойчиви икономически модели&lt;/li&gt;&lt;li&gt;Среща между индустрията и академичните среди&lt;/li&gt;&lt;/ul&gt;</value></data>
+  <data name="Day03Title" xml:space="preserve"><value>СТАНДАРТИ И ДЕКЛАРАЦИЯ</value></data>
+  <data name="Home_Day03List_Html" xml:space="preserve"><value>&lt;ul&gt;&lt;li&gt;Уъркшопове за дизайн на учебни програми&lt;/li&gt;&lt;li&gt;Блокчейн лаборатории и инфраструктура&lt;/li&gt;&lt;li&gt;Международна академична мрежа&lt;/li&gt;&lt;li&gt;Подписване на Софийската декларация&lt;/li&gt;&lt;li&gt;Официална церемония по закриване&lt;/li&gt;&lt;/ul&gt;</value></data>
+  <data name="Global_BtnFullSchedule" xml:space="preserve"><value>ВИЖТЕ ПЪЛНАТА ПРОГРАМА</value></data>
+  <data name="Home_CtaTitle" xml:space="preserve"><value>Развитието на блокчейн технологиите и криптоикономиката.</value></data>
+  <data name="Home_CtaPara1" xml:space="preserve"><value>Развитието на блокчейн технологиите и криптоикономиката разчита на непрекъснат диалог между академичните среди, регулаторите и индустрията, както и на създаването на признати образователни програми с различна дълбочина и усъвършенствани академични стандарти.</value></data>
+  <data name="Home_CtaPara2" xml:space="preserve"><value>Международна научна конференция за академично образование и наука в областта на криптоикономиката, блокчейн технологиите и финансовите иновации, изследователски институти и практици. Организирана от УНСС, Института по криптоикономика, блокчейн и иновации (ICBI) и Националната асоциация за блокчейн и иновации (NABI), тя обединява академичните среди, регулаторите и бизнеса в споделено пространство, фокусирано върху качествено образование, изследвания и иновации.</value></data>
+  <data name="Home_StudyTitle" xml:space="preserve"><value>Обучение по криптоикономика и блокчейн</value></data>
+  <data name="Home_StudyDesc" xml:space="preserve"><value>Изберете своя образователен път в сферата на дигиталните финанси.</value></data>
+  <data name="Home_BtnBachelor" xml:space="preserve"><value>БАКАЛАВЪРСКА ПРОГРАМА</value></data>
+  <data name="Home_BtnMaster" xml:space="preserve"><value>МАГИСТЪРСКА ПРОГРАМА</value></data>
+</root>

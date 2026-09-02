@@ -1,0 +1,64 @@
+@* Общ визуален панел за auth страниците.
+
+   Викайте с: <partial name="_AuthVisual" model="new AuthVisual(step, flow)" />
+   или по-простото: <partial name="_AuthVisual" model="1" /> където
+   1 = първа стъпка, 2 = код/парола, 3 = профил.
+
+   Първият етап се нарича различно според потока: "Регистрация" при
+   /Register, "Вход" при /Login и /Verification след логин. Подавайте
+   isLogin през ViewData["AuthFlowIsLogin"], за да не се променя моделът. *@
+@model int
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    var isLoginFlow = ViewData["AuthFlowIsLogin"] as bool? ?? false;
+    var isAdminPath = ViewData["AuthAdminPath"] as bool? ?? false;
+
+    var stepOne = isLoginFlow ? Localizer["ladder_login"] : Localizer["ladder_register"];
+    var stepTwo = isAdminPath ? Localizer["ladder_password"] : Localizer["ladder_code"];
+
+    @* На 403 стълбицата „три стъпки до профил“ няма смисъл — там показваме
+       какво може да се направи по самата страница. Подава се с
+       ViewData["AuthDenied"] = true; от AccessDenied.cshtml. *@
+    var isDenied = ViewData["AuthDenied"] as bool? ?? false;
+}
+
+<aside class="auth-visual">
+    <img src="~/images/register/register.png" alt="">
+    <span class="auth-visual-fade" aria-hidden="true"></span>
+    <span class="auth-visual-grid" aria-hidden="true"></span>
+    <span class="auth-visual-edge" aria-hidden="true"></span>
+
+    <div class="auth-visual-inner">
+        <div class="auth-visual-top">
+            <span class="auth-wordmark">@Localizer["visual_wordmark"]</span>
+            <b>2026</b>
+        </div>
+
+        <div class="auth-visual-bottom">
+            <p class="auth-visual-claim">@(isDenied ? Localizer["visual_claim_denied"] : Localizer["visual_claim"])</p>
+
+            @if (isDenied)
+            {
+                <ol class="auth-ladder auth-ladder--routes">
+                    <li><b>01</b> <span>@Localizer["denied_route_1"]</span></li>
+                    <li><b>02</b> <span>@Localizer["denied_route_2"]</span></li>
+                    <li><b>03</b> <span>@Localizer["denied_route_3"]</span></li>
+                </ol>
+            }
+            else
+            {
+                <ol class="auth-ladder">
+                    <li class="@(Model == 1 ? "is-current" : "")">
+                        <b>01</b> <span>@stepOne</span>
+                    </li>
+                    <li class="@(Model == 2 ? "is-current" : "")">
+                        <b>02</b> <span>@stepTwo</span>
+                    </li>
+                    <li class="@(Model == 3 ? "is-current" : "")">
+                        <b>03</b> <span>@Localizer["ladder_profile"]</span>
+                    </li>
+                </ol>
+            }
+        </div>
+    </div>
+</aside>

@@ -1,0 +1,253 @@
+@page
+@model ConferenceApp.Pages.VerificationModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["verify_title"].Value;
+
+    // Кодът се ползва и в двата потока — след регистрация и след вход
+    // на обикновен потребител — затова първата стъпка в стълбицата
+    // следва Purpose.
+    ViewData["AuthFlowIsLogin"] = Model.Purpose != "Registration";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/authStyle.css" asp-append-version="true">
+}
+
+<main class="auth-page">
+    <div class="auth-split">
+
+        <div class="auth-col">
+            <div class="auth-form-wrap auth-step-in">
+
+                <span class="auth-ghost" aria-hidden="true">02</span>
+
+                <div class="auth-brand">
+                    <img src="~/images/logos/mainLogo.png" alt="">
+                    <span class="auth-brand-rule"></span>
+                    <span class="auth-step">02 / 03</span>
+                </div>
+
+                <p class="auth-eyebrow">@Localizer["verify_subtitle"]</p>
+                <h1 class="auth-title">@Localizer["verify_title"]</h1>
+                <span class="auth-title-rule"></span>
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="auth-ok">@TempData["SuccessMessage"]</div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="auth-alert" role="alert">@TempData["ErrorMessage"]</div>
+                }
+
+                <div class="auth-meta">
+                    <p>@Localizer["verify_info_sent"] <strong>@Model.DisplayEmail</strong></p>
+                    <p class="auth-meta-timer">
+                        <span>@Localizer["verify_info_valid"]</span>
+                        <span class="auth-timer" id="timer">00:00</span>
+                    </p>
+                </div>
+
+                <form class="auth-form" id="verification-form" method="post" data-auth-handoff="true">
+                    <div asp-validation-summary="ModelOnly" class="auth-alert"></div>
+
+                    <input type="hidden" asp-for="VerificationCode" id="hidden-code" />
+
+                    <div class="auth-field">
+                        <label class="auth-label">@Localizer["label_code"]</label>
+                        <div class="auth-otp auth-otp-line code-container">
+                            <input type="text" class="auth-otp-box code-box" maxlength="1" required autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" autofocus>
+                            <input type="text" class="auth-otp-box code-box" maxlength="1" required autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+                            <input type="text" class="auth-otp-box code-box" maxlength="1" required autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+                            <input type="text" class="auth-otp-box code-box" maxlength="1" required autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+                            <input type="text" class="auth-otp-box code-box" maxlength="1" required autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+                            <input type="text" class="auth-otp-box code-box" maxlength="1" required autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+                        </div>
+                        @* На телефон няма Ctrl + V — редът се крие от CSS. *@
+                        <p class="auth-paste-hint">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path></svg>
+                            @* КРИТИЧНО: тук НЕ бива да се чете ключ, който съдържа
+                               "{0}", през @Localizer["..."] директно. IViewLocalizer
+                               връща LocalizedHtmlString, чийто WriteTo минава през
+                               string.Format — дори без подадени аргументи. Ключ с
+                               "{0}" хвърля FormatException, страницата връща 500 и
+                               потребителят вижда празен екран (точно това чупеше
+                               /Verification след вход и регистрация).
+                               Затова текстът е разделен на две части без плейсхолдър,
+                               а клавишът се вмъква от скрипта — ⌘ V на Mac, Ctrl + V
+                               навсякъде другаде. *@
+                            <span>@Localizer["verify_paste_hint_prefix"]</span>
+                            <kbd data-paste-key>Ctrl + V</kbd>
+                            <span>@Localizer["verify_paste_hint_suffix"]</span>
+                        </p>
+                    </div>
+
+                    <div class="auth-actions-row">
+                        <button type="submit" class="auth-submit">
+                            <span>@Localizer["btn_verify"]</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="auth-resend-row">
+                    <form method="post" asp-page-handler="Resend">
+                        <button type="submit" id="resendBtn" class="auth-resend" disabled>
+                            @Html.Raw(string.Format(Localizer["verify_resend_wait"].Value, "<span id=\"resendTimer\">" + Model.ResendCooldownSeconds + "</span>"))
+                        </button>
+                    </form>
+                    <span class="auth-note">@Localizer["verify_spam_note"]</span>
+                </div>
+
+                @if (Model.Purpose == "Registration")
+                {
+                    <div class="auth-footer">
+                        <p>@Localizer["text_have_account"] <a href="/Login">@Localizer["link_login"]</a></p>
+                    </div>
+                }
+
+            </div>
+        </div>
+
+        <partial name="_AuthVisual" model="2" />
+
+    </div>
+
+    <partial name="_AuthHandoff" />
+</main>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const codeBoxes = document.querySelectorAll('.code-box');
+            const hiddenInput = document.getElementById('hidden-code');
+
+            codeBoxes.forEach((box, index) => {
+                box.addEventListener('input', () => {
+                    box.value = box.value.replace(/[^0-9]/g, '');
+                    if (box.value !== '' && index < codeBoxes.length - 1) {
+                        codeBoxes[index + 1].focus();
+                    }
+                    updateHiddenCode();
+                });
+
+                box.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace') {
+                        if (box.value === '' && index > 0) {
+                            codeBoxes[index - 1].focus();
+                            codeBoxes[index - 1].value = '';
+                        }
+                    } else if (e.key === 'ArrowLeft' && index > 0) {
+                        codeBoxes[index - 1].focus();
+                    } else if (e.key === 'ArrowRight' && index < codeBoxes.length - 1) {
+                        codeBoxes[index + 1].focus();
+                    }
+                });
+
+                box.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    fillFromText(e.clipboardData.getData('text'));
+                });
+            });
+
+            // ── Поставяне на кода ────────────────────────────────────────
+            // Разпределя цифрите по кутийките и фокусира първата празна.
+            function fillFromText(raw) {
+                const digits = (raw || '').replace(/[^0-9]/g, '').slice(0, codeBoxes.length);
+                if (!digits) return false;
+
+                codeBoxes.forEach(b => { b.value = ''; });
+                digits.split('').forEach((char, i) => { codeBoxes[i].value = char; });
+
+                const next = digits.length < codeBoxes.length ? digits.length : codeBoxes.length - 1;
+                codeBoxes[next].focus();
+
+                updateHiddenCode();
+                return true;
+            }
+
+            // Поставяне без фокус в кутийка: потребителят копира кода от имейла,
+            // връща се в таба и натиска Ctrl/⌘ + V, без да е кликнал никъде.
+            // Слушателят е на документа, затова хваща и този случай.
+            document.addEventListener('paste', (e) => {
+                // Ако фокусът вече е в кутийка, per-box слушателят е свършил работата.
+                if (document.activeElement && document.activeElement.classList.contains('auth-otp-box')) return;
+
+                const text = (e.clipboardData || window.clipboardData).getData('text');
+                if (fillFromText(text)) e.preventDefault();
+            });
+
+            // ── Клавишът според платформата ──────────────────────────────
+            // Mac показва ⌘ V, всичко останало Ctrl + V.
+            (function () {
+                const keyEl = document.querySelector('[data-paste-key]');
+                if (!keyEl) return;
+
+                const platform =
+                    (navigator.userAgentData && navigator.userAgentData.platform) ||
+                    navigator.platform || '';
+
+                if (/mac/i.test(platform)) keyEl.textContent = '\u2318 V';
+            })();
+
+            function updateHiddenCode() {
+                hiddenInput.value = Array.from(codeBoxes).map(b => b.value).join('');
+            }
+
+            const timerDisplay = document.getElementById('timer');
+            let timeLeft = parseInt('@Model.TimeLeftSeconds', 10);
+
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            updateTimerDisplay();
+            if (timeLeft > 0) {
+                const countdown = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft <= 0) {
+                        clearInterval(countdown);
+                        timerDisplay.textContent = "00:00";
+                        timerDisplay.style.color = "#56534e";
+                    }
+                }, 1000);
+            } else {
+                timerDisplay.textContent = "00:00";
+                timerDisplay.style.color = "#56534e";
+            }
+
+            const resendBtn = document.getElementById('resendBtn');
+            let resendCooldown = parseInt('@Model.ResendCooldownSeconds', 10);
+            const originalBtnHtml = '@Html.Raw(Localizer["verify_resend_btn"].Value)';
+            const waitBtnHtml = '@Html.Raw(Localizer["verify_resend_wait"].Value)';
+
+            function updateResendUI() {
+                if (resendCooldown > 0) {
+                    resendBtn.disabled = true;
+                    resendBtn.innerHTML = waitBtnHtml.replace('{0}', `<span id="resendTimer">${resendCooldown}</span>`);
+                } else {
+                    resendBtn.disabled = false;
+                    resendBtn.innerHTML = originalBtnHtml;
+                }
+            }
+
+            updateResendUI();
+            if (resendCooldown > 0) {
+                const resendCountdown = setInterval(() => {
+                    resendCooldown--;
+                    if (resendCooldown <= 0) {
+                        clearInterval(resendCountdown);
+                        updateResendUI();
+                    } else {
+                        const timerSpan = document.getElementById('resendTimer');
+                        if (timerSpan) timerSpan.textContent = resendCooldown;
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+}

@@ -1,0 +1,86 @@
+﻿@page
+@model ConferenceApp.Pages.LecturersModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Nav_Lecturers"].Value ?? "Lecturers";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/lecturersStyle.css" asp-append-version="true" />
+}
+
+<main>
+    <section class="hero lecturers-hero">
+      <div class="hero-overlay"></div>
+
+      <a href="#tickets-section" class="scroll-down-arrow" aria-label="Scroll down">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </a>
+    </section>
+
+    <section class="lecturers-section" id="tickets-section">
+        <div class="section-inner reveal center-section">
+            
+            <div class="page-header">
+                <p class="section-label">@Localizer["Lec_Subtitle"]</p>
+                <h2>@Localizer["Lec_Title"]</h2>
+            </div>
+
+            <div class="filter-menu">
+                <button class="filter-btn active" data-filter="all">@Localizer["Filter_All"]</button>
+                <button class="filter-btn" data-filter="keynote">@Localizer["Filter_Keynote"]</button>
+                <button class="filter-btn" data-filter="academic">@Localizer["Filter_Academic"]</button>
+                <button class="filter-btn" data-filter="industry">@Localizer["Filter_Industry"]</button>
+                <button class="filter-btn" data-filter="regulatory">@Localizer["Filter_Regulatory"]</button>
+            </div>
+
+            <div class="speakers-grid">
+                @if (Model.Lecturers != null && Model.Lecturers.Any())
+                {
+                    foreach (var lecturer in Model.Lecturers)
+                    {
+                        var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+                        
+                        var name = isBulgarian ? (string.IsNullOrWhiteSpace(lecturer.FullNameBg) ? lecturer.FullNameEn : lecturer.FullNameBg) : lecturer.FullNameEn;
+                        var role = isBulgarian ? (string.IsNullOrWhiteSpace(lecturer.RoleBg) ? lecturer.RoleEn : lecturer.RoleBg) : lecturer.RoleEn;
+                        var org = isBulgarian ? (string.IsNullOrWhiteSpace(lecturer.OrganizationBg) ? lecturer.OrganizationEn : lecturer.OrganizationBg) : lecturer.OrganizationEn;
+                        var bio = isBulgarian ? (string.IsNullOrWhiteSpace(lecturer.BiographyBg) ? lecturer.BiographyEn : lecturer.BiographyBg) : lecturer.BiographyEn;
+                        var avatarSrc = string.IsNullOrEmpty(lecturer.AvatarImagePath) ? "/images/logos/avatar.png" : lecturer.AvatarImagePath;
+                        
+                        // Форматираме категорията, за да съвпада с data-filter бутоните (напр. "Regulatory & Policy" става "regulatory")
+                        var dataCategory = (lecturer.Category ?? "").ToLower().Replace(" & policy", "").Replace(",", " ");
+                        var hasUrl = !string.IsNullOrEmpty(lecturer.ProfileUrl);
+
+                        if (hasUrl)
+                        {
+                            <a class="speaker-card" data-category="@dataCategory"
+                               href="@lecturer.ProfileUrl" target="_blank" rel="noopener">
+                                <div class="avatar"><img src="@avatarSrc" alt="@name"></div>
+                                <h4>@name</h4>
+                                <p class="role">@role</p>
+                                <p class="org">@org</p>
+                                <p class="bio">@bio</p>
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="speaker-card" data-category="@dataCategory">
+                                <div class="avatar"><img src="@avatarSrc" alt="@name"></div>
+                                <h4>@name</h4>
+                                <p class="role">@role</p>
+                                <p class="org">@org</p>
+                                <p class="bio">@bio</p>
+                            </div>
+                        }
+                    }
+                }
+            </div>
+        </div>
+    </section>
+</main>
+
+@section Scripts {
+    <script src="~/js/scriptLecturers.js" asp-append-version="true"></script>
+}

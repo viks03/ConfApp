@@ -1,0 +1,709 @@
+@page "/Admin/SendInvitations"
+@model ConferenceApp.Pages.SendInvitationsModel
+@{
+    Layout = "/Pages/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Send Invitations";
+}
+
+@* Uses the shared _Layout.cshtml (header/hamburger/footer) — same pattern
+   as Areas/Admin/Pages/Index.cshtml. All copy is in English, all icons
+   are inline SVG (no emoji) for a consistent, premium look. *@
+@section Styles {
+    <link rel="stylesheet" href="~/css/adminPanel.css" asp-append-version="true">
+    <style>
+        /* ── DESIGN TOKENS ─────────────────────────────────────────────────── */
+        .inv-wrapper {
+            --inv-red: #dc2626;
+            --inv-red-dark: #b91c1c;
+            --inv-red-light: #fef2f2;
+            --inv-red-border: #fecaca;
+            --inv-ink: #0f172a;
+            --inv-ink-soft: #334155;
+            --inv-muted: #64748b;
+            --inv-faint: #94a3b8;
+            --inv-line: #e2e8f0;
+            --inv-line-soft: #f1f5f9;
+            --inv-surface: #ffffff;
+            --inv-bg: #f5f6f8;
+            --inv-radius-lg: 14px;
+            --inv-radius-md: 10px;
+            --inv-radius-sm: 7px;
+            --inv-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 4px 16px rgba(15,23,42,0.05);
+            --inv-shadow-md: 0 2px 6px rgba(15,23,42,0.06), 0 8px 24px rgba(15,23,42,0.06);
+            --inv-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+            background: var(--inv-bg);
+            min-height: 80vh;
+            padding: 40px 0 64px;
+            color: var(--inv-ink);
+            font-feature-settings: "cv02","cv03","cv04","cv11";
+        }
+        .inv-wrapper * { box-sizing: border-box; }
+        .inv-icon { width: 18px; height: 18px; flex-shrink: 0; display: inline-block; vertical-align: -3px; }
+        .inv-icon.sm { width: 15px; height: 15px; }
+
+        .inv-shell { max-width: 1220px; margin: 0 auto; padding: 0 24px; }
+
+        .inv-back-link {
+            display: inline-flex; align-items: center; gap: 6px; color: var(--inv-muted);
+            text-decoration: none; font-size: 13px; font-weight: 600; margin-bottom: 22px;
+            transition: color 0.15s var(--inv-ease), transform 0.15s var(--inv-ease);
+        }
+        .inv-back-link:hover { color: var(--inv-ink); transform: translateX(-2px); }
+
+        .inv-header { margin-bottom: 26px; display: flex; align-items: center; gap: 14px; }
+        .inv-header-icon {
+            width: 46px; height: 46px; border-radius: var(--inv-radius-md);
+            background: var(--inv-ink); color: #fff;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: var(--inv-shadow);
+        }
+        .inv-header-icon .inv-icon { width: 22px; height: 22px; }
+        .inv-header h1 { font-size: 25px; font-weight: 800; margin: 0 0 3px; letter-spacing: -0.4px; }
+        .inv-header p { color: var(--inv-muted); font-size: 13.5px; margin: 0; }
+
+        /* ── TABS ──────────────────────────────────────────────────────────── */
+        .inv-tabs { display: flex; gap: 4px; margin-bottom: 22px; border-bottom: 1px solid var(--inv-line); }
+        .inv-tab {
+            background: none; border: none; padding: 11px 16px 13px; font-size: 13.5px; font-weight: 700;
+            color: var(--inv-muted); cursor: pointer; position: relative; display: inline-flex; align-items: center;
+            gap: 8px; transition: color 0.15s var(--inv-ease); border-radius: var(--inv-radius-sm) var(--inv-radius-sm) 0 0;
+        }
+        .inv-tab:hover { color: var(--inv-ink); background: rgba(15,23,42,0.03); }
+        .inv-tab.active { color: var(--inv-red); }
+        .inv-tab.active::after {
+            content: ''; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2.5px;
+            background: var(--inv-red); border-radius: 2px 2px 0 0;
+        }
+        .inv-tab-badge {
+            background: var(--inv-red); color: #fff; font-size: 10.5px; font-weight: 800;
+            padding: 1px 7px; border-radius: 999px; min-width: 17px; text-align: center; display: none;
+            line-height: 1.5;
+        }
+        .inv-tab-pane { display: none; }
+        .inv-tab-pane.active { display: block; animation: invFadeIn 0.25s var(--inv-ease); }
+        .inv-tab-pane.inv-grid.active { display: grid; }
+        .inv-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 22px; align-items: start; }
+        @@keyframes invFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+        /* ── CARD ──────────────────────────────────────────────────────────── */
+        .inv-card {
+            background: var(--inv-surface); border-radius: var(--inv-radius-lg);
+            border: 1px solid var(--inv-line); box-shadow: var(--inv-shadow); overflow: hidden;
+        }
+        .inv-card-header {
+            padding: 16px 20px; border-bottom: 1px solid var(--inv-line-soft);
+            display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        }
+        .inv-card-header-left { display: flex; align-items: center; gap: 11px; }
+        .inv-card-icon-chip {
+            width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+            background: rgba(15,23,42,0.05); color: var(--inv-ink-soft);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .inv-card-icon-chip .inv-icon { width: 16px; height: 16px; }
+        .inv-card-icon-chip.is-success { background: #f0fdf4; color: #16a34a; }
+        .inv-card-icon-chip.is-danger { background: var(--inv-red-light); color: var(--inv-red); }
+        .inv-card-header h2 { margin: 0; font-size: 14.5px; font-weight: 700; color: var(--inv-ink); }
+        .inv-card-body { padding: 20px; }
+
+        /* ── FORM ELEMENTS ─────────────────────────────────────────────────── */
+        .inv-form-group { margin-bottom: 18px; }
+        .inv-form-group:last-child { margin-bottom: 0; }
+        .inv-form-group label { display: block; font-size: 12.5px; font-weight: 650; color: var(--inv-ink-soft); margin-bottom: 7px; letter-spacing: -0.1px; }
+        .inv-form-group label .inv-label-hint { font-weight: 400; color: var(--inv-faint); margin-left: 4px; }
+        .inv-form-group input[type="text"], .inv-form-group textarea {
+            width: 100%; padding: 10px 13px; border: 1.5px solid var(--inv-line); border-radius: var(--inv-radius-sm);
+            font-size: 13.5px; color: var(--inv-ink); font-family: inherit; background: var(--inv-surface);
+            transition: border-color 0.15s var(--inv-ease), box-shadow 0.15s var(--inv-ease); resize: vertical;
+        }
+        .inv-form-group input:focus, .inv-form-group textarea:focus {
+            outline: none; border-color: var(--inv-red); box-shadow: 0 0 0 3.5px rgba(220,38,38,0.09);
+        }
+        .inv-form-group textarea { min-height: 216px; font-family: "SF Mono", "Cascadia Code", Consolas, monospace; font-size: 12.5px; line-height: 1.65; }
+        .inv-hint { font-size: 11.5px; color: var(--inv-faint); margin-top: 7px; line-height: 1.6; }
+        .inv-hint code { background: var(--inv-line-soft); border-radius: 4px; padding: 1px 5px; font-size: 11px; color: var(--inv-ink-soft); }
+
+        /* ── USAGE GUIDE BOX (how to use this form) ───────────────────────────── */
+        .inv-usage-box { background: var(--inv-line-soft); border: 1px solid var(--inv-line); border-radius: var(--inv-radius-md); padding: 14px 16px; margin-top: 12px; }
+        .inv-usage-box-title { display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 700; color: var(--inv-ink-soft); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .inv-usage-box-title .inv-icon { color: var(--inv-muted); width: 14px; height: 14px; }
+        .inv-usage-box ol, .inv-usage-box ul { margin: 0; padding-left: 18px; color: var(--inv-muted); font-size: 11.5px; line-height: 1.75; }
+        .inv-usage-box li { margin-bottom: 3px; }
+        .inv-usage-box li:last-child { margin-bottom: 0; }
+        .inv-usage-box code { background: #fff; border: 1px solid var(--inv-line); border-radius: 4px; padding: 1px 5px; font-size: 11px; color: var(--inv-ink-soft); }
+
+        /* ── STATS BAR ─────────────────────────────────────────────────────── */
+        .email-stats { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .email-stat {
+            background: var(--inv-line-soft); border: 1px solid var(--inv-line); border-radius: 999px;
+            padding: 5px 12px; font-size: 11.5px; font-weight: 650; color: var(--inv-ink-soft);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .email-stat .stat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .dot-valid { background: #16a34a; } .dot-invalid { background: #dc2626; } .dot-dup { background: #d97706; }
+
+        /* ── TEMPLATE SOURCE: FILE UPLOAD / DROPZONE ──────────────────────────── */
+        .template-source-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .file-drop-zone {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 15px; border: 1.5px dashed var(--inv-line); border-radius: var(--inv-radius-sm);
+            font-size: 12px; font-weight: 650; color: var(--inv-ink-soft); cursor: pointer;
+            background: var(--inv-line-soft); transition: all 0.15s var(--inv-ease);
+        }
+        .file-drop-zone:hover { border-color: var(--inv-red); color: var(--inv-red); background: var(--inv-red-light); }
+        .file-drop-zone.is-dragover { border-color: var(--inv-red); color: var(--inv-red); background: var(--inv-red-light); border-style: solid; }
+        .file-drop-sub { font-weight: 400; color: var(--inv-faint); }
+        .template-source-badge {
+            font-size: 11px; font-weight: 700; color: var(--inv-muted); background: var(--inv-line-soft);
+            border: 1px solid var(--inv-line); border-radius: 999px; padding: 4px 11px;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .template-source-badge .inv-icon { width: 12px; height: 12px; }
+        .template-source-badge.is-file { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+
+        /* ── BUTTONS ───────────────────────────────────────────────────────── */
+        .inv-btn-row { display: flex; gap: 10px; }
+        .inv-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 13.5px; font-weight: 700; border-radius: var(--inv-radius-sm); cursor: pointer;
+            border: none; padding: 12px 20px; transition: all 0.15s var(--inv-ease); white-space: nowrap;
+        }
+        .inv-btn-primary { flex: 1; background: var(--inv-ink); color: #fff; box-shadow: var(--inv-shadow); }
+        .inv-btn-primary:hover:not(:disabled) { background: #000; transform: translateY(-1px); box-shadow: var(--inv-shadow-md); }
+        .inv-btn-primary:active:not(:disabled) { transform: translateY(0); }
+        .inv-btn-primary:disabled { background: #cbd5e1 !important; cursor: not-allowed !important; box-shadow: none !important; }
+        .inv-btn-primary .inv-icon.spin { animation: invSpin 0.8s linear infinite; }
+        @@keyframes invSpin { to { transform: rotate(360deg); } }
+
+        .inv-btn-ghost {
+            display: none; background: var(--inv-surface); color: var(--inv-ink-soft);
+            border: 1.5px solid var(--inv-line); padding: 12px 18px;
+        }
+        .inv-btn-ghost:hover:not(:disabled) { border-color: var(--inv-faint); background: var(--inv-line-soft); }
+        .inv-btn-ghost:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        .inv-retry-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #ffffff; border: 1.5px solid currentColor; color: inherit;
+            border-radius: 999px; padding: 5px 13px; font-size: 11.5px; font-weight: 700;
+            cursor: pointer; transition: all 0.15s var(--inv-ease);
+        }
+        .inv-retry-btn:hover { background: rgba(0,0,0,0.04); }
+
+        /* ── PROGRESS ──────────────────────────────────────────────────────── */
+        .inv-progress-wrap { display: none; margin-top: 18px; }
+        .inv-progress-wrap.show { display: block; }
+        .progress-bar-track { background: var(--inv-line-soft); border-radius: 999px; height: 7px; overflow: hidden; margin-bottom: 8px; }
+        .progress-bar-fill { height: 100%; background: var(--inv-red); border-radius: 999px; width: 0%; transition: width 0.35s var(--inv-ease); }
+        .progress-label { font-size: 11.5px; color: var(--inv-muted); font-weight: 650; text-align: right; }
+
+        /* ── LOG ───────────────────────────────────────────────────────────── */
+        .inv-log {
+            background: #0b1120; border-radius: var(--inv-radius-md); padding: 15px 16px; height: 230px;
+            overflow-y: auto; font-family: "SF Mono", "Cascadia Code", Consolas, monospace; font-size: 12px;
+            line-height: 1.75; display: none; margin-top: 18px; border: 1px solid #1e293b;
+        }
+        .inv-log.show { display: block; }
+        .log-line { margin: 0; padding: 1px 0; }
+        .log-ok { color: #4ade80; } .log-err { color: #f87171; } .log-info { color: #94a3b8; } .log-warn { color: #fbbf24; }
+
+        /* ── SUMMARY ───────────────────────────────────────────────────────── */
+        .inv-summary { display: none; margin-top: 16px; padding: 13px 16px; border-radius: var(--inv-radius-sm); font-size: 12.5px; font-weight: 650; flex-wrap: wrap; }
+        .inv-summary.show { display: flex; align-items: center; gap: 10px; }
+        .inv-summary.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+        .inv-summary.partial { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+        .inv-summary.error { background: var(--inv-red-light); border: 1px solid var(--inv-red-border); color: #991b1b; }
+
+        /* ── PREVIEW PANEL ─────────────────────────────────────────────────── */
+        .preview-iframe-wrap { border-radius: var(--inv-radius-md); overflow: hidden; border: 1px solid var(--inv-line); background: var(--inv-line-soft); }
+        .preview-iframe-wrap iframe { width: 100%; height: 100%; min-height: 560px; border: none; display: block; }
+
+        /* ── DELAY SLIDER ──────────────────────────────────────────────────── */
+        .delay-row { display: flex; align-items: center; gap: 14px; }
+
+        .delay-row input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 999px;
+            /* --fill is kept in sync with the current value by sendEmail.js */
+            background: linear-gradient(to right, var(--inv-red) var(--fill, 14%), var(--inv-line) var(--fill, 14%));
+            outline: none;
+            cursor: pointer;
+            transition: box-shadow 0.15s var(--inv-ease);
+        }
+        .delay-row input[type="range"]:focus-visible {
+            box-shadow: 0 0 0 3.5px rgba(220,38,38,0.16);
+            border-radius: 999px;
+        }
+        /* Thumb — WebKit */
+        .delay-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #fff; border: 3px solid var(--inv-red);
+            box-shadow: 0 1px 3px rgba(15,23,42,0.28);
+            cursor: grab;
+            transition: transform 0.15s var(--inv-ease), box-shadow 0.15s var(--inv-ease);
+        }
+        .delay-row input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.12); box-shadow: 0 2px 9px rgba(220,38,38,0.4); }
+        .delay-row input[type="range"]::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.05); }
+        /* Track + thumb — Firefox (needs the fill drawn via ::-moz-range-progress, WebKit can't do that at all) */
+        .delay-row input[type="range"]::-moz-range-track { height: 6px; border-radius: 999px; background: var(--inv-line); }
+        .delay-row input[type="range"]::-moz-range-progress { height: 6px; border-radius: 999px; background: var(--inv-red); }
+        .delay-row input[type="range"]::-moz-range-thumb {
+            width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--inv-red);
+            background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,0.28); cursor: grab;
+            transition: transform 0.15s var(--inv-ease), box-shadow 0.15s var(--inv-ease);
+        }
+        .delay-row input[type="range"]::-moz-range-thumb:hover { transform: scale(1.12); }
+
+        .delay-value {
+            font-size: 12px; font-weight: 800; color: #fff; min-width: 42px; text-align: center;
+            background: var(--inv-red); padding: 4px 11px; border-radius: 999px;
+            box-shadow: 0 1px 3px rgba(220,38,38,0.35); flex-shrink: 0;
+        }
+        .delay-scale {
+            display: flex; justify-content: space-between; margin-top: 7px;
+            font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+            color: var(--inv-faint);
+        }
+
+        /* ── HISTORY TAB ───────────────────────────────────────────────────── */
+        .inv-demo-banner {
+            display: flex; align-items: center; gap: 10px; background: #fffbeb; border: 1px solid #fde68a;
+            color: #92400e; border-radius: var(--inv-radius-sm); padding: 10px 14px; font-size: 12px;
+            font-weight: 600; margin-bottom: 18px;
+        }
+        .inv-demo-banner .inv-icon { color: #d97706; }
+
+        .history-summary-row { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+        .history-summary-stat {
+            flex: 1; min-width: 150px; background: var(--inv-surface); border: 1px solid var(--inv-line);
+            border-radius: var(--inv-radius-md); padding: 15px 17px; box-shadow: var(--inv-shadow);
+        }
+        .history-summary-stat .num { font-size: 23px; font-weight: 800; color: var(--inv-ink); line-height: 1.2; letter-spacing: -0.5px; }
+        .history-summary-stat .lbl { font-size: 11.5px; color: var(--inv-muted); font-weight: 650; margin-top: 3px; }
+        .history-summary-stat.is-ok .num { color: #16a34a; }
+        .history-summary-stat.is-err .num { color: #dc2626; }
+
+        .history-section-header {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            flex-wrap: wrap; margin-bottom: 14px;
+        }
+        .history-section-header-left { display: flex; align-items: center; gap: 10px; }
+        .history-section-header h2 { margin: 0; font-size: 16.5px; font-weight: 800; color: var(--inv-ink); letter-spacing: -0.2px; }
+
+        .history-toolbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .history-filter-btn {
+            background: var(--inv-line-soft); border: 1px solid var(--inv-line); color: var(--inv-ink-soft);
+            font-size: 11.5px; font-weight: 700; padding: 5px 13px; border-radius: 999px;
+            cursor: pointer; transition: all 0.15s var(--inv-ease);
+        }
+        .history-filter-btn:hover { background: var(--inv-line); }
+        .history-filter-btn.active { background: var(--inv-ink); border-color: var(--inv-ink); color: #fff; }
+        .history-count { font-size: 11.5px; color: var(--inv-faint); font-weight: 650; }
+        .history-clear-btn {
+            display: inline-flex; align-items: center; gap: 5px; background: none; border: none;
+            color: var(--inv-faint); font-size: 11.5px; font-weight: 650; cursor: pointer; padding: 5px 6px;
+            border-radius: var(--inv-radius-sm); transition: color 0.15s var(--inv-ease);
+        }
+        .history-clear-btn:hover { color: var(--inv-red); }
+        .history-clear-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .history-danger-btn {
+            display: inline-flex; align-items: center; gap: 5px; background: none;
+            border: 1px solid var(--inv-red-border); color: var(--inv-red);
+            font-size: 11.5px; font-weight: 700; cursor: pointer; padding: 4px 11px;
+            border-radius: 999px; transition: all 0.15s var(--inv-ease);
+        }
+        .history-danger-btn:hover { background: var(--inv-red); border-color: var(--inv-red); color: #fff; }
+        .history-download-link {
+            display: inline-flex; align-items: center; gap: 4px; color: var(--inv-ink-soft);
+            font-size: 11px; font-weight: 650; text-decoration: none; padding: 3px 8px;
+            border: 1px solid var(--inv-line); border-radius: 999px; transition: all 0.15s var(--inv-ease);
+        }
+        .history-download-link:hover { border-color: var(--inv-ink); color: var(--inv-ink); background: var(--inv-line-soft); }
+        .history-download-link .inv-icon { width: 11px; height: 11px; }
+        .history-table-wrap { display: none; overflow-x: auto; }
+        .history-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 640px; }
+        .history-table th {
+            text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+            color: var(--inv-faint); padding: 11px 20px; border-bottom: 1px solid var(--inv-line); white-space: nowrap;
+        }
+        .history-table td { padding: 11px 20px; border-bottom: 1px solid var(--inv-line-soft); vertical-align: middle; }
+        .history-table tbody tr { transition: background 0.1s var(--inv-ease); }
+        .history-table tbody tr:hover { background: #fafbfc; }
+        .history-empty { padding: 60px 20px; text-align: center; color: var(--inv-faint); font-size: 13px; }
+        .history-empty .inv-icon { width: 34px; height: 34px; margin-bottom: 12px; opacity: 0.35; }
+
+        /* Engagement pill for the Successful Sends table (self-contained — doesn't rely on adminPanel.css) */
+        .inv-status-pill {
+            display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px;
+            font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
+        }
+        .inv-status-pill::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+        .inv-status-clicked { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .inv-status-opened { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+        .engagement-meta {
+            display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px;
+            background: var(--inv-line-soft); color: var(--inv-muted); border: 1px solid var(--inv-line);
+            font-size: 10px; font-weight: 600; white-space: nowrap;
+        }
+        .engagement-meta::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; opacity: 0.6; }
+        .inv-badge-muted {
+            display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px;
+            background: var(--inv-line-soft); color: var(--inv-faint); border: 1px solid var(--inv-line);
+            font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
+        }
+        .inv-badge-tag {
+            display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px; flex-shrink: 0;
+            background: var(--inv-red-light); color: var(--inv-red-dark); border: 1px solid var(--inv-red-border);
+            font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;
+        }
+        .details-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+        .engagement-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        @@keyframes historyPulse { 0% { background: rgba(220,38,38,0.07); } 100% { background: transparent; } }
+        .history-table-wrap.just-updated { animation: historyPulse 0.7s ease-out; }
+
+        /* ── RESPONSIVE ────────────────────────────────────────────────────── */
+        @@media (max-width: 900px) {
+            .inv-grid, .inv-tab-pane.inv-grid.active { grid-template-columns: 1fr; }
+            .preview-iframe-wrap iframe { min-height: 420px; }
+        }
+        @@media (max-width: 640px) {
+            .inv-wrapper { padding: 24px 0 48px; }
+            .inv-shell { padding: 0 16px; }
+            .inv-header { gap: 10px; }
+            .inv-header-icon { width: 40px; height: 40px; }
+            .inv-header h1 { font-size: 20px; }
+            .inv-card-body { padding: 16px; }
+            .inv-card-header { padding: 14px 16px; }
+            .inv-btn-row { flex-direction: column; }
+            .inv-btn-ghost { width: 100%; }
+            .inv-tabs { gap: 0; }
+            .inv-tab { padding: 10px 12px 12px; font-size: 12.5px; }
+            .history-summary-row { flex-direction: column; }
+        }
+    </style>
+}
+
+  <div class="inv-wrapper">
+    <div class="inv-shell">
+      <a href="/Admin" class="inv-back-link">
+        <svg class="inv-icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Admin Panel
+      </a>
+
+      <div class="inv-header">
+        <div class="inv-header-icon">
+          <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+        </div>
+        <div>
+          <h1>Send Invitations</h1>
+          <p>Compose, send, and track email invitations with a live template preview.</p>
+        </div>
+      </div>
+
+      <div class="inv-tabs">
+        <button type="button" class="inv-tab active" data-tab="compose">
+          <svg class="inv-icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+          Compose
+        </button>
+        <button type="button" class="inv-tab" data-tab="history">
+          <svg class="inv-icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="M9 12h6"></path><path d="M9 16h6"></path></svg>
+          History
+          <span class="inv-tab-badge" id="historyTabBadge">0</span>
+        </button>
+      </div>
+
+      <!-- ══════════════════════ TAB: COMPOSE ══════════════════════ -->
+      <div class="inv-tab-pane inv-grid active" id="tab-compose">
+        <!-- LEFT: FORM -->
+        <div>
+          <!-- Settings -->
+          <div class="inv-card" style="margin-bottom:18px;">
+            <div class="inv-card-header">
+              <div class="inv-card-header-left">
+                <div class="inv-card-icon-chip">
+                  <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </div>
+                <h2>Settings</h2>
+              </div>
+            </div>
+            <div class="inv-card-body">
+              <div class="inv-form-group">
+                <label>Subject</label>
+                <input type="text" id="subjectInput" value="Invitation — Blockchain Education 2026" maxlength="200">
+                <p class="inv-hint" id="subjectCounter">40 / 200 characters</p>
+              </div>
+              <div class="inv-form-group">
+                <label>HTML Template <span class="inv-label-hint">(edit directly or upload an .html file)</span></label>
+                <div class="template-source-row">
+                  <label class="file-drop-zone" id="fileDropZone" for="templateFileInput">
+                    <svg class="inv-icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span>Upload .html file <span class="file-drop-sub">or drag it here</span></span>
+                  </label>
+                  <input type="file" id="templateFileInput" accept=".html,.htm,text/html" hidden>
+                  <span class="template-source-badge" id="templateSourceBadge">No template loaded</span>
+                </div>
+                <textarea id="htmlTemplateInput" placeholder="Paste your HTML code here..."></textarea>
+                <p class="inv-hint" id="templateSizeHint">0 KB (max 750 KB)</p>
+                <div class="inv-usage-box">
+                  <div class="inv-usage-box-title">
+                    <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    How to use this field
+                  </div>
+                  <ul>
+                    <li>Paste a full HTML document, or click <strong>Upload .html file</strong> above to load one from disk.</li>
+                    <li>These placeholders get replaced automatically for each recipient: <code>{Greeting}</code>, <code>{RecipientName}</code>, <code>{RecipientEmail}</code>, <code>{EmailSubject}</code>, <code>{BaseUrl}</code>.</li>
+                    <li>The preview on the right always reflects exactly what will be sent — check it before sending to a large list.</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="inv-form-group">
+                <label>Delay between emails <span class="inv-label-hint">(helps avoid spam filters)</span></label>
+                <div class="delay-row">
+                  <input type="range" id="delaySlider" min="500" max="5000" step="100" value="1200">
+                  <span class="delay-value" id="delayLabel">1.2s</span>
+                </div>
+                <div class="delay-scale"><span>Faster</span><span>Safer</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recipients -->
+          <div class="inv-card" style="margin-bottom:18px;">
+            <div class="inv-card-header">
+              <div class="inv-card-header-left">
+                <div class="inv-card-icon-chip">
+                  <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                <h2>Recipients</h2>
+              </div>
+            </div>
+            <div class="inv-card-body">
+              <div class="inv-form-group">
+                <label>Email addresses <span class="inv-label-hint">(one per line)</span></label>
+                <textarea id="emailsTextarea" placeholder="ivan.petrov&#64;example.com&#10;maria.georgieva&#64;unwe.bg | Prof. Maria Georgieva&#10;contact&#64;company.com"></textarea>
+                <div class="inv-usage-box">
+                  <div class="inv-usage-box-title">
+                    <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    How to use this field
+                  </div>
+                  <ol>
+                    <li>One address per line: <code>email</code>, or <code>email | Full Name</code> to personalize the greeting.</li>
+                    <li>Lines starting with <code>#</code> are treated as comments and skipped.</li>
+                    <li>Duplicates are detected automatically and only counted once.</li>
+                    <li>Check the stats bar below before sending — Send stays disabled until at least one address is valid.</li>
+                    <li>For long lists, increase the delay slider above — it reduces the chance of the sending mailbox being flagged as spam.</li>
+                  </ol>
+                </div>
+                <div class="email-stats" id="emailStats" style="display:none;">
+                  <div class="email-stat"><span class="stat-dot dot-valid"></span><span id="statValid">0 valid</span></div>
+                  <div class="email-stat"><span class="stat-dot dot-invalid"></span><span id="statInvalid">0 invalid</span></div>
+                  <div class="email-stat"><span class="stat-dot dot-dup"></span><span id="statDup">0 duplicates</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Send -->
+          <div class="inv-card">
+            <div class="inv-card-body">
+              @Html.AntiForgeryToken()
+
+              <div class="inv-btn-row">
+                <button class="inv-btn inv-btn-primary" id="sendBtn" disabled="disabled">
+                  <span id="sendBtnIcon">
+                    <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                  </span>
+                  <span id="sendBtnText">Send Invitations</span>
+                </button>
+                <button type="button" class="inv-btn inv-btn-ghost" id="stopBtn">
+                  <span id="stopBtnIcon">
+                    <svg class="inv-icon sm" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="6" width="12" height="12" rx="1.5"></rect></svg>
+                  </span>
+                  <span id="stopBtnText">Stop Sending</span>
+                </button>
+              </div>
+
+              <!-- Progress -->
+              <div class="inv-progress-wrap" id="progressWrap">
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+                <div class="progress-label" id="progressLabel">0 / 0</div>
+              </div>
+
+              <!-- Summary -->
+              <div class="inv-summary" id="summaryBox"></div>
+
+              <!-- Log -->
+              <div class="inv-log" id="logBox"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: PREVIEW -->
+        <div>
+          <div class="inv-card" style="height:100%;">
+            <div class="inv-card-header">
+              <div class="inv-card-header-left">
+                <div class="inv-card-icon-chip">
+                  <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </div>
+                <h2>Template Preview</h2>
+              </div>
+            </div>
+            <div class="inv-card-body" style="padding:14px;">
+              <div class="preview-iframe-wrap">
+                <iframe id="previewFrame" sandbox="allow-same-origin"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════ TAB: HISTORY ══════════════════════ -->
+      <div class="inv-tab-pane" id="tab-history">
+        <div class="history-summary-row">
+          <div class="history-summary-stat">
+            <div class="num" id="historyTotalNum">0</div>
+            <div class="lbl">Total attempts on record</div>
+          </div>
+          <div class="history-summary-stat is-ok">
+            <div class="num" id="historyOkNum">0</div>
+            <div class="lbl">Successfully sent</div>
+          </div>
+          <div class="history-summary-stat is-err">
+            <div class="num" id="historyErrNum">0</div>
+            <div class="lbl">Failed</div>
+          </div>
+        </div>
+
+        <div class="history-section-header">
+          <div class="history-section-header-left">
+            <h2>Sending History</h2>
+            <span class="history-count" id="historyCount">0 entries total</span>
+          </div>
+          <div class="history-toolbar">
+            <button type="button" class="history-filter-btn active" data-filter="ok">Successful</button>
+            <button type="button" class="history-filter-btn" data-filter="err">Failed</button>
+            <button type="button" class="history-filter-btn" data-filter="all">All</button>
+            <button type="button" class="history-clear-btn" id="refreshHistoryBtn">
+              <svg class="inv-icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              Refresh
+            </button>
+            <button type="button" class="history-danger-btn" id="clearAllHistoryBtn">
+              <svg class="inv-icon sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Shown only when there is truly nothing in the database yet. -->
+        <div class="inv-card" id="historyEmptyCard" style="display:none;">
+          <div class="inv-card-body">
+            <div class="history-empty" id="historyEmpty">
+              <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg><br>
+              No sends on record yet.
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Successful Sends — own card, own columns (Engagement + Download make
+             sense here). Shown when filter is "Successful" or "All". ── -->
+        <div class="inv-card history-group-card" id="successGroupCard" style="margin-bottom:18px;">
+          <div class="inv-card-header">
+            <div class="inv-card-header-left">
+              <div class="inv-card-icon-chip is-success">
+                <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              </div>
+              <h2>Successful Sends</h2>
+              <span class="history-count" id="successGroupCount">0 entries</span>
+            </div>
+          </div>
+          <div class="inv-card-body" style="padding:0;">
+            <div class="history-empty" id="successGroupEmpty" style="display:none;">
+              <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg><br>
+              No successful sends yet.
+            </div>
+            <div class="history-table-wrap" id="successGroupWrap">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Subject</th>
+                    <th>Date Sent</th>
+                    <th>Time Sent</th>
+                    <th>Engagement</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody id="successGroupBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Failed Sends — own card, own columns (no Engagement column at all,
+             since a failed send was never delivered — there'd be nothing to show
+             but empty badges in every row). Shown when filter is "Failed" or "All". ── -->
+        <div class="inv-card history-group-card" id="failedGroupCard">
+          <div class="inv-card-header">
+            <div class="inv-card-header-left">
+              <div class="inv-card-icon-chip is-danger">
+                <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+              </div>
+              <h2>Failed Sends</h2>
+              <span class="history-count" id="failedGroupCount">0 entries</span>
+            </div>
+          </div>
+          <div class="inv-card-body" style="padding:0;">
+            <div class="history-empty" id="failedGroupEmpty" style="display:none;">
+              <svg class="inv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg><br>
+              No failed sends — nothing to see here.
+            </div>
+            <div class="history-table-wrap" id="failedGroupWrap">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Subject</th>
+                    <th>Date Sent</th>
+                    <th>Time Sent</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody id="failedGroupBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <p class="inv-hint" style="margin-top:14px;">
+          History is stored permanently in the database (one record per recipient, per send attempt), including a downloadable copy of what was actually sent for successful ones. Use <strong>Clear All</strong> above to permanently wipe it.
+        </p>
+        <p class="inv-hint">
+          <strong>About "Engagement":</strong> it combines a tracking pixel and link-click tracking, so a click always counts as an open. It's still a signal, not a certainty — most mail apps block remote images until the recipient allows them (silent false negative), while Apple Mail on iOS/macOS auto-preloads images for privacy reasons regardless of whether the person actually opened the email (false positive). Treat these numbers as "likely engaged," not a confirmed read receipt.
+        </p>
+      </div>
+    </div>
+  </div>
+
+@section Scripts {
+  <script src="~/js/sendEmail.js"></script>
+}

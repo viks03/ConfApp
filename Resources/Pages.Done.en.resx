@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="done_step_register" xml:space="preserve"><value>Register</value></data>
+  <data name="done_step_verify" xml:space="preserve"><value>Verify</value></data>
+  <data name="done_step_done" xml:space="preserve"><value>Done</value></data>
+  <data name="done_badge" xml:space="preserve"><value>Your account is active</value></data>
+  <data name="done_title" xml:space="preserve"><value>Done</value></data>
+  <data name="done_description" xml:space="preserve"><value>Your email is confirmed and you are signed in.</value></data>
+  <data name="done_continue_btn" xml:space="preserve"><value>Continue now</value></data>
+  <data name="done_redirect_before" xml:space="preserve"><value>Automatically redirecting to your profile in</value></data>
+  <data name="done_redirect_active" xml:space="preserve"><value>Redirecting to your profile</value></data>
+  <data name="done_seconds_suffix" xml:space="preserve"><value>s</value></data>
+  <data name="done_stub_kicker" xml:space="preserve"><value>Ticket</value></data>
+  <data name="done_redirect_after_label" xml:space="preserve"><value>Redirecting in</value></data>
+  <data name="done_status_label" xml:space="preserve"><value>Status</value></data>
+  <data name="done_status_value" xml:space="preserve"><value>Confirmed</value></data>
+  <data name="done_date_label" xml:space="preserve"><value>Date</value></data>
+</root>

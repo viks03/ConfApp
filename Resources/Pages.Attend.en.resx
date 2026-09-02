@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <data name="Nav_Attend" xml:space="preserve"><value>Attend</value></data>
+  <data name="Attend_TicketsLabel" xml:space="preserve"><value>TICKETS</value></data>
+  <data name="Attend_TicketsTitle" xml:space="preserve"><value>Choose Your Pass</value></data>
+  <data name="Attend_RibbonLimited" xml:space="preserve"><value>LIMITED</value></data>
+  <data name="Attend_BtnGetTicket" xml:space="preserve"><value>GET TICKET</value></data>
+  
+  <data name="Attend_AccessOnlineTitle" xml:space="preserve"><value>Online Spectator</value></data>
+  <data name="Attend_AccessOnlineDesc" xml:space="preserve"><value>Can't attend in person? Join the event online from anywhere in the world.</value></data>
+  <data name="Attend_AccessOnlineBtn" xml:space="preserve"><value>Watch Online</value></data>
+  
+  <data name="Attend_AccessJournalistTitle" xml:space="preserve"><value>Journalist Access</value></data>
+  <data name="Attend_AccessJournalistDesc" xml:space="preserve"><value>Are you a journalist? Apply for media access to cover the event.</value></data>
+  <data name="Attend_AccessJournalistBtn" xml:space="preserve"><value>Apply as Journalist</value></data>
+  <data name="Attend_AccessJournalistBtn_SubmitDocs" xml:space="preserve"><value>Submit Documents</value></data>
+  
+  <data name="Attend_ExtrasLabel" xml:space="preserve"><value>ADDITIONAL</value></data>
+  <data name="Attend_ExtrasTitle" xml:space="preserve"><value>Extras &amp; Payment Info</value></data>
+  
+  <data name="Attend_Extra1Title" xml:space="preserve"><value>Extra package 1</value></data>
+  <data name="Attend_Extra1Desc" xml:space="preserve"><value>Transfer Sofia Airport – Hotel – Sofia Airport</value></data>
+  
+  <data name="Attend_Extra2Title" xml:space="preserve"><value>Extra package 2</value></data>
+  <data name="Attend_Extra2Desc" xml:space="preserve"><value>Transfer Sofia Airport – Hotel + Hotel accommodation – Sofia Airport</value></data>
+  
+  <data name="Attend_PaymentMethods" xml:space="preserve"><value>Payment Methods</value></data>
+  <data name="Attend_BankTransfer" xml:space="preserve"><value>Bank Transfer:</value></data>
+  <data name="Attend_BankDesc" xml:space="preserve"><value>Information for our bank account and payment instructions will be generated and provided to you after completing the registration process.</value></data>
+  
+  <data name="Attend_Method_Card" xml:space="preserve"><value>Credit / Debit Card</value></data>
+  <data name="Attend_Method_CardDesc" xml:space="preserve"><value>Secure real-time payment processing via Stripe. Instant automatic registration confirmation.</value></data>
+  <data name="Attend_Method_Crypto" xml:space="preserve"><value>Cryptocurrency</value></data>
+  <data name="Attend_Method_CryptoDesc" xml:space="preserve"><value>Pay with Bitcoin, Ethereum, USDC or other digital assets via Go28. Automated and fully secure.</value></data>
+  
+  <data name="Attend_Tag_Instant" xml:space="preserve"><value>Instant</value></data>
+  <data name="Attend_Tag_Days" xml:space="preserve"><value>days</value></data>
+</root>

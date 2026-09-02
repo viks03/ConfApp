@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="reg_title" xml:space="preserve"><value>Registration</value></data>
+  <data name="reg_subtitle" xml:space="preserve"><value>Join the leading academic network</value></data>
+  <data name="required_field" xml:space="preserve"><value>All fields with * are required</value></data>
+  <data name="label_fname" xml:space="preserve"><value>First Name</value></data>
+  <data name="label_lname" xml:space="preserve"><value>Last Name</value></data>
+  <data name="label_age" xml:space="preserve"><value>Age (in years)</value></data>
+  <data name="label_academic_title" xml:space="preserve"><value>Academic Title</value></data>
+  <data name="label_email" xml:space="preserve"><value>Email Address</value></data>
+  <data name="label_phone" xml:space="preserve"><value>Mobile Phone</value></data>
+  <data name="label_organization" xml:space="preserve"><value>Organization / University</value></data>
+  <data name="label_part_form" xml:space="preserve"><value>Type of participation</value></data>
+  <data name="opt_lector" xml:space="preserve"><value>Lector / Academic</value></data>
+  <data name="opt_student" xml:space="preserve"><value>Student / PhD Candidate</value></data>
+  <data name="opt_online" xml:space="preserve"><value>Online Participant</value></data>
+  <data name="opt_journalist" xml:space="preserve"><value>Journalist / Media</value></data>
+  <data name="label_foreigner" xml:space="preserve"><value>Foreigner (check if you are not from Bulgaria)</value></data>
+  <data name="link_privacy" xml:space="preserve"><value>Privacy Policy</value></data>
+  <data name="label_gdpr_mid" xml:space="preserve"><value> and </value></data>
+  <data name="link_terms" xml:space="preserve"><value>Terms of Use</value></data>
+  <data name="label_marketing" xml:space="preserve"><value>I would like to receive email updates about future events and news.</value></data>
+  <data name="label_upload" xml:space="preserve"><value>Upload file (PDF, DOC, DOCX)</value></data>
+  <data name="label_publish_consent" xml:space="preserve"><value>I consent to the publication of my submitted academic paper in the official conference proceedings.</value></data>
+  <data name="btn_reg" xml:space="preserve"><value>Register Now</value></data>
+
+  <data name="verify_title" xml:space="preserve"><value>Verification</value></data>
+  <data name="verify_subtitle" xml:space="preserve"><value>Welcome back to the future</value></data>
+  <data name="label_verify_code" xml:space="preserve"><value>Verification Code from your email</value></data>
+  <data name="btn_verify" xml:space="preserve"><value>Verify</value></data>
+  <data name="link_register" xml:space="preserve"><value>Register here</value></data>
+  <data name="text_no_account" xml:space="preserve"><value>Don't have an account?</value></data>
+
+  <data name="Error_Required" xml:space="preserve"><value>This field is mandatory.</value></data>
+  <data name="Error_InvalidEmail" xml:space="preserve"><value>Please enter a valid email address.</value></data>
+  <data name="Error_GDPR" xml:space="preserve"><value>You must accept the privacy policy to continue.</value></data>
+  <data name="Error_EmailTaken" xml:space="preserve"><value>This email address is already registered.</value></data>
+  <data name="Error_FileTooLarge" xml:space="preserve"><value>The file is too large ({0} MB). The maximum size is 10 MB.</value></data>
+  <data name="Error_FileUploadFailed" xml:space="preserve"><value>An error occurred during file upload.</value></data>
+  <data name="Error_NameLength" xml:space="preserve"><value>The field must contain at least 2 characters.</value></data>
+  <data name="Error_AgeRange" xml:space="preserve"><value>Age must be between 18 and 100.</value></data>
+  <data name="Error_PhoneFormat" xml:space="preserve"><value>Invalid phone number format (8-15 digits).</value></data>
+  <data name="Error_NameLatinOnly" xml:space="preserve"><value>Only Latin letters are allowed.</value></data>
+  <data name="Error_TooManyRegistrations" xml:space="preserve"><value>Too many registrations from this IP address. Please try again later.</value></data>
+
+  <data name="verify_info_sent" xml:space="preserve"><value>We sent a 6-digit activation code to your email.</value></data>
+  <data name="verify_info_valid_start" xml:space="preserve"><value>The code is valid for another</value></data>
+  <data name="verify_info_valid_end" xml:space="preserve"><value>minutes.</value></data>
+  <data name="verify_spam_note" xml:space="preserve"><value>Please also check your "Spam" folder.</value></data>
+  <data name="label_code" xml:space="preserve"><value>Enter the code here:</value></data>
+  <data name="Error_InvalidCode" xml:space="preserve"><value>Invalid verification code.</value></data>
+  <data name="Error_CodeExpired" xml:space="preserve"><value>The code has expired. Please register again.</value></data>
+  <data name="Error_CodeRequired" xml:space="preserve"><value>Please enter the full 6-digit code.</value></data>
+
+  <data name="reg_phase1" xml:space="preserve"><value>Details</value></data>
+  <data name="reg_phase2" xml:space="preserve"><value>Participation</value></data>
+  <data name="reg_phase3" xml:space="preserve"><value>Consents</value></data>
+  <data name="reg_phase1_title" xml:space="preserve"><value>Personal details</value></data>
+  <data name="reg_phase2_title" xml:space="preserve"><value>Participation</value></data>
+  <data name="reg_phase3_title" xml:space="preserve"><value>Consents</value></data>
+  <data name="btn_back" xml:space="preserve"><value>Back</value></data>
+  <data name="btn_next" xml:space="preserve"><value>Continue</value></data>
+  <data name="upload_btn" xml:space="preserve"><value>Choose file</value></data>
+  <data name="upload_hint" xml:space="preserve"><value>PDF, DOC or DOCX up to 10 MB</value></data>
+  <data name="upload_drop_idle" xml:space="preserve"><value>Drag the file here</value></data>
+  <data name="upload_drop_active" xml:space="preserve"><value>Drop the file</value></data>
+  <data name="upload_drop_mobile" xml:space="preserve"><value>Attach a paper</value></data>
+  <data name="verify_notice_title" xml:space="preserve"><value>Verification follows</value></data>
+  <data name="verify_notice_student" xml:space="preserve"><value>After registering you will need to confirm your student status to use subsidised participation. You will receive an email with the required documents.</value></data>
+  <data name="verify_notice_journalist" xml:space="preserve"><value>After registering you will need to confirm your accreditation. You will receive an email with the required documents.</value></data>
+  <data name="sum_name" xml:space="preserve"><value>Participant</value></data>
+  <data name="sum_email" xml:space="preserve"><value>Email</value></data>
+  <data name="sum_part" xml:space="preserve"><value>Form</value></data>
+  <data name="label_gdpr" xml:space="preserve"><value>I accept the processing of my personal data.</value></data>
+  <data name="label_gdpr_see" xml:space="preserve"><value>See the</value></data>
+
+  <data name="text_have_account" xml:space="preserve"><value>Already have an account?</value></data>
+  <data name="link_login" xml:space="preserve"><value>Login</value></data>
+
+  <data name="Error_InvalidPartForm" xml:space="preserve"><value>Please select a valid participation type.</value></data>
+  <data name="Error_InvalidFileType" xml:space="preserve"><value>Only PDF, DOC or DOCX files are allowed.</value></data>
+  <data name="v_first_name_required" xml:space="preserve"><value>Please enter your first name.</value></data>
+  <data name="v_first_name_short" xml:space="preserve"><value>The first name must be at least 2 characters.</value></data>
+  <data name="v_first_name_latin" xml:space="preserve"><value>Please use Latin characters only.</value></data>
+  <data name="v_last_name_required" xml:space="preserve"><value>Please enter your last name.</value></data>
+  <data name="v_last_name_short" xml:space="preserve"><value>The last name must be at least 2 characters.</value></data>
+  <data name="v_last_name_latin" xml:space="preserve"><value>Please use Latin characters only.</value></data>
+  <data name="v_age_required" xml:space="preserve"><value>Please enter your age.</value></data>
+  <data name="v_age_digits" xml:space="preserve"><value>Please enter digits only.</value></data>
+  <data name="v_age_range" xml:space="preserve"><value>Age must be between 18 and 100.</value></data>
+  <data name="v_title_required" xml:space="preserve"><value>Please enter your academic title.</value></data>
+  <data name="v_email_required" xml:space="preserve"><value>Please enter your email address.</value></data>
+  <data name="v_email_invalid" xml:space="preserve"><value>Please enter a valid email address.</value></data>
+  <data name="v_email_taken" xml:space="preserve"><value>An account with this email address already exists.</value></data>
+  <data name="v_phone_required" xml:space="preserve"><value>Please enter a phone number.</value></data>
+  <data name="v_phone_invalid" xml:space="preserve"><value>Please enter a valid phone number.</value></data>
+  <data name="v_workplace_required" xml:space="preserve"><value>Please enter your organisation.</value></data>
+  <data name="v_partform_required" xml:space="preserve"><value>Please select a form of participation.</value></data>
+  <data name="v_gdpr_required" xml:space="preserve"><value>Consent to the processing of personal data is required.</value></data>
+  <data name="upload_remove" xml:space="preserve"><value>Remove file</value></data>
+</root>

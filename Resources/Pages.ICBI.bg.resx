@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <data name="Nav_ICBI" xml:space="preserve"><value>За ICBI</value></data>
+  <data name="ICBI_EstLabel" xml:space="preserve"><value>Осн. Януари 2026</value></data>
+  <data name="ICBI_HeroTitle" xml:space="preserve"><value>Институт по криптоикономика,&lt;br&gt;блокчейн и иновации</value></data>
+  <data name="ICBI_HeroDesc" xml:space="preserve"><value>Създаден като специализирано академично звено към Университета за национално и световно стопанство (УНСС) с Постановление на Министерския съвет от 28 януари 2026 г., Институтът по криптоикономика, блокчейн и иновации (ICBI) служи като съществена свързваща връзка между традиционното висше образование, регулаторните институции и динамичната Web3 екосистема.</value></data>
+  <data name="ICBI_HeroQuote" xml:space="preserve"><value>Нашата основна мисия е да установим златен стандарт за образование по криптоикономика, давайки възможност на академичния и бизнес сектора да се ориентират безпроблемно в новите европейски регулаторни рамки, включително MiCA.</value></data>
+  <data name="ICBI_PillarsLabel" xml:space="preserve"><value>ОСНОВНИ НАПРАВЛЕНИЯ</value></data>
+  <data name="ICBI_PillarsTitle" xml:space="preserve"><value>Четири стълба на дейност</value></data>
+  <data name="ICBI_Pillar1_Title" xml:space="preserve"><value>Образование</value></data>
+  <data name="ICBI_Pillar1_Desc" xml:space="preserve"><value>Разработване на иновативни университетски програми, сертификационни курсове и специализирани обучения, надграждащи установената основа на УНСС по криптоикономика.</value></data>
+  <data name="ICBI_Pillar2_Title" xml:space="preserve"><value>Изследвания</value></data>
+  <data name="ICBI_Pillar2_Desc" xml:space="preserve"><value>Задълбочен научен анализ в областта на децентрализираните финанси (DeFi), токенизацията на реални активи (RWA) и синергията между блокчейн и изкуствения интелект.</value></data>
+  <data name="ICBI_Pillar3_Title" xml:space="preserve"><value>Партньорства</value></data>
+  <data name="ICBI_Pillar3_Desc" xml:space="preserve"><value>Изграждане на устойчива международна мрежа, която обединява водещи университети, регулатори, технологични пионери и компании в съвместни проекти.</value></data>
+  <data name="ICBI_Pillar4_Title" xml:space="preserve"><value>Политика</value></data>
+  <data name="ICBI_Pillar4_Desc" xml:space="preserve"><value>Ангажиране с държавната администрация и регулаторните институции в подкрепа на гладкото адаптиране на образователния и бизнес сектора към новите европейски рамки.</value></data>
+  <data name="ICBI_VenueLabel" xml:space="preserve"><value>МЯСТО</value></data>
+  <data name="ICBI_VenueTitle" xml:space="preserve"><value>Университет за национално и световно стопанство</value></data>
+  <data name="ICBI_VenueConfTitle" xml:space="preserve"><value>МЯСТО НА КОНФЕРЕНЦИЯТА</value></data>
+  <data name="ICBI_VenueConfDesc" xml:space="preserve"><value>Университет за национално и световно стопанство&lt;br&gt;ул. 8-ми декември 19, 1700 София, България</value></data>
+  <data name="ICBI_VenueHoursTitle" xml:space="preserve"><value>ЧАСОВЕ НА КОНФЕРЕНЦИЯТА</value></data>
+  <data name="ICBI_VenueHoursDesc" xml:space="preserve"><value>Ден 1-3: 09:00 - 20:00&lt;br&gt;Регистрация от 08:30 всеки ден</value></data>
+  <data name="ICBI_VenueEmailTitle" xml:space="preserve"><value>ИМЕЙЛ</value></data>
+  <data name="ICBI_EventsLabel" xml:space="preserve"><value>Предишни събития</value></data>
+  <data name="ICBI_EventsTitle" xml:space="preserve"><value>Нашият опит</value></data>
+</root>

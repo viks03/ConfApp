@@ -1,0 +1,434 @@
+﻿@page
+@model IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Home_PageTitle"];
+}
+
+@* ЗАРЕЖДАМЕ indexStyle.css САМО ТУК *@
+@section Styles {
+    <link rel="stylesheet" href="~/css/indexStyle.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/auroraGlow.js" asp-append-version="true"></script>
+}
+
+<main>
+    <canvas id="site-particles-bg" aria-hidden="true"></canvas>
+    @* ── HERO (нов) ───────────────────────────────────────────────────────
+       Твърдо разсечен екран: тъмен панел със заглавието отляво, снимката
+       отдясно, и „пропуск" лента с данните най-долу.
+
+       Промени спрямо стария hero:
+       · .hero-overlay отпада — вече няма CSS background на секцията, а
+         реален <img> в .hero-visual (затова снимката може да се кадрира
+         с object-fit и има собствен градиент към панела).
+       · .hero-meta / .meta-item стават .hero-pass / .hero-pass-cell.
+         .meta-label и .meta-value са запазени НАРОЧНО — старите правила
+         за тях продължават да важат.
+       · Стрелката .hero-scroll-hint е махната: долният ръб вече е зает
+         от пропуска, който сам изпълнява ролята на визуална граница.
+         Ако я искате обратно, кажете и ще я върна в лявия панел.
+       · Един НОВ (но незадължителен) resource ключ: Home_HeroOrganisers
+         („Организатори" / „Organisers"). Ако липсва, надписът просто не
+         се рендира — виж ResourceNotFound проверката по-долу. *@
+    <section class="hero index-hero">
+        <div class="hero-split">
+
+            <div class="hero-panel">
+                @* Растер от седалки — ехо от залата на снимката. Чист CSS
+                   градиент, без изображение. *@
+                <span class="hero-seatmap" aria-hidden="true"></span>
+
+                <p class="hero-subtitle">@Localizer["Home_HeroSubtitle"]</p>
+                <h1 class="hero-title">@Localizer["Home_HeroTitle"]</h1>
+                <p class="hero-conference-name">@Localizer["Home_HeroConferenceName"]</p>
+
+                <div class="hero-organisers">
+                    @{
+                        // Localizer[...] тук е IViewLocalizer -> IHtmlLocalizer,
+                        // чиито индексатор връща LocalizedHtmlString — този тип
+                        // НЯМА .ResourceNotFound (build грешка CS1061 иначе).
+                        // IHtmlLocalizer.GetString(...) обаче връща обикновен
+                        // LocalizedString (същия localizer, друг метод) — Е с
+                        // .ResourceNotFound, без риск да провери различен
+                        // .resx файл.
+                        var orgLabel = Localizer.GetString("Home_HeroOrganisers");
+                    }
+                    @if (!orgLabel.ResourceNotFound)
+                    {
+                        <span class="hero-foot-label">@orgLabel</span>
+                    }
+                    <div class="partners-bar">
+                        <div class="partner-logo"><img src="~/images/logos/UNWE.png" alt="UNWE"></div>
+                        <div class="partner-logo"><img src="~/images/logos/ICBI.png" alt="ICBI"></div>
+                        <div class="partner-logo"><img src="~/images/logos/NABI.png" alt="NABI"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                @* @Url.Content, не "~/" — Razor разрешава "~/" само в src/href
+                   на tag helper-и, не в srcset на <source>. *@
+                <picture>
+                    <source media="(max-width: 1024px)" srcset="@Url.Content("~/images/home/bannerHomeMobile.png")">
+                    <img src="@Url.Content("~/images/home/bannerHome.png")" alt="">
+                </picture>
+                <span class="hero-visual-blur" aria-hidden="true"></span>
+                <span class="hero-visual-fade" aria-hidden="true"></span>
+                <span class="hero-venue" aria-hidden="true">@Localizer["Home_HeroLocValue"]</span>
+            </div>
+
+        </div>
+
+        <div class="hero-pass">
+            <div class="hero-pass-fields">
+                <div class="hero-pass-cell">
+                    <span class="meta-label">@Localizer["Global_Date"]</span>
+                    <span class="meta-value">@Localizer["Home_HeroDateValue"]</span>
+                </div>
+                <div class="hero-pass-cell">
+                    <span class="meta-label">@Localizer["Global_Location"]</span>
+                    <span class="meta-value">@Localizer["Home_HeroLocValue"]</span>
+                </div>
+                <div class="hero-pass-cell">
+                    <span class="meta-label">@Localizer["Global_Duration"]</span>
+                    <span class="meta-value">@Localizer["Home_HeroDurationValue"]</span>
+                </div>
+                <div class="hero-pass-cell">
+                    <span class="meta-label">@Localizer["Global_Language"]</span>
+                    <span class="meta-value">@Localizer["Home_HeroLangValue"]</span>
+                </div>
+            </div>
+
+            @* Перфорацията между полетата и талона — двете кръгчета са в
+               цвета на фона (--bg), затова изглеждат като изрязани. *@
+            <span class="hero-pass-perf" aria-hidden="true"></span>
+
+            <a class="hero-pass-stub" href="/Register">
+                <span class="hero-pass-stub-label">@Localizer["Nav_Register"]</span>
+                <span class="hero-pass-stub-value">2026</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="partherAnimation-section" id="partners-marquee-section">
+        <div class="section-inner reveal">
+            
+            <div class="partners-marquee">
+                
+                @if (Model.PartnersLogos != null && Model.PartnersLogos.Any())
+                {
+                    <div class="marquee-group">
+                        @foreach (var logo in Model.PartnersLogos)
+                        {
+                            <div class="marquee-logo">
+                                <img src="@logo.ImagePath" alt="Partner Logo">
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="marquee-group" aria-hidden="true">
+                        @foreach (var logo in Model.PartnersLogos)
+                        {
+                            <div class="marquee-logo">
+                                <img src="@logo.ImagePath" alt="Partner Logo">
+                            </div>
+                        }
+                    </div>
+                }
+
+            </div>
+
+        </div>
+    </section>
+
+    <section class="intro-section" id="intro-section">
+        <div class="section-inner reveal">
+            <div class="intro-grid">
+                <div class="intro-text">
+                    <p class="section-label">@Localizer["Home_AboutLabel"]</p>
+                    <h2>@Localizer["Home_GapTitle"]</h2>
+                    <p>@Localizer["Home_GapDesc1"]</p>
+                    <p>@Localizer["Home_GapDesc2"]</p>
+                    <div class="btn-group">
+                        <a href="/Conference" class="btn btn-red">@Localizer["Global_BtnLearnMore"]</a>
+                        <a href="/Schedule" class="btn btn-outline">@Localizer["Global_BtnViewAgenda"]</a>
+                    </div>
+                </div>
+                <div class="intro-quote">
+                    <blockquote>
+                        @Localizer["Home_Quote"]
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="outcomes-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Home_DelivLabel"]</p>
+            <h2>@Localizer["Home_DelivTitle"]</h2>
+            
+            <div class="outcomes-row">
+                <div class="outcome-item">
+                    <span class="number">01</span>
+                    <h4>@Localizer["Home_Deliv1_Title"]</h4>
+                    <p>@Localizer["Home_Deliv1_Desc"]</p>
+                </div>
+                <div class="outcome-item">
+                    <span class="number">02</span>
+                    <h4>@Localizer["Home_Deliv2_Title"]</h4>
+                    <p>@Localizer["Home_Deliv2_Desc"]</p>
+                </div>
+                <div class="outcome-item">
+                    <span class="number">03</span>
+                    <h4>@Localizer["Home_Deliv3_Title"]</h4>
+                    <p>@Localizer["Home_Deliv3_Desc"]</p>
+                </div>
+                <div class="outcome-item">
+                    <span class="number">04</span>
+                    <h4>@Localizer["Home_Deliv4_Title"]</h4>
+                    <p>@Localizer["Home_Deliv4_Desc"]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="domains-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Home_DomainsLabel"]</p>
+            <h2>@Localizer["Home_DomainsTitle"]</h2>
+            
+            <div class="grid-4-col">
+                <div class="domain-card">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.8-1.3-4-2-6.5-2A1.5 1.5 0 0 0 4 6v11a1 1 0 0 0 1.2 1c2.2-.4 4.2.1 6.8 2 2.6-1.9 4.6-2.4 6.8-2a1 1 0 0 0 1.2-1V6a1.5 1.5 0 0 0-1.5-1.5c-2.5 0-4.7.7-6.5 2Z"></path><path d="M12 6.5V20"></path></svg></div>
+                    <h4>@Localizer["Home_Dom1_Title"]</h4>
+                    <p>@Localizer["Home_Dom1_Desc"]</p>
+                </div>
+                <div class="domain-card">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"></path><path d="M7 21h10"></path><path d="M5 7h4"></path><path d="M15 7h4"></path><path d="M3 7l2 5a2.2 2.2 0 0 0 4 0l2-5"></path><path d="M13 7l2 5a2.2 2.2 0 0 0 4 0l2-5"></path></svg></div>
+                    <h4>@Localizer["Home_Dom2_Title"]</h4>
+                    <p>@Localizer["Home_Dom2_Desc"]</p>
+                </div>
+                <div class="domain-card">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1.5"></rect><rect x="9.5" y="9.5" width="5" height="5" rx="0.5"></rect><path d="M9 2v2M12 2v2M15 2v2M9 20v2M12 20v2M15 20v2M2 9h2M2 12h2M2 15h2M20 9h2M20 12h2M20 15h2"></path></svg></div>
+                    <h4>@Localizer["Home_Dom3_Title"]</h4>
+                    <p>@Localizer["Home_Dom3_Desc"]</p>
+                </div>
+                <div class="domain-card">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"></circle><ellipse cx="12" cy="12" rx="9" ry="3.8"></ellipse><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(60 12 12)"></ellipse><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(120 12 12)"></ellipse></svg></div>
+                    <h4>@Localizer["Home_Dom4_Title"]</h4>
+                    <p>@Localizer["Home_Dom4_Desc"]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (Model.TopLecturers != null && Model.TopLecturers.Any())
+    {
+        var isBg = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+        var lecturersJson = System.Text.Json.JsonSerializer.Serialize(Model.AllLecturers.Select(l => new {
+            nameEn = l.FullNameEn,
+            nameBg = string.IsNullOrWhiteSpace(l.FullNameBg) ? l.FullNameEn : l.FullNameBg,
+            roleEn = l.RoleEn ?? "",
+            roleBg = string.IsNullOrWhiteSpace(l.RoleBg) ? (l.RoleEn ?? "") : l.RoleBg,
+            orgEn  = l.OrganizationEn ?? "",
+            orgBg  = string.IsNullOrWhiteSpace(l.OrganizationBg) ? (l.OrganizationEn ?? "") : l.OrganizationBg,
+            bioEn  = l.BiographyEn != null && l.BiographyEn.Length > 90 ? l.BiographyEn[..90] + "..." : (l.BiographyEn ?? ""),
+            bioBg  = l.BiographyBg != null && l.BiographyBg.Length > 90 ? l.BiographyBg[..90] + "..." : (string.IsNullOrWhiteSpace(l.BiographyBg) ? (l.BiographyEn != null && l.BiographyEn.Length > 90 ? l.BiographyEn[..90] + "..." : (l.BiographyEn ?? "")) : l.BiographyBg),
+            url    = l.ProfileUrl ?? "",
+            avatar = string.IsNullOrEmpty(l.AvatarImagePath) ? "/images/logos/avatar.png" : l.AvatarImagePath
+        }));
+
+        <section class="faculty-section">
+            <div class="section-inner reveal center-section">
+                <p class="section-label">@Localizer["Speakers_Subtitle"]</p>
+                <h2>@Localizer["Speakers_Title"]</h2>
+
+                <div class="grid-4-col" id="lecturers-grid">
+                    @{ int slot = 0; }
+                    @foreach (var lecturer in Model.TopLecturers)
+                    {
+                        var name = isBg ? (string.IsNullOrWhiteSpace(lecturer.FullNameBg) ? lecturer.FullNameEn : lecturer.FullNameBg) : lecturer.FullNameEn;
+                        var role = isBg ? (string.IsNullOrWhiteSpace(lecturer.RoleBg) ? lecturer.RoleEn : lecturer.RoleBg) : lecturer.RoleEn;
+                        var org  = isBg ? (string.IsNullOrWhiteSpace(lecturer.OrganizationBg) ? lecturer.OrganizationEn : lecturer.OrganizationBg) : lecturer.OrganizationEn;
+                        var bio  = isBg ? (string.IsNullOrWhiteSpace(lecturer.BiographyBg) ? lecturer.BiographyEn : lecturer.BiographyBg) : lecturer.BiographyEn;
+                        var avatarPath = string.IsNullOrEmpty(lecturer.AvatarImagePath) ? "/images/logos/avatar.png" : lecturer.AvatarImagePath;
+                        if (!string.IsNullOrEmpty(bio) && bio.Length > 90) bio = bio[..90] + "...";
+                        var hasUrl = !string.IsNullOrEmpty(lecturer.ProfileUrl);
+
+                        <div class="faculty-card"
+                             data-slot="@slot"
+                             data-url="@(lecturer.ProfileUrl ?? "")"
+                             style="cursor:@(hasUrl ? "pointer" : "default")">
+                            <div class="avatar-lg"><img src="@avatarPath" alt="@name"></div>
+                            <h4>@name</h4>
+                            <p class="role">@role</p>
+                            <p class="org">@org</p>
+                            <p class="bio">@bio</p>
+                        </div>
+
+                        slot++;
+                    }
+                </div>
+
+                <a href="/Lecturers" class="view-all-link mt-4">@Localizer["Home_ViewAllLecturers"]</a>
+            </div>
+        </section>
+
+        <script>
+        (function () {
+            const LOCALE = '@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName)';
+            const isBg   = LOCALE === 'bg';
+            const ALL    = @Html.Raw(lecturersJson);
+
+            if (!ALL || ALL.length <= 4) return;
+
+            const grid = document.getElementById('lecturers-grid');
+            if (!grid) return;
+
+            grid.addEventListener('click', function (e) {
+                const card = e.target.closest('.faculty-card');
+                if (card && card.dataset.url) window.open(card.dataset.url, '_blank', 'noopener');
+            });
+
+            let pool      = ALL.slice(4).sort(function () { return Math.random() - 0.5; });
+            let poolIndex = 0;
+            let slotIndex = 0;
+
+            function getName(l) { return isBg ? (l.nameBg || l.nameEn) : l.nameEn; }
+            function getRole(l) { return isBg ? (l.roleBg || l.roleEn) : l.roleEn; }
+            function getOrg (l) { return isBg ? (l.orgBg  || l.orgEn)  : l.orgEn;  }
+            function getBio (l) { return isBg ? (l.bioBg  || l.bioEn)  : l.bioEn;  }
+
+            function rotateCard() {
+                const cards = grid.querySelectorAll('.faculty-card');
+                if (!cards.length) return;
+
+                const card = cards[slotIndex % cards.length];
+                const next = pool[poolIndex % pool.length];
+
+                // Flip out — 360ms да завърши rotateY(90deg)
+                card.classList.add('rotating-out');
+
+                setTimeout(function () {
+                    // Картата е "на кантар" — сменяме съдържанието
+                    card.querySelector('.avatar-lg img').src = next.avatar;
+                    card.querySelector('.avatar-lg img').alt = getName(next);
+                    card.querySelector('h4').textContent     = getName(next);
+                    card.querySelector('.role').textContent  = getRole(next);
+                    card.querySelector('.org').textContent   = getOrg(next);
+                    card.querySelector('.bio').textContent   = getBio(next);
+                    card.dataset.url  = next.url;
+                    card.style.cursor = next.url ? 'pointer' : 'default';
+
+                    // Flip in — влиза от -90deg
+                    card.classList.remove('rotating-out');
+                    card.classList.add('rotating-in');
+
+                    setTimeout(function () { card.classList.remove('rotating-in'); }, 460);
+
+                    poolIndex = (poolIndex + 1) % pool.length;
+                    slotIndex = (slotIndex + 1) % cards.length;
+
+                    if (poolIndex === 0) {
+                        pool = pool.slice().sort(function () { return Math.random() - 0.5; });
+                    }
+                }, 360);
+            }
+
+            // По една карта на всеки 5 секунди
+            setInterval(rotateCard, 5000);
+        })();
+        </script>
+    }
+
+    <section class="timeline-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Home_TimelineLabel"]</p>
+            <h2>@Localizer["Home_TimelineTitle"]</h2>
+            
+            <div class="timeline-track">
+                <div class="timeline-item">
+                    <div class="timeline-node">01</div>
+                    <div class="timeline-content">
+                        <span class="item-label">@Localizer["Home_Time1_Label"]</span>
+                        <h3 class="item-date">@Localizer["Home_Time1_Date"]</h3>
+                        <p class="item-desc">@Localizer["Home_Time1_Desc"]</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-node">02</div>
+                    <div class="timeline-content">
+                        <span class="item-label">@Localizer["Home_Time4_Label"]</span>
+                        <h3 class="item-date">@Localizer["Home_Time4_Date"]</h3>
+                        <p class="item-desc">@Localizer["Home_Time4_Desc"]</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-node">03</div>
+                    <div class="timeline-content">
+                        <span class="item-label">@Localizer["Home_Time5_Label"]</span>
+                        <h3 class="item-date">@Localizer["Home_Time5_Date"]</h3>
+                        <p class="item-desc">@Localizer["Home_Time5_Desc"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="agenda-preview-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Home_AgendaLabel"]</p>
+            <h2>@Localizer["Home_AgendaTitle"]</h2>
+            
+            <div class="grid-3-col agenda-days">
+                <div class="day-col">
+                    <div class="day-header">
+                        <span class="number">01</span>
+                        <h4>@Localizer["Day01Title"]</h4>
+                    </div>
+                    @Html.Raw(Localizer["Home_Day01List_Html"].Value)
+                </div>
+                <div class="day-col">
+                    <div class="day-header">
+                        <span class="number">02</span>
+                        <h4>@Localizer["Day02Title"]</h4>
+                    </div>
+                    @Html.Raw(Localizer["Home_Day02List_Html"].Value)
+                </div>
+                <div class="day-col">
+                    <div class="day-header">
+                        <span class="number">03</span>
+                        <h4>@Localizer["Day03Title"]</h4>
+                    </div>
+                    @Html.Raw(Localizer["Home_Day03List_Html"].Value)
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="/Schedule" class="btn btn-outline">@Localizer["Global_BtnFullSchedule"]</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-cta-section">
+        <div class="section-inner reveal">
+            <div class="cta-grid">
+                <div class="cta-text">
+                    <h2>@Localizer["Home_CtaTitle"]</h2>
+                    <p>@Localizer["Home_CtaPara1"]</p>
+                    <p>@Localizer["Home_CtaPara2"]</p>
+                </div>
+                <div class="cta-card">
+                    <h3>@Localizer["Home_StudyTitle"]</h3>
+                    <p>@Localizer["Home_StudyDesc"]</p>
+                    <a href="https://www.unwe.bg/en/pages/11856/fields-and-specialties.html#3760" target="_blank" class="btn btn-red full-width mb-3">@Localizer["Home_BtnBachelor"]</a>
+                    <a href="https://www.unwe.bg/bg/pages/11855/%d1%81%d0%bf%d0%b5%d1%86%d0%b8%d0%b0%d0%bb%d0%bd%d0%be%d1%81%d1%82%d0%b8.html#3762" target="_blank" class="btn btn-outline full-width">@Localizer["Home_BtnMaster"]</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>

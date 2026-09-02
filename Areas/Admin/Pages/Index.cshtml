@@ -1,0 +1,2716 @@
+@page "/Admin"
+@using ConferenceApp.Models
+@using ConferenceApp.Data
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model ConferenceApp.Areas.Admin.Pages.IndexModel
+@{
+    Layout = "/Pages/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Admin Panel";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/adminPanel.css" asp-append-version="true">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css">
+    @* Инлайн <style> блокът, който стоеше тук, е премахнат — всяко правило
+       от него (status-*, method-*, iban-alert, field-error-msg, verif-type-*,
+       section-divider, form-section-label, #rejectReasonText, image-upload-preview,
+       modal-validation-banner) вече живее в adminPanel.css със същите имена. *@
+}
+
+  <main>
+    <div class="admin-wrapper">
+      <div class="admin-container">
+
+        <div class="admin-header">
+          <div class="admin-header-text">
+            <h2>Administration Dashboard</h2>
+            <p>Manage registrations, payments, verifications and website content.</p>
+          </div>
+          <div class="admin-header-meta">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="admin-header-badge">@User.Identity.Name</div>
+            }
+            <div class="admin-header-badge"><span class="dot"></span>System Online</div>
+            <div class="admin-header-badge">@DateTime.Now.ToString("dd MMM yyyy, HH:mm")</div>
+          </div>
+        </div>
+
+        <div class="admin-body">
+        <nav class="admin-nav admin-sidebar" aria-label="Admin sections">
+          <span class="admin-sidebar-label">Operations</span>
+          <button type="button" class="admin-tab" data-target="tab-registrations">Registrations</button>
+          <button type="button" class="admin-tab" data-target="tab-payments">Payments</button>
+          <button type="button" class="admin-tab" data-target="tab-verifications">
+            Verifications
+            @if (Model.PendingVerifCount > 0)
+            {
+                <span class="tab-badge">@Model.PendingVerifCount</span>
+            }
+          </button>
+          <button type="button" class="admin-tab" data-target="tab-crypto">Crypto Orders</button>
+          <button type="button" class="admin-tab" data-target="tab-audit">Audit Logs</button>
+          <button type="button" class="admin-tab" data-target="tab-health">Health Check</button>
+          <span class="admin-sidebar-label">Content</span>
+          <button type="button" class="admin-tab" data-target="tab-conference">Conference</button>
+          <button type="button" class="admin-tab" data-target="tab-icbi">About ICBI</button>
+          <button type="button" class="admin-tab" data-target="tab-lecturers">Lecturers</button>
+          <button type="button" class="admin-tab" data-target="tab-schedule">Schedule</button>
+          <button type="button" class="admin-tab" data-target="tab-attend">Attend</button>
+          <button type="button" class="admin-tab" data-target="tab-travel">Travel</button>
+          <button type="button" class="admin-tab" data-target="tab-faq">FAQ</button>
+          <button type="button" class="admin-tab" data-target="tab-privacy">Privacy Policy</button>
+          <button type="button" class="admin-tab" data-target="tab-terms">Terms of Use</button>
+          <button type="button" class="admin-tab" data-target="tab-cookies">Cookie Notice</button>
+          <span class="admin-sidebar-label">Site</span>
+          <button type="button" class="admin-tab" data-target="tab-settings">Site Settings</button>
+          <button type="button" class="admin-tab" data-target="tab-emails">Email Notifications</button>
+          <button type="button" class="admin-tab" data-target="tab-paycontrol">Payment Control</button>
+          <button type="button" class="admin-tab" onclick="window.location.href='/Admin/SendInvitations'">Send Invitations</button>
+          <button type="button" class="admin-tab" onclick="window.location.href='/Admin/BugReports'">
+            Bug Reports
+            @if (Model.OpenBugReportCount > 0)
+            {
+                <span class="tab-badge">@Model.OpenBugReportCount</span>
+            }
+          </button>
+        </nav>
+
+        <div class="admin-main">
+
+        
+        <div id="tab-registrations" class="admin-section">
+          <div class="admin-panel-card">
+            <h3>
+              <span>Submitted Registrations</span>
+              <div class="header-actions">
+                <a href="?handler=ExportAuditLogs" class="action-btn btn-audit" style="text-decoration:none;">Download Audit Logs</a>
+                <div class="dropdown">
+                  <button type="button" class="action-btn btn-download">Download CSV &#9662;</button>
+                  <div class="dropdown-content">
+                    <a href="?handler=ExportRegistrations&type=all">All Registrations</a>
+                    <a href="?handler=ExportRegistrations&type=confirmed">Confirmed Only</a>
+                    <a href="?handler=ExportRegistrations&type=pending">Pending Only</a>
+                    <a href="?handler=ExportRegistrations&type=cancelled">Cancelled Only</a>
+                  </div>
+                </div>
+              </div>
+            </h3>
+
+            
+            <div class="dashboard-stats">
+              <div class="stat-card s-slate">
+                <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx='9' cy='8' r='3'></circle><path d='M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1'></path><circle cx='17' cy='8' r='2.5'></circle><path d='M17 13.5c2.5.3 4.5 2.4 4.5 5V21'></path></svg></div>
+                <div class="stat-info">
+                  <span class="stat-title">Total Users</span>
+                  <strong class="stat-value">@Model.TotalUsers</strong>
+                </div>
+              </div>
+              <div class="stat-card s-green">
+                <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx='12' cy='12' r='9'></circle><polyline points='8 12.5 11 15.5 16 9'></polyline></svg></div>
+                <div class="stat-info">
+                  <span class="stat-title">Confirmed</span>
+                  <strong class="stat-value" style="color:var(--c-green);">@Model.ConfirmedPaymentsCount</strong>
+                </div>
+              </div>
+              <div class="stat-card s-red">
+                <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                <div class="stat-info">
+                  <span class="stat-title">Pending</span>
+                  <strong class="stat-value text-red">@Model.PendingPaymentsCount</strong>
+                </div>
+              </div>
+              <div class="stat-card s-amber">
+                <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1='3' y1='22' x2='21' y2='22'></line><line x1='6' y1='18' x2='6' y2='11'></line><line x1='10' y1='18' x2='10' y2='11'></line><line x1='14' y1='18' x2='14' y2='11'></line><line x1='18' y1='18' x2='18' y2='11'></line><polygon points='12 2 21 8 3 8'></polygon></svg></div>
+                <div class="stat-info">
+                  <span class="stat-title">IBAN Awaiting</span>
+                  <strong class="stat-value text-blue">@Model.IbanPendingCount</strong>
+                </div>
+              </div>
+              <div class="stat-card s-amber">
+                <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d='M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2'></path><rect x='9' y='3' width='6' height='4' rx='1'></rect></svg></div>
+                <div class="stat-info">
+                  <span class="stat-title">Pending Verif.</span>
+                  <strong class="stat-value text-blue">@Model.PendingVerifCount</strong>
+                </div>
+              </div>
+              <div class="stat-card s-purple">
+                <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d='M7 5h7a3.5 3.5 0 0 1 0 7H7z'></path><path d='M7 12h7.5a3.5 3.5 0 0 1 0 7H7z'></path><line x1='9.5' y1='3' x2='9.5' y2='21'></line></svg></div>
+                <div class="stat-info">
+                  <span class="stat-title">Crypto Orders</span>
+                  <strong class="stat-value">@Model.TotalCryptoOrders</strong>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx='12' cy='12' r='9'></circle><polyline points='12 7 12 12 15 14'></polyline></svg></div>
+                <div class="stat-info">
+                  <span class="stat-title">Last Cleanup</span>
+                  <strong class="stat-value text-small">@Model.LastCleanupTime</strong>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg></div>
+                <div class="stat-info">
+                  <span class="stat-title">Next Cleanup</span>
+                  <strong class="stat-value text-blue text-small">@Model.NextCleanupTime</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-filters">
+              <input type="text" id="regSearchInput" placeholder="Search by name, email or organization..." class="filter-input">
+              <select id="regPaymentFilter" class="filter-select">
+                <option value="all">All Payment Statuses</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Pending">Pending</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+              <select id="regTypeFilter" class="filter-select">
+                <option value="all">All Types</option>
+                <option value="1">Lector / Academic</option>
+                <option value="2">Student / PhD</option>
+                <option value="3">Online Participant</option>
+                <option value="4">Journalist / Media</option>
+              </select>
+              <select id="regAccountFilter" class="filter-select">
+                <option value="all">All Account Statuses</option>
+                <option value="Verified">Email Verified</option>
+                <option value="Not Verified">Not Verified</option>
+              </select>
+            </div>
+
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Contact</th>
+                  <th>Type</th>
+                  <th>Payment</th>
+                  <th>Verification</th>
+                  <th>File</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="registrationsTableBody">
+                @if (!Model.RegisteredUsers.Any())
+                {
+                    <tr><td colspan="7" class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect></svg></span>No registrations yet.</td></tr>
+                }
+                else
+                {
+                    @foreach (var u in Model.RegisteredUsers)
+                    {
+                        var payStat = string.IsNullOrEmpty(u.PaymentStatus) ? "Pending" : u.PaymentStatus;
+                        var accStat = u.EmailConfirmed ? "Verified" : "Not Verified";
+                        var searchTxt = $"{u.FirstName} {u.LastName} {u.Workplace} {u.Email} {u.ReferenceNumber}".ToLower();
+                        var typeDisplay = ConferenceApp.Areas.Admin.Pages.IndexModel.FormatPartForm(u.PartForm);
+                        var verifStat = u.VerificationStatus ?? "None";
+                        var payBadgeClass = payStat == "Confirmed" ? "status-confirmed" : payStat == "Cancelled" ? "status-cancelled" : "status-pending";
+                        var verifBadgeClass = verifStat == "Approved" ? "status-approved" : verifStat == "Rejected" ? "status-rejected" : verifStat == "Pending" ? "status-pending" : "status-none";
+                        <tr class="reg-data-row"
+                            data-search="@searchTxt"
+                            data-payment="@payStat"
+                            data-type="@u.PartForm"
+                            data-account="@accStat">
+                          <td>
+                            <strong>@u.FirstName @u.LastName</strong>
+                            <br><span style="color:var(--c-text-muted);font-size:11px;">@u.AcademicTitle — Age @u.Age</span>
+                            <br><span style="color:var(--c-text-faint);font-size:10px;font-family:monospace;">@u.ReferenceNumber</span>
+                          </td>
+                          <td>
+                            <span style="font-size:13px;">@u.Email</span>
+                            <br><span style="color:var(--c-text-secondary);font-size:12px;">@u.PhoneNumber</span>
+                          </td>
+                          <td><span class="category-badge">@typeDisplay</span></td>
+                          <td>
+                            <span class="status-badge @payBadgeClass">@payStat</span>
+                            @if (!string.IsNullOrEmpty(u.PaymentMethod))
+                            {
+                                var mClass = u.PaymentMethod.ToLower() switch { "card" => "method-card", "crypto" => "method-crypto", "iban" => "method-iban", "manual" => "method-manual", "subsidised" => "method-subsidised", _ => "method-manual" };
+                                <br><span class="method-badge @mClass" style="margin-top:4px;">@u.PaymentMethod</span>
+                            }
+                          </td>
+                          <td>
+                            @if (u.PartForm == "2" || u.PartForm == "4")
+                            {
+                                <span class="status-badge @verifBadgeClass">@verifStat</span>
+                            }
+                            else { <span style="color:var(--c-border-strong);font-size:12px;">N/A</span> }
+                          </td>
+                          <td>
+                            @if (!string.IsNullOrEmpty(u.PaperFilePath))
+                            {
+                                <a href="?handler=DownloadPaper&userId=@u.Id" class="action-btn btn-download" style="padding:4px 8px;font-size:11px;">Paper</a>
+                            }
+                            else { <span style="color:var(--c-border-strong);font-size:12px;">None</span> }
+                          </td>
+                          <td>
+                            <button type="button" class="action-btn btn-view view-reg-btn"
+                                    data-modal-target="view-registration-modal"
+                                    data-id="@u.Id"
+                                    data-fname="@u.FirstName" data-lname="@u.LastName"
+                                    data-age="@u.Age" data-email="@u.Email" data-phone="@u.PhoneNumber"
+                                    data-title="@u.AcademicTitle" data-org="@u.Workplace"
+                                    data-part="@typeDisplay" data-partform="@u.PartForm"
+                                    data-foreign="@(u.IsForeigner ? "Yes" : "No")"
+                                    data-confirmed="@accStat" data-payment="@payStat"
+                                    data-paymethod="@(u.PaymentMethod ?? "")"
+                                    data-refnum="@u.ReferenceNumber"
+                                    data-verifstatus="@verifStat"
+                                    data-verifinstitution="@(u.VerificationInstitution ?? "")"
+                                    data-verifspecialty="@(u.VerificationSpecialty ?? "")"
+                                    data-verifyear="@(u.VerificationYear ?? "")"
+                                    data-verifstudentid="@(u.VerificationStudentId ?? "")"
+                                    data-paidat="@(u.PaidAt.HasValue ? ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(u.PaidAt.Value).ToString("dd.MM.yyyy HH:mm") : "—")"
+                                    data-created="@(ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(u.CreatedAt).ToString("dd MMM yyyy, HH:mm"))"
+                                    data-gdpr='@(u.HasAcceptedGdpr ? $"Yes ({ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(u.GdprConsentDate ?? DateTime.UtcNow).ToString("dd MMM yyyy")})" : "No")'
+                                    data-marketing="@(u.WantsMarketing ? "Yes" : "No")"
+                                    data-publishconsent="@(u.ConsentToPublishPaper ? "Yes" : "No")"
+                                    data-filename="@(string.IsNullOrEmpty(u.PaperFilePath) ? "" : System.IO.Path.GetFileName(u.PaperFilePath))"
+                                    data-hasverifDoc="@(!string.IsNullOrEmpty(u.VerificationDocumentPath) ? "true" : "false")">View</button>
+
+                            <button type="button" class="action-btn btn-edit edit-reg-btn"
+                                    data-modal-target="edit-registration-modal"
+                                    data-id="@u.Id" data-fname="@u.FirstName" data-lname="@u.LastName"
+                                    data-age="@u.Age" data-phone="@u.PhoneNumber"
+                                    data-title="@u.AcademicTitle" data-org="@u.Workplace"
+                                    data-part="@u.PartForm" data-foreign="@(u.IsForeigner ? "true" : "false")"
+                                    data-confirmed="@accStat" data-payment="@payStat"
+                                    data-verifstatus="@verifStat"
+                                    data-filename="@(string.IsNullOrEmpty(u.PaperFilePath) ? "" : System.IO.Path.GetFileName(u.PaperFilePath))">Edit</button>
+
+                            <button type="button" class="action-btn btn-delete delete-reg-btn"
+                                    data-modal-target="delete-modal"
+                                    data-delete-name="@u.FirstName @u.LastName"
+                                    data-id="@u.Id">Delete</button>
+                          </td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        
+        <div id="tab-payments" class="admin-section">
+
+          @if (Model.IbanPending.Any())
+          {
+              <div class="admin-panel-card" style="border-left:4px solid var(--c-amber-vivid);">
+                <h3>
+                  <span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> IBAN Transfers Awaiting Confirmation</span>
+                  <span style="background:var(--c-amber-light);color:var(--c-amber);border:1px solid var(--c-amber-border);padding:4px 12px;border-radius:4px;font-size:13px;font-weight:bold;">@Model.IbanPending.Count pending</span>
+                </h3>
+                <p style="color:var(--c-amber);font-size:14px;margin-bottom:16px;">The following users submitted IBAN transfer notifications. Verify the bank transfer and confirm manually.</p>
+                <div class="table-scroll">
+                <table class="admin-table">
+                  <thead>
+                    <tr><th>User</th><th>Reference #</th><th>Type</th><th>Submitted At</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody>
+                    @foreach (var u in Model.IbanPending)
+                    {
+                        var submitted = u.IbanTransferSubmittedAt.HasValue
+                            ? ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(u.IbanTransferSubmittedAt.Value).ToString("dd.MM.yyyy HH:mm")
+                            : "—";
+                        <tr>
+                          <td><strong>@u.FirstName @u.LastName</strong><br><small style="color:var(--c-text-secondary);">@u.Email</small></td>
+                          <td><code style="background:var(--c-surface-soft);padding:2px 6px;border-radius:4px;font-size:12px;">@u.ReferenceNumber</code></td>
+                          <td>@ConferenceApp.Areas.Admin.Pages.IndexModel.FormatPartForm(u.PartForm)</td>
+                          <td style="color:var(--c-amber);font-weight:bold;font-size:13px;">@submitted</td>
+                          <td>
+                            <button type="button" class="action-btn btn-view confirm-payment-btn"
+                                    data-userid="@u.Id" data-name="@u.FirstName @u.LastName"
+                                    data-ref="@u.ReferenceNumber" data-method="IBAN"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points='20 6 9 17 4 12'></polyline></svg> Confirm IBAN</button>
+                            <button type="button" class="action-btn btn-delete cancel-payment-btn"
+                                    data-userid="@u.Id" data-name="@u.FirstName @u.LastName"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1='18' y1='6' x2='6' y2='18'></line><line x1='6' y1='6' x2='18' y2='18'></line></svg> Cancel</button>
+                          </td>
+                        </tr>
+                    }
+                  </tbody>
+                </table>
+                </div>
+              </div>
+          }
+
+          <div class="admin-panel-card">
+            <h3>
+              <span>All Payments</span>
+              <div class="header-actions">
+                <a href="?handler=ExportRegistrations&type=confirmed" class="action-btn btn-download" style="text-decoration:none;font-size:13px;">Export Confirmed CSV</a>
+              </div>
+            </h3>
+            <div class="admin-filters">
+              <input type="text" id="paySearchInput" placeholder="Search by name, email or reference number..." class="filter-input">
+              <select id="payStatusFilter" class="filter-select">
+                <option value="all">All Statuses</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Pending">Pending</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+              <select id="payMethodFilter" class="filter-select">
+                <option value="all">All Methods</option>
+                <option value="Card">Card (Stripe)</option>
+                <option value="Crypto">Crypto (Go28)</option>
+                <option value="IBAN">IBAN Transfer</option>
+                <option value="Manual">Manual</option>
+                <option value="Subsidised">Subsidised</option>
+              </select>
+            </div>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>User</th><th>Reference #</th><th>Type</th><th>Status</th><th>Method</th><th>Paid At</th><th>IBAN Submitted</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="paymentsTableBody">
+                @foreach (var u in Model.RegisteredUsers)
+                {
+                    var payStat = u.PaymentStatus ?? "Pending";
+                    var payMethod = u.PaymentMethod ?? "";
+                    var paidAt = u.PaidAt.HasValue ? ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(u.PaidAt.Value).ToString("dd.MM.yyyy HH:mm") : "—";
+                    var ibanAt = u.IbanTransferSubmittedAt.HasValue ? ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(u.IbanTransferSubmittedAt.Value).ToString("dd.MM.yyyy HH:mm") : "—";
+                    var payBadgeClass = payStat == "Confirmed" ? "status-confirmed" : payStat == "Cancelled" ? "status-cancelled" : "status-pending";
+                    var mClass = payMethod.ToLower() switch { "card" => "method-card", "crypto" => "method-crypto", "iban" => "method-iban", "manual" => "method-manual", "subsidised" => "method-subsidised", _ => "" };
+                    <tr class="pay-data-row"
+                        data-search="@($"{u.FirstName} {u.LastName} {u.Email} {u.ReferenceNumber}".ToLower())"
+                        data-status="@payStat"
+                        data-method="@payMethod">
+                      <td><strong>@u.FirstName @u.LastName</strong><br><small style="color:var(--c-text-secondary);">@u.Email</small></td>
+                      <td><code style="background:var(--c-surface-soft);padding:2px 6px;border-radius:4px;font-size:11px;">@u.ReferenceNumber</code></td>
+                      <td style="font-size:12px;">@ConferenceApp.Areas.Admin.Pages.IndexModel.FormatPartForm(u.PartForm)</td>
+                      <td><span class="status-badge @payBadgeClass">@payStat</span></td>
+                      <td>@if (!string.IsNullOrEmpty(payMethod)) { <span class="method-badge @mClass">@payMethod</span> } else { <span style="color:var(--c-border-strong);">—</span> }</td>
+                      <td style="font-size:12px;">@paidAt</td>
+                      <td style="font-size:12px;">@if (u.IbanTransferSubmittedAt.HasValue) { <span style="color:var(--c-amber);font-weight:bold;">@ibanAt</span> } else { <text>—</text> }</td>
+                      <td>
+                        @if (payStat != "Confirmed")
+                        {
+                            <button type="button" class="action-btn btn-view confirm-payment-btn"
+                                    data-userid="@u.Id" data-name="@u.FirstName @u.LastName"
+                                    data-ref="@u.ReferenceNumber" data-method="Manual"
+                                    style="font-size:12px;padding:5px 9px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points='20 6 9 17 4 12'></polyline></svg> Confirm</button>
+                        }
+                        @if (payStat != "Cancelled")
+                        {
+                            <button type="button" class="action-btn btn-delete cancel-payment-btn"
+                                    data-userid="@u.Id" data-name="@u.FirstName @u.LastName"
+                                    style="font-size:12px;padding:5px 9px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1='18' y1='6' x2='6' y2='18'></line><line x1='6' y1='6' x2='18' y2='18'></line></svg> Cancel</button>
+                        }
+                        @if (payStat == "Confirmed") { <span style="color:var(--c-green);font-weight:bold;font-size:12px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points='20 6 9 17 4 12'></polyline></svg> Paid</span> }
+                      </td>
+                    </tr>
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        
+        <div id="tab-verifications" class="admin-section">
+
+          <!-- PENDING VERIFICATIONS — Card-based with live preview -->
+          <div class="admin-panel-card">
+            <h3>
+              <span>
+                <span class="card-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d='M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2'></path><rect x='9' y='3' width='6' height='4' rx='1'></rect></svg></span>
+                Pending Verifications
+              </span>
+              @if (Model.PendingVerifCount > 0)
+              {
+                  <span class="status-badge status-pending">@Model.PendingVerifCount awaiting review</span>
+              }
+              else
+              {
+                  <span class="status-badge status-approved">All reviewed</span>
+              }
+            </h3>
+
+            @if (!Model.PendingVerifications.Any())
+            {
+                <div class="empty-state">
+                  <span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="8 12.5 11 15.5 16 9"></polyline></svg></span>
+                  <span>No pending verifications. All caught up!</span>
+                </div>
+            }
+            else
+            {
+                <div style="padding:16px 22px;">
+                  @foreach (var u in Model.PendingVerifications)
+                  {
+                      var vType  = u.PartForm == "2" ? "Student / PhD" : "Journalist / Media";
+                      var vBadge = u.PartForm == "2" ? "verif-type-student" : "verif-type-journalist";
+                      var subAt  = u.VerificationSubmittedAt.HasValue
+                          ? ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(u.VerificationSubmittedAt.Value).ToString("dd.MM.yyyy HH:mm")
+                          : "—";
+                      var initials = $"{(u.FirstName?.Length > 0 ? u.FirstName[0] : ' ')}{(u.LastName?.Length > 0 ? u.LastName[0] : ' ')}".ToUpper();
+                      var hasDoc   = !string.IsNullOrEmpty(u.VerificationDocumentPath);
+                      var docExt   = hasDoc ? System.IO.Path.GetExtension(u.VerificationDocumentPath ?? "").ToLower() : "";
+                      var isImage  = new[]{ ".jpg", ".jpeg", ".png", ".webp", ".gif" }.Contains(docExt);
+
+                      <div class="verif-pending-card" id="vpc-@u.Id">
+                        <!-- Card Header — always visible -->
+                        <div class="verif-pending-card-header" id="vpc-header-@u.Id">
+                          <div class="verif-pending-user">
+                            <div class="verif-pending-avatar">@initials</div>
+                            <div>
+                              <div class="verif-pending-name">@u.FirstName @u.LastName</div>
+                              <div class="verif-pending-email">@u.Email</div>
+                            </div>
+                          </div>
+                          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <span class="status-badge @vBadge">@vType</span>
+                            <span style="font-size:12px;color:var(--c-text-muted);">@subAt</span>
+                            <div class="verif-pending-actions">
+                              <button type="button" class="action-btn btn-view approve-verif-btn"
+                                      data-userid="@u.Id"
+                                      data-name="@u.FirstName @u.LastName"
+                                      data-type="@vType"
+                                      data-partform="@u.PartForm"
+                                      style="font-size:12px;padding:5px 11px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points='20 6 9 17 4 12'></polyline></svg> Approve</button>
+                              <button type="button" class="action-btn btn-delete reject-verif-btn"
+                                      data-userid="@u.Id"
+                                      data-name="@u.FirstName @u.LastName"
+                                      style="font-size:12px;padding:5px 11px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1='18' y1='6' x2='6' y2='18'></line><line x1='6' y1='6' x2='18' y2='18'></line></svg> Reject</button>
+                              <button type="button" class="verif-expand-btn" id="vpc-toggle-@u.Id">
+                                <span>Review</span><span class="chevron"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points='6 9 12 15 18 9'></polyline></svg></span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Card Body — expandable live preview -->
+                        <div class="verif-pending-body" id="vpc-body-@u.Id">
+                          <div class="verif-review-layout">
+
+                            <!-- Left: info -->
+                            <div class="verif-info-panel">
+                              <h5>Submitted Information</h5>
+                              <div class="verif-info-row">
+                                <span class="label">Type</span>
+                                <span class="value"><span class="status-badge @vBadge">@vType</span></span>
+                              </div>
+                              <div class="verif-info-row">
+                                <span class="label">Institution</span>
+                                <span class="value">@(u.VerificationInstitution ?? "—")</span>
+                              </div>
+                              <div class="verif-info-row">
+                                <span class="label">@(u.PartForm == "2" ? "Specialty" : "Position")</span>
+                                <span class="value">@(u.VerificationSpecialty ?? "—")</span>
+                              </div>
+                              <div class="verif-info-row">
+                                <span class="label">@(u.PartForm == "2" ? "Semester / Year" : "Media / Website URL")</span>
+                                <span class="value">
+                                  @if (u.PartForm == "2" && !string.IsNullOrEmpty(u.VerificationYear))
+                                  {
+                                      <text>Semester @u.VerificationYear</text>
+                                  }
+                                  else
+                                  {
+                                      @(u.VerificationYear ?? "—")
+                                  }
+                                </span>
+                              </div>
+                              @if (u.PartForm == "2" && !string.IsNullOrEmpty(u.VerificationStudentId))
+                              {
+                                  <div class="verif-info-row">
+                                    <span class="label">Student ID</span>
+                                    <span class="value"><code>@u.VerificationStudentId</code></span>
+                                  </div>
+                              }
+                              <div class="verif-info-row">
+                                <span class="label">Submitted</span>
+                                <span class="value">@subAt</span>
+                              </div>
+                              <div class="verif-info-row">
+                                <span class="label">Reference</span>
+                                <span class="value"><code>@u.ReferenceNumber</code></span>
+                              </div>
+                              @if (u.PartForm == "2")
+                              {
+                                  <div style="margin-top:12px;padding:10px;background:var(--c-amber-light);border:1px solid var(--c-amber-border);border-radius:6px;font-size:12px;color:var(--c-amber);">
+                                    <strong><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx='12' cy='12' r='9'></circle><line x1='12' y1='11' x2='12' y2='16'></line><line x1='12' y1='8' x2='12.01' y2='8'></line></svg> Note:</strong> Approving will auto-confirm payment as <strong>Subsidised</strong> (student discount).
+                                  </div>
+                              }
+                              else if (u.PartForm == "4")
+                              {
+                                  <div style="margin-top:12px;padding:10px;background:var(--c-blue-light);border:1px solid var(--c-blue-border);border-radius:6px;font-size:12px;color:var(--c-blue);">
+                                    <strong><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx='12' cy='12' r='9'></circle><line x1='12' y1='11' x2='12' y2='16'></line><line x1='12' y1='8' x2='12.01' y2='8'></line></svg> Note:</strong> Approving will confirm journalist/media <strong>accreditation</strong> and auto-confirm registration.
+                                  </div>
+                              }
+                            </div>
+
+                            <!-- Right: document preview -->
+                            <div class="verif-doc-panel">
+                              <h5>
+                                <span>Verification Document</span>
+                                @if (hasDoc)
+                                {
+                                    <a href="?handler=DownloadVerifDoc&userId=@u.Id"
+                                       class="action-btn btn-download"
+                                       style="font-size:11px;padding:3px 9px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M12 3v12'></path><polyline points='7 11 12 16 17 11'></polyline><path d='M5 19h14'></path></svg> Download</a>
+                                }
+                              </h5>
+                              <div class="verif-doc-preview" id="vdp-@u.Id">
+                                @if (!hasDoc)
+                                {
+                                    <div class="verif-doc-placeholder">
+                                      <span class="ph-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'></path><polyline points='14 2 14 8 20 8'></polyline></svg></span>
+                                      <span>No document uploaded</span>
+                                    </div>
+                                }
+                                else if (isImage)
+                                {
+                                    <!-- Image: load inline -->
+                                    <img src="?handler=DownloadVerifDoc&userId=@u.Id"
+                                         alt="Verification document"
+                                         style="max-width:100%;max-height:220px;object-fit:contain;"
+                                         onerror="this.style.display='none';" />
+                                }
+                                else
+                                {
+                                    <!-- PDF or other: embed or prompt download -->
+                                    <div class="verif-doc-placeholder">
+                                      <span class="ph-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'></path><polyline points='14 2 14 8 20 8'></polyline></svg></span>
+                                      <span style="font-size:12px;text-align:center;">PDF document<br><a href="?handler=DownloadVerifDoc&userId=@u.Id" style="color:var(--c-blue);font-weight:600;">Open / Download</a></span>
+                                    </div>
+                                }
+                              </div>
+                              @if (hasDoc)
+                              {
+                                  <div class="verif-doc-footer">
+                                    <span style="font-size:11px;color:var(--c-text-muted);flex:1;">@System.IO.Path.GetFileName(u.VerificationDocumentPath)</span>
+                                    <span style="font-size:11px;color:var(--c-text-muted);text-transform:uppercase;font-weight:700;">@docExt.TrimStart('.')</span>
+                                  </div>
+                              }
+                            </div>
+
+                          </div><!-- end verif-review-layout -->
+                        </div><!-- end verif-pending-body -->
+                      </div><!-- end verif-pending-card -->
+                  }
+                </div>
+            }
+          </div>
+
+          <!-- VERIFICATIONS HISTORY -->
+          <div class="admin-panel-card">
+            <h3>
+              <span><span class="card-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1='18' y1='20' x2='18' y2='10'></line><line x1='12' y1='20' x2='12' y2='4'></line><line x1='6' y1='20' x2='6' y2='14'></line></svg></span>All Verifications History</span>
+            </h3>
+            <div class="admin-filters">
+              <input type="text" id="verifSearchInput" placeholder="Search by name or institution..." class="filter-input">
+              <select id="verifStatusFilter" class="filter-select">
+                <option value="all">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+                <option value="None">No Submission</option>
+              </select>
+              <select id="verifTypeFilter" class="filter-select">
+                <option value="all">All Types</option>
+                <option value="2">Student / PhD</option>
+                <option value="4">Journalist / Media</option>
+              </select>
+            </div>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>User</th><th>Type</th><th>Institution</th><th>Status</th><th>Submitted</th><th>Document</th></tr>
+              </thead>
+              <tbody>
+                @if (!Model.AllVerifications.Any())
+                {
+                    <tr><td colspan="6"><div class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect></svg></span><span>No students or journalists registered yet.</span></div></td></tr>
+                }
+                else
+                {
+                    @foreach (var u in Model.AllVerifications)
+                    {
+                        var vType   = u.PartForm == "2" ? "Student / PhD" : "Journalist / Media";
+                        var vBadge  = u.PartForm == "2" ? "verif-type-student" : "verif-type-journalist";
+                        var vStat   = u.VerificationStatus ?? "None";
+                        var vStatBadge = vStat == "Approved" ? "status-approved" : vStat == "Rejected" ? "status-rejected" : vStat == "Pending" ? "status-pending" : "status-none";
+                        var subAt   = u.VerificationSubmittedAt.HasValue
+                            ? ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(u.VerificationSubmittedAt.Value).ToString("dd.MM.yyyy HH:mm")
+                            : "—";
+                        <tr class="verif-data-row"
+                            data-search="@($"{u.FirstName} {u.LastName} {u.Email} {u.VerificationInstitution}".ToLower())"
+                            data-status="@vStat"
+                            data-type="@u.PartForm">
+                          <td>
+                            <strong>@u.FirstName @u.LastName</strong>
+                            <br><small style="color:var(--c-text-muted);">@u.Email</small>
+                          </td>
+                          <td><span class="status-badge @vBadge">@vType</span></td>
+                          <td style="font-size:13px;">@(u.VerificationInstitution ?? "—")</td>
+                          <td><span class="status-badge @vStatBadge">@vStat</span></td>
+                          <td style="font-size:12px;white-space:nowrap;">@subAt</td>
+                          <td>
+                            @if (!string.IsNullOrEmpty(u.VerificationDocumentPath))
+                            {
+                                <a href="?handler=DownloadVerifDoc&userId=@u.Id" class="action-btn btn-download" style="font-size:11px;padding:4px 8px;"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M12 3v12'></path><polyline points='7 11 12 16 17 11'></polyline><path d='M5 19h14'></path></svg> Download</a>
+                            }
+                            else { <span style="color:var(--c-text-xmuted);font-size:12px;">None</span> }
+                          </td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-crypto" class="admin-section">
+          <div class="admin-panel-card">
+            <h3>
+              <span>Crypto Payment Orders (Go28)</span>
+              <div class="header-actions">
+                @* Трие само изтеклите. Потвърдените са следа от реално плащане
+                   и не се пипат — виж OnPostClearInactiveCryptoOrdersAsync. *@
+                <button type="button" id="clearInactiveCryptoBtn" class="action-btn"
+                        title="Трие изтеклите поръчки. Потвърдените и активните остават.">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>
+                  Изчисти неактивните
+                </button>
+              </div>
+            </h3>
+            <div class="admin-filters">
+              <input type="text" id="cryptoSearchInput" placeholder="Search by currency, external ID or wallet..." class="filter-input">
+              <select id="cryptoStatusFilter" class="filter-select">
+                <option value="all">All Statuses</option>
+                <option value="InProcess">In Process</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Expired">Expired</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+              <select id="cryptoCurrencyFilter" class="filter-select">
+                <option value="all">All Currencies</option>
+                <option value="BTC">BTC</option>
+                <option value="ETH">ETH</option>
+                <option value="USDC">USDC</option>
+                <option value="EURC">EURC</option>
+              </select>
+            </div>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Go28 ID</th><th>External ID</th><th>User ID</th><th>Currency</th><th>EUR Amount</th><th>Crypto Amount</th><th>Status</th><th>Created</th><th>Expires / Completed</th></tr>
+              </thead>
+              <tbody id="cryptoTableBody">
+                @if (!Model.CryptoOrders.Any())
+                {
+                    <tr><td colspan="9" class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h7a3.5 3.5 0 0 1 0 7H7z"></path><path d="M7 12h7.5a3.5 3.5 0 0 1 0 7H7z"></path><line x1="9.5" y1="3" x2="9.5" y2="21"></line></svg></span>No crypto orders yet.</td></tr>
+                }
+                else
+                {
+                    @foreach (var o in Model.CryptoOrders)
+                    {
+                        var cStatBadge = o.Status == "Confirmed" ? "status-confirmed" : o.Status == "InProcess" ? "status-inprocess" : o.Status == "Expired" ? "status-rejected" : "status-none";
+                        var cCreated = ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(o.CreatedAt).ToString("dd.MM.yyyy HH:mm");
+                        var cEnd = o.CompletedAt.HasValue
+                            ? ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(o.CompletedAt.Value).ToString("dd.MM.yyyy HH:mm")
+                            : (o.ExpiresAt.HasValue ? ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(o.ExpiresAt.Value).ToString("dd.MM.yyyy HH:mm") : "—");
+                        <tr class="crypto-data-row"
+                            data-search="@($"{o.Currency} {o.ExternalId} {o.WalletAddress}".ToLower())"
+                            data-status="@o.Status"
+                            data-currency="@o.Currency">
+                          <td><code>@o.Go28OrderId</code></td>
+                          <td style="font-size:11px;max-width:160px;word-break:break-all;">@o.ExternalId</td>
+                          <td style="font-size:11px;color:var(--c-text-muted);max-width:80px;word-break:break-all;">@o.UserId.Substring(0, Math.Min(8, o.UserId.Length))…</td>
+                          <td><strong>@o.Currency</strong><br><small style="color:var(--c-text-muted);">@o.Network</small></td>
+                          <td><strong style="color:var(--c-green);">€@o.AmountEUR</strong></td>
+                          <td style="font-size:12px;">@o.CryptoAmount</td>
+                          <td><span class="status-badge @cStatBadge">@o.Status</span></td>
+                          <td style="font-size:12px;">@cCreated</td>
+                          <td style="font-size:12px;color:var(--c-text-secondary);">@cEnd</td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        
+        <div id="tab-audit" class="admin-section">
+          <div class="admin-panel-card">
+            <h3>
+              <span>Audit Logs (Last 200)</span>
+              <div class="header-actions">
+                <a href="?handler=ExportAuditLogs" class="action-btn btn-audit" style="text-decoration:none;">Export All CSV</a>
+              </div>
+            </h3>
+            <div class="admin-filters">
+              <input type="text" id="auditSearchInput" placeholder="Search by email, action or details..." class="filter-input">
+              <select id="auditActionFilter" class="filter-select">
+                <option value="all">All Actions</option>
+                <option value="Payment">Payment</option>
+                <option value="Verification">Verification</option>
+                <option value="Admin Edit">Admin Edit</option>
+                <option value="User Registered">Registration</option>
+                <option value="User Deleted">Deletion</option>
+                <option value="Stripe">Stripe</option>
+                <option value="Webhook">Webhook</option>
+                <option value="Login">Login</option>
+                <option value="System">System</option>
+              </select>
+            </div>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th style="white-space:nowrap;">Date &amp; Time (BG)</th><th>User</th><th>Action</th><th>IP Address</th><th>Details</th></tr>
+              </thead>
+              <tbody>
+                @if (!Model.RecentAuditLogs.Any())
+                {
+                    <tr><td colspan="5" class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect></svg></span>No audit logs yet.</td></tr>
+                }
+                else
+                {
+                    @foreach (var log in Model.RecentAuditLogs)
+                    {
+                        var logTime = ConferenceApp.Areas.Admin.Pages.IndexModel.ConvertToBgTime(log.Timestamp).ToString("dd.MM.yyyy HH:mm:ss");
+                        var logIp = log.IpAddress == "::1" ? "Localhost" : (log.IpAddress ?? "—");
+                        var isPayment = log.Action.Contains("Payment") || log.Action.Contains("Stripe") || log.Action.Contains("Webhook");
+                        var isVerif = log.Action.Contains("Verification");
+                        var isDelete = log.Action.Contains("Deleted");
+                        var rowClass = isPayment ? "audit-row-payment" : isVerif ? "audit-row-verification" : isDelete ? "audit-row-delete" : "";
+                        <tr class="@rowClass audit-data-row"
+                            data-search="@($"{log.UserEmail} {log.Action} {log.Details}".ToLower())"
+                            data-action="@log.Action">
+                          <td style="font-size:12px;white-space:nowrap;">@logTime</td>
+                          <td style="font-size:12px;">@log.UserEmail</td>
+                          <td>
+                            <span class="status-badge @(isPayment ? "status-confirmed" : isVerif ? "status-approved" : isDelete ? "status-rejected" : "status-none")"
+                                  style="font-size:10px;">@log.Action</span>
+                          </td>
+                          <td style="font-size:12px;color:var(--c-text-muted);">@logIp</td>
+                          <td style="font-size:11px;color:var(--c-text-secondary);max-width:300px;word-break:break-word;">@log.Details</td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        
+
+        <!-- ── HEALTH CHECK ───────────────────────────────────────────────
+             Проверката тръгва при отваряне на таба (adminPanelHealth.js),
+             не при зареждане на панела. data-hc-endpoint може да се смени,
+             без да се пипа скриптът; data-hc-mode="bulk" превключва от осем
+             паралелни заявки към една обща.                            -->
+        <div id="tab-health" class="admin-section"
+             data-hc-endpoint="?handler=HealthCheck" data-hc-mode="parallel">
+          <div class="admin-panel-card">
+            <h3>
+              <span>
+                <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"></path></svg></span>
+                <span>Health Check</span>
+              </span>
+              <div class="header-actions">
+                <button type="button" id="hc-copy" class="action-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg>
+                  Копирай като текст
+                </button>
+                <button type="button" id="hc-refresh-all" class="action-btn btn-add">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"></path><polyline points="20.5 4 20.5 9.2 15.3 9.2"></polyline></svg>
+                  Провери отново
+                </button>
+              </div>
+            </h3>
+
+            <div class="hc-toolbar">
+              <p style="margin:0; font-size:12.5px; line-height:1.45; color:var(--c-text-muted); max-width:76ch;">
+                Моментна снимка, не непрекъснат монитор. Проверката се свързва и се представя,
+                но не създава реални плащания и не изпраща имейли до никого.
+              </p>
+              <div class="hc-toolbar-meta">
+                <span>Последна проверка</span><span id="hc-timestamp">—</span>
+              </div>
+            </div>
+
+            <div id="hc-fatal" class="hc-fatal" role="alert">
+              <span class="hc-summary-mark" style="color:var(--c-accent-ink); border-color:currentColor;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>
+              </span>
+              <div class="hc-fatal-text">
+                <span class="hc-fatal-title">Проверката не тръгна</span>
+                <p class="hc-fatal-body"></p>
+                <button type="button" class="action-btn" onclick="window.adminHealthCheck &amp;&amp; window.adminHealthCheck.run()">Опитай пак</button>
+              </div>
+            </div>
+
+            <div id="hc-summary" class="hc-summary is-loading" role="status" aria-live="polite">
+              <span class="hc-summary-mark"></span>
+              <span class="hc-summary-text">
+                <span class="hc-summary-title">Проверката тече</span>
+                <span class="hc-summary-sub">0 от 8 услуги са проверени.</span>
+              </span>
+              <span class="hc-tally">
+                <span class="hc-tally-item is-ok"><span class="hc-tally-num">0</span><span class="hc-tally-label">Работят</span></span>
+                <span class="hc-tally-item is-warn"><span class="hc-tally-num">0</span><span class="hc-tally-label">Внимание</span></span>
+                <span class="hc-tally-item is-fail"><span class="hc-tally-num">0</span><span class="hc-tally-label">Проблем</span></span>
+              </span>
+            </div>
+
+            <div id="hc-grid" class="hc-grid"></div>
+          </div>
+        </div>
+
+        <div id="tab-conference" class="admin-section">
+
+          <div class="admin-panel-card">
+            <h3>
+              <span>Partnership Logos for Home Page</span>
+              <button type="button" class="action-btn btn-add" onclick="document.getElementById('upload-logo-modal').style.display='block'" style="margin-left:auto;">+ Add Logo</button>
+            </h3>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Logo</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                @if (Model.HomePageLogos != null && Model.HomePageLogos.Any())
+                {
+                    @foreach (var logo in Model.HomePageLogos)
+                    {
+                        <tr id="logo-row-@logo.Id">
+                            <td>
+                                <img src="@logo.ImagePath" 
+                                     alt="Home Page Partner" 
+                                     class="zoomable-image" 
+                                     data-image-src="@logo.ImagePath" 
+                                     style="height: 50px; width: auto; max-width: 150px; object-fit: contain; background-color: var(--c-slate); padding: 5px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" />
+                            </td>
+                            <td>
+                                <button type="button" class="action-btn btn-delete" onclick="deleteHomePageLogo(@logo.Id)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="2" style="text-align:center; color:var(--c-text-muted);">No logos uploaded yet.</td>
+                    </tr>
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+
+          <div class="admin-panel-card">
+            <h3>
+              <span>Leadership &amp; Committees</span>
+              <button type="button" class="action-btn btn-add" data-modal-target="edit-member-modal" data-modal-title="Add New Member" style="margin-left:auto;">+ Add Member</button>
+            </h3>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Avatar</th><th>Name</th><th>Role</th><th>Organization</th><th>Committee</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                @if (!Model.CommitteeMembers.Any())
+                {
+                    <tr><td colspan="6" class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1"></path><circle cx="17" cy="8" r="2.5"></circle><path d="M17 13.5c2.5.3 4.5 2.4 4.5 5V21"></path></svg></span>No committee members added yet.</td></tr>
+                }
+                else
+                {
+                    @foreach (var m in Model.CommitteeMembers)
+                    {
+                        <tr>
+                          <td><img src="@(string.IsNullOrEmpty(m.AvatarImagePath) ? "/images/logos/avatar.png" : m.AvatarImagePath)" alt="" class="zoomable-image" data-image-src="@(string.IsNullOrEmpty(m.AvatarImagePath) ? "/images/logos/avatar.png" : m.AvatarImagePath)"></td>
+                          <td><strong>@m.FullNameEn</strong></td>
+                          <td>@m.RoleEn</td>
+                          <td>@m.OrganizationEn</td>
+                          <td><span class="category-badge">@m.CommitteeType</span></td>
+                          <td>
+                            <button type="button" class="action-btn btn-edit edit-member-btn"
+                                    data-modal-target="edit-member-modal" data-modal-title="Edit Member: @m.FullNameEn"
+                                    data-id="@m.Id" data-name-en="@m.FullNameEn" data-name-bg="@m.FullNameBg"
+                                    data-role-en="@m.RoleEn" data-role-bg="@m.RoleBg"
+                                    data-org-en="@m.OrganizationEn" data-org-bg="@m.OrganizationBg"
+                                    data-committee="@m.CommitteeType">Edit</button>
+                            <button type="button" class="action-btn btn-delete delete-member-btn"
+                                    data-modal-target="delete-modal" data-delete-name="@m.FullNameEn" data-id="@m.Id">Delete</button>
+                          </td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+
+          <div class="admin-panel-card">
+            <h3>
+              <span>Our Partners</span>
+              <button type="button" class="action-btn btn-add" data-modal-target="edit-partner-modal" data-modal-title="Add Partner" style="margin-left:auto;">+ Add Partner</button>
+            </h3>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Logo</th><th>Partner Name</th><th>Category</th><th>Website</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                @if (!Model.Partners.Any())
+                {
+                    <tr><td colspan="4" class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg></span>No partners added yet.</td></tr>
+                }
+                else
+                {
+                    @foreach (var p in Model.Partners)
+                    {
+                        <tr>
+                          <td><img src="@(string.IsNullOrEmpty(p.LogoImagePath) ? "/images/logos/avatar.png" : p.LogoImagePath)" alt="Logo" class="zoomable-image" style="border-radius:0;max-height:40px;" data-image-src="@(string.IsNullOrEmpty(p.LogoImagePath) ? "/images/logos/avatar.png" : p.LogoImagePath)"></td>
+                          <td><strong>@p.NameEn</strong></td>
+                          <td>@p.Category</td>
+                          <td>
+                            @if (!string.IsNullOrEmpty(p.WebsiteUrl))
+                            {
+                                <a href="@p.WebsiteUrl" target="_blank" style="color:#0077b5;font-weight:bold;text-decoration:none;">Link <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'></path><polyline points='15 3 21 3 21 9'></polyline><line x1='10' y1='14' x2='21' y2='3'></line></svg></a>
+                            }
+                            else { <span style="color:var(--c-border-strong);">—</span> }
+                          </td>
+                          <td>
+                            <button type="button" class="action-btn btn-edit edit-partner-btn"
+                                    data-modal-target="edit-partner-modal" data-modal-title="Edit Partner: @p.NameEn"
+                                    data-id="@p.Id" data-name-en="@p.NameEn" data-name-bg="@p.NameBg"
+                                    data-category="@p.Category" data-url="@p.WebsiteUrl">Edit</button>
+                            <button type="button" class="action-btn btn-delete delete-partner-btn"
+                                    data-modal-target="delete-modal" data-delete-name="@p.NameEn" data-id="@p.Id">Delete</button>
+                          </td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        
+        <div id="tab-icbi" class="admin-section">
+          <div class="admin-panel-card">
+            <h3>
+              <span>Previous Events (Track Record)</span>
+              <button type="button" class="action-btn btn-add" data-modal-target="edit-event-modal" data-modal-title="Add Event" style="margin-left:auto;">+ Add Event</button>
+            </h3>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Image</th><th>Event Title</th><th>Location &amp; Year</th><th>URL</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                @if (!Model.Events.Any())
+                {
+                    <tr><td colspan="5" class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg></span>No previous events added.</td></tr>
+                }
+                else
+                {
+                    @foreach (var ev in Model.Events)
+                    {
+                        <tr>
+                          <td><img src="@(string.IsNullOrEmpty(ev.ImagePath) ? "/images/logos/avatar.png" : ev.ImagePath)" alt="" class="zoomable-image" data-image-src="@(string.IsNullOrEmpty(ev.ImagePath) ? "/images/logos/avatar.png" : ev.ImagePath)"></td>
+                          <td><strong>@ev.TitleEn</strong></td>
+                          <td>@ev.LocationEn</td>
+                          <td>
+                            @if (!string.IsNullOrEmpty(ev.EventUrl))
+                            {
+                                <a href="@ev.EventUrl" target="_blank" style="color:#0077b5;font-weight:bold;text-decoration:none;">Link <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'></path><polyline points='15 3 21 3 21 9'></polyline><line x1='10' y1='14' x2='21' y2='3'></line></svg></a>
+                            }
+                            else { <span style="color:var(--c-border-strong);">—</span> }
+                          </td>
+                          <td>
+                            <button type="button" class="action-btn btn-edit edit-event-btn"
+                                    data-modal-target="edit-event-modal" data-modal-title="Edit Event: @ev.TitleEn"
+                                    data-id="@ev.Id" data-title-en="@ev.TitleEn" data-title-bg="@ev.TitleBg"
+                                    data-loc-en="@ev.LocationEn" data-loc-bg="@ev.LocationBg"
+                                    data-url="@ev.EventUrl">Edit</button>
+                            <button type="button" class="action-btn btn-delete delete-event-btn"
+                                    data-modal-target="delete-modal" data-delete-name="@ev.TitleEn" data-id="@ev.Id">Delete</button>
+                          </td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        
+        <div id="tab-lecturers" class="admin-section">
+          <div class="admin-panel-card">
+            <h3>
+              <span>Lecturers &amp; Speakers</span>
+              <button type="button" class="action-btn btn-add" data-modal-target="edit-lecturer-modal" data-modal-title="Add New Lecturer" style="margin-left:auto;">+ Add Lecturer</button>
+            </h3>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Avatar</th><th>Name</th><th>Role</th><th>Organization</th><th>Category</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                @if (!Model.Lecturers.Any())
+                {
+                    <tr><td colspan="6" class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"></path><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"></path></svg></span>No lecturers added yet.</td></tr>
+                }
+                else
+                {
+                    @foreach (var l in Model.Lecturers)
+                    {
+                        <tr>
+                          <td><img src="@(string.IsNullOrEmpty(l.AvatarImagePath) ? "/images/logos/avatar.png" : l.AvatarImagePath)" alt="" class="zoomable-image" data-image-src="@(string.IsNullOrEmpty(l.AvatarImagePath) ? "/images/logos/avatar.png" : l.AvatarImagePath)"></td>
+                          <td><strong>@l.FullNameEn</strong></td>
+                          <td style="font-size:12px;">@l.RoleEn</td>
+                          <td style="font-size:12px;">@l.OrganizationEn</td>
+                          <td><span class="category-badge">@l.Category</span></td>
+                          <td>
+                            <button type="button" class="action-btn btn-edit edit-lecturer-btn"
+                                    data-modal-target="edit-lecturer-modal" data-modal-title="Edit Lecturer: @l.FullNameEn"
+                                    data-id="@l.Id" data-name-en="@l.FullNameEn" data-name-bg="@l.FullNameBg"
+                                    data-category="@l.Category"
+                                    data-role-en="@l.RoleEn" data-role-bg="@l.RoleBg"
+                                    data-org-en="@l.OrganizationEn" data-org-bg="@l.OrganizationBg"
+                                    data-bio-en="@l.BiographyEn" data-bio-bg="@l.BiographyBg"
+                                    data-url="@l.ProfileUrl">Edit</button>
+                            <button type="button" class="action-btn btn-delete delete-lecturer-btn"
+                                    data-modal-target="delete-modal" data-delete-name="@l.FullNameEn" data-id="@l.Id">Delete</button>
+                          </td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        
+        <div id="tab-schedule" class="admin-section">
+          <div class="admin-panel-card">
+            <h3>
+              <span>Conference Schedule</span>
+              <div class="header-actions">
+                <!-- Този бутон отваря малкия модал за стрийм линка -->
+                <button type="button" class="action-btn btn-view" data-modal-target="add-live-link-modal" data-modal-title="Add Live Link">
+                  <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"></rect><polygon points="22 8 16 12 22 16 22 8"></polygon></svg>
+                  Add Live Link
+                </button>
+                <button type="button" class="action-btn btn-add" data-modal-target="edit-schedule-modal" data-modal-title="Add New Session">+ Add Session</button>
+              </div>
+            </h3>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Day</th><th>Time</th><th>Title</th><th>Speaker</th><th>Type</th><th>Location</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                @if (!Model.ScheduleSessions.Any())
+                {
+                    <tr><td colspan="7" class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg></span>No sessions added yet.</td></tr>
+                }
+                else
+                {
+                    @foreach (var s in Model.ScheduleSessions)
+                    {
+                        var breakTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase){ "coffee break","refreshment break","lunch","dinner","farewell lunch","registration" };
+                        var typeBadge = breakTypes.Contains(s.SessionType ?? "") ? "type-break" : "type-registration";
+                        <tr>
+                          <td style="font-size:12px;white-space:nowrap;">@s.Day</td>
+                          <td style="font-size:12px;white-space:nowrap;">@s.StartTime — @s.EndTime</td>
+                          <td>
+                              <div class="schedule-title-cell">
+                                  @if (!string.IsNullOrEmpty(s.LiveStreamUrl))
+                                  {
+                                      <span class="live-dot" title="Live: @s.LiveStreamUrl"></span>
+                                  }
+                                  <strong>@s.TitleEn</strong>
+                              </div>
+                          </td>
+                          <td style="font-size:12px;color:var(--c-text-secondary);">@(string.IsNullOrEmpty(s.SpeakerEn) ? "—" : s.SpeakerEn)</td>
+                          <td><span class="category-badge @typeBadge">@(s.SessionType ?? "—")</span></td>
+                          <td style="font-size:12px;">@(string.IsNullOrEmpty(s.LocationEn) ? "—" : s.LocationEn)</td>
+                          <td>
+                            <button type="button" class="action-btn btn-edit edit-schedule-btn"
+                                    data-modal-target="edit-schedule-modal" data-modal-title="Edit Session"
+                                    data-id="@s.Id" data-day="@s.Day"
+                                    data-start="@s.StartTime" data-end="@s.EndTime"
+                                    data-title-en="@s.TitleEn" data-title-bg="@s.TitleBg"
+                                    data-type="@s.SessionType"
+                                    data-speaker-en="@s.SpeakerEn" data-speaker-bg="@s.SpeakerBg"
+                                    data-loc-en="@s.LocationEn" data-loc-bg="@s.LocationBg"
+                                    data-desc-en="@s.DescriptionEn" data-desc-bg="@s.DescriptionBg"
+                                    data-stream-url="@(s.LiveStreamUrl ?? "")">Edit</button>
+                            @if (!string.IsNullOrEmpty(s.LiveStreamUrl))
+                            {
+                                <button type="button" class="action-btn btn-unlink remove-stream-btn" data-id="@s.Id" data-title="@s.TitleEn">Unlink</button>
+                            }
+                            <button type="button" class="action-btn btn-delete delete-session-btn"
+                                    data-modal-target="delete-modal" data-delete-name="@s.TitleEn" data-id="@s.Id">Delete</button>
+                          </td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        
+        <div id="tab-attend" class="admin-section">
+
+          <div class="admin-panel-card" style="margin-bottom: 25px;">
+            <h3><span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x='2' y='6' width='14' height='12' rx='2'></rect><polygon points='22 8 16 12 22 16 22 8'></polygon></svg> Live Stream Линк (За цялата конференция)</span></h3>
+            @* Формата беше директно под <h3>, извън .card-body — затова полето и
+               бутонът опираха в ръба на картата. Другите единайсет карти в панела
+               ползват .card-body за същия отстъп. *@
+            <div class="card-body">
+              <form method="post" action="?handler=SaveLiveLink" class="livelink-form">
+                @Html.AntiForgeryToken()
+                <input type="url" name="liveLink" class="filter-input"
+                       placeholder="https://youtube.com/..." value="@Model.LiveStreamLink" required />
+                <button type="submit" class="btn-save">Запази линка</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="admin-panel-card">
+            <h3><span>Ticket Tiers</span></h3>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Tier Name</th><th>Description</th><th>Price</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                @if (!Model.TicketTiers.Any())
+                {
+                    <tr><td colspan="4" class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"></path><line x1="13" y1="7" x2="13" y2="9"></line><line x1="13" y1="15" x2="13" y2="17"></line></svg></span>No ticket tiers configured.</td></tr>
+                }
+                else
+                {
+                    @foreach (var t in Model.TicketTiers)
+                    {
+                        <tr>
+                          <td><strong>@t.NameEn</strong></td>
+                          <td>@t.DescriptionEn</td>
+                          <td>
+                            @if (!string.IsNullOrEmpty(t.PromoPriceEn))
+                            {
+                                <del style="color:var(--c-text-muted);margin-right:5px;">@t.RegularPriceEn</del><strong>@t.PromoPriceEn</strong>
+                            }
+                            else if (t.RegularPriceEn == "Fully Subsidized")
+                            {
+                                <span style="color:var(--c-green);font-weight:bold;">@t.RegularPriceEn</span>
+                            }
+                            else { <strong>@t.RegularPriceEn</strong> }
+                          </td>
+                          <td>
+                            <button type="button" class="action-btn btn-edit edit-ticket-btn"
+                                    data-modal-target="edit-ticket-modal" data-modal-title="Edit Tier: @t.NameEn"
+                                    data-id="@t.Id" data-name-en="@t.NameEn" data-name-bg="@t.NameBg"
+                                    data-desc-en="@t.DescriptionEn" data-desc-bg="@t.DescriptionBg"
+                                    data-reg-en="@t.RegularPriceEn" data-reg-bg="@t.RegularPriceBg"
+                                    data-promo-en="@t.PromoPriceEn" data-promo-bg="@t.PromoPriceBg"
+                                    data-perks-en="@t.PerksEn" data-perks-bg="@t.PerksBg">Edit</button>
+                          </td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        
+        <div id="tab-travel" class="admin-section">
+          <div class="admin-panel-card">
+            <h3>
+              <span>Hotels &amp; Travel</span>
+              <button type="button" class="action-btn btn-add" data-modal-target="edit-hotel-modal" data-modal-title="Add New Hotel" style="margin-left:auto;">+ Add Hotel</button>
+            </h3>
+            <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Hotel Name</th><th>Description</th><th>Link</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                @if (!Model.Hotels.Any())
+                {
+                    <tr><td colspan="4" class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"></rect><line x1="9" y1="7.5" x2="9" y2="7.51"></line><line x1="15" y1="7.5" x2="15" y2="7.51"></line><line x1="9" y1="11.5" x2="9" y2="11.51"></line><line x1="15" y1="11.5" x2="15" y2="11.51"></line><path d="M9 21v-3a3 3 0 0 1 6 0v3"></path></svg></span>No hotels added yet.</td></tr>
+                }
+                else
+                {
+                    @foreach (var h in Model.Hotels)
+                    {
+                        <tr>
+                          <td><strong>@h.NameEn</strong><br><span style="color:var(--c-text-secondary);font-size:12px;">@h.NameBg</span></td>
+                          <td style="font-size:13px;">@h.DescriptionEn</td>
+                          <td>
+                            @if (!string.IsNullOrEmpty(h.Url))
+                            {
+                                <a href="@h.Url" target="_blank" style="color:#0077b5;font-weight:bold;text-decoration:none;">Link <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'></path><polyline points='15 3 21 3 21 9'></polyline><line x1='10' y1='14' x2='21' y2='3'></line></svg></a>
+                            }
+                            else { <span style="color:var(--c-border-strong);">—</span> }
+                          </td>
+                          <td>
+                            <button type="button" class="action-btn btn-edit edit-hotel-btn"
+                                    data-modal-target="edit-hotel-modal" data-modal-title="Edit Hotel: @h.NameEn"
+                                    data-id="@h.Id" data-name-en="@h.NameEn" data-name-bg="@h.NameBg"
+                                    data-desc-en="@h.DescriptionEn" data-desc-bg="@h.DescriptionBg"
+                                    data-url="@h.Url">Edit</button>
+                            <button type="button" class="action-btn btn-delete delete-hotel-btn"
+                                    data-modal-target="delete-modal" data-delete-name="@h.NameEn" data-id="@h.Id">Delete</button>
+                          </td>
+                        </tr>
+                    }
+                }
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── FAQ SECTION ────────────────────────────────────────────────── -->
+        <div id="tab-faq" class="admin-section">
+          <div class="admin-panel-card">
+            <h3>
+              <span>Frequently Asked Questions</span>
+              <button type="button" class="action-btn btn-add" data-modal-target="edit-faq-modal" data-modal-title="Add FAQ" style="margin-left:auto;">+ Add FAQ</button>
+            </h3>
+            <div class="card-body">
+              <p class="settings-hint">Drag the <svg class="icon-inline" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg> handle to reorder — this controls the order they appear on the public FAQ page.</p>
+              
+              <div id="faqList" class="promo-slide-list">
+                @if (Model.Faqs == null || !Model.Faqs.Any())
+                {
+                    <div class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>No FAQs added yet.</div>
+                }
+                else
+                {
+                    @foreach (var faq in Model.Faqs)
+                    {
+                        <div class="promo-slide-row @(faq.IsActive ? "" : "is-inactive")" draggable="true" data-id="@faq.Id">
+                          <span class="promo-drag-handle" title="Drag to reorder"><svg class="icon-inline" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></span>
+                          
+                          <div class="promo-slide-info">
+                            <strong>@faq.QuestionEn</strong>
+                            <span class="promo-slide-desc" style="white-space:normal;">@faq.QuestionBg</span>
+                          </div>
+
+                          @if (!faq.IsActive)
+                          {
+                              <span class="tab-badge" style="position:static;margin-right:8px;">Hidden</span>
+                          }
+                          <div class="promo-slide-actions">
+                            <button type="button" class="action-btn toggle-faq-active-btn" data-id="@faq.Id">@(faq.IsActive ? "Hide" : "Show")</button>
+                            <button type="button" class="action-btn btn-edit edit-faq-btn"
+                                    data-modal-target="edit-faq-modal" data-modal-title="Edit FAQ"
+                                    data-id="@faq.Id" data-question-en="@faq.QuestionEn" data-question-bg="@faq.QuestionBg"
+                                    data-answer-en="@faq.AnswerEn" data-answer-bg="@faq.AnswerBg">Edit</button>
+                            <button type="button" class="action-btn btn-delete delete-faq-btn"
+                                    data-modal-target="delete-modal" data-delete-name="@faq.QuestionEn" data-id="@faq.Id">Delete</button>
+                          </div>
+                        </div>
+                    }
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-privacy" class="admin-section">
+          <div class="admin-panel-card">
+            <h3><span>Privacy Policy / GDPR</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">
+                This is the full content shown on the public <code>/Privacy</code> page (English and Bulgarian versions, shown to visitors based on their selected language).
+                Last updated: <span id="privacyLastUpdatedText">@ConferenceApp.Helpers.TimeZoneHelper.ToLocal(Model.PrivacyContent.LastUpdatedAt).ToString("dd MMM yyyy, HH:mm")</span>.
+              </p>
+              @Html.AntiForgeryToken()
+
+              <textarea id="privacyContentEnSeed" style="display:none;">@Model.PrivacyContent.ContentEn</textarea>
+              <textarea id="privacyContentBgSeed" style="display:none;">@Model.PrivacyContent.ContentBg</textarea>
+
+              <div class="form-group" style="margin-bottom:26px;">
+                <label>English version</label>
+                <div id="privacyEditorEn" class="quill-editor-container"></div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:10px;">
+                <label>Bulgarian version (Български)</label>
+                <div id="privacyEditorBg" class="quill-editor-container"></div>
+              </div>
+
+              <div class="privacy-actions-row">
+                <button type="button" class="btn-save" id="savePrivacyPolicyBtn">Save Privacy Policy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-terms" class="admin-section">
+          <div class="admin-panel-card">
+            <h3><span>Terms of Use</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">
+                This is the full content shown on the public <code>/Terms</code> page (English and Bulgarian versions, shown to visitors based on their selected language).
+                Last updated: <span id="termsLastUpdatedText">@ConferenceApp.Helpers.TimeZoneHelper.ToLocal(Model.TermsContent.LastUpdatedAt).ToString("dd MMM yyyy, HH:mm")</span>.
+              </p>
+              @Html.AntiForgeryToken()
+
+              <textarea id="termsContentEnSeed" style="display:none;">@Model.TermsContent.ContentEn</textarea>
+              <textarea id="termsContentBgSeed" style="display:none;">@Model.TermsContent.ContentBg</textarea>
+
+              <div class="form-group" style="margin-bottom:26px;">
+                <label>English version</label>
+                <div id="termsEditorEn" class="quill-editor-container"></div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:10px;">
+                <label>Bulgarian version (Български)</label>
+                <div id="termsEditorBg" class="quill-editor-container"></div>
+              </div>
+
+              <div class="privacy-actions-row">
+                <button type="button" class="btn-save" id="saveTermsOfUseBtn">Save Terms of Use</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-cookies" class="admin-section">
+          <div class="admin-panel-card">
+            <h3><span>Cookie Categories</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">
+                These are the categories shown in the cookie preferences panel on the public site. "Strictly Necessary" is legally required and can't be made switchable by visitors.
+              </p>
+              @Html.AntiForgeryToken()
+
+              <div id="cookieCategoryList" class="cookie-category-list">
+                @foreach (var cat in Model.CookieCategories)
+                {
+                    <div class="cookie-category-row"
+                         data-id="@cat.Id" data-key="@cat.Key"
+                         data-name-en="@cat.NameEn" data-name-bg="@cat.NameBg"
+                         data-desc-en="@cat.DescriptionEn" data-desc-bg="@cat.DescriptionBg"
+                         data-visible="@cat.IsVisible.ToString().ToLowerInvariant()"
+                         data-toggleable="@cat.IsToggleable.ToString().ToLowerInvariant()">
+                        <span class="cookie-category-key">@cat.Key</span>
+                        <div class="cookie-category-row-names">
+                            <strong>@cat.NameEn</strong>
+                            <span class="cookie-category-row-sub">@cat.NameBg</span>
+                        </div>
+                        <div class="cookie-category-row-status">
+                            <span class="cookie-status-icon @(cat.IsVisible ? "is-on" : "is-off")" title="@(cat.IsVisible ? "Visible on site" : "Hidden from site")">
+                                @if (cat.IsVisible)
+                                {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                }
+                                else
+                                {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                }
+                            </span>
+                            <span class="cookie-status-icon @(cat.IsToggleable ? "is-on" : "is-off")" title="@(cat.IsToggleable ? "Visitor can switch it" : "Always on — locked, required by law")">
+                                @if (cat.IsToggleable)
+                                {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"></rect><circle cx="16" cy="12" r="3" fill="currentColor" stroke="none"></circle></svg>
+                                }
+                                else
+                                {
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                }
+                            </span>
+                        </div>
+                        <div class="cookie-category-row-actions">
+                            <button type="button" class="action-btn btn-edit cookie-edit-btn">Edit</button>
+                            @if (!cat.IsBuiltIn)
+                            {
+                                <button type="button" class="action-btn btn-delete cookie-delete-btn" data-id="@cat.Id">Delete</button>
+                            }
+                        </div>
+                    </div>
+                }
+              </div>
+
+              <button type="button" class="action-btn btn-add" id="addCookieCategoryBtn">
+                <svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add New Category
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-panel-card">
+            <h3><span>Banner Text</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">
+                The intro text shown on the cookie banner itself (title + description, English and Bulgarian).
+                Last updated: <span id="cookieNoticeLastUpdatedText">@ConferenceApp.Helpers.TimeZoneHelper.ToLocal(Model.CookieNotice.LastUpdatedAt).ToString("dd MMM yyyy, HH:mm")</span>.
+              </p>
+
+              <textarea id="cookieNoticeContentEnSeed" style="display:none;">@Model.CookieNotice.ContentEn</textarea>
+              <textarea id="cookieNoticeContentBgSeed" style="display:none;">@Model.CookieNotice.ContentBg</textarea>
+
+              <div class="form-group" style="margin-bottom:26px;">
+                <label>English version</label>
+                <div id="cookieNoticeEditorEn" class="quill-editor-container"></div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:10px;">
+                <label>Bulgarian version (Български)</label>
+                <div id="cookieNoticeEditorBg" class="quill-editor-container"></div>
+              </div>
+
+              <div class="privacy-actions-row">
+                <button type="button" class="btn-save" id="saveCookieNoticeBtn">Save Banner Text</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-panel-card">
+            <h3><span>Cookie Policy Page</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">
+                The full content shown on the public <code>/Cookies</code> page (above the category list) — what cookies are, third parties, browser controls, and contact info. English and Bulgarian.
+                Last updated: <span id="cookiePolicyLastUpdatedText">@ConferenceApp.Helpers.TimeZoneHelper.ToLocal(Model.CookiePolicy.LastUpdatedAt).ToString("dd MMM yyyy, HH:mm")</span>.
+              </p>
+
+              <textarea id="cookiePolicyContentEnSeed" style="display:none;">@Model.CookiePolicy.ContentEn</textarea>
+              <textarea id="cookiePolicyContentBgSeed" style="display:none;">@Model.CookiePolicy.ContentBg</textarea>
+
+              <div class="form-group" style="margin-bottom:26px;">
+                <label>English version</label>
+                <div id="cookiePolicyEditorEn" class="quill-editor-container"></div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:10px;">
+                <label>Bulgarian version (Български)</label>
+                <div id="cookiePolicyEditorBg" class="quill-editor-container"></div>
+              </div>
+
+              <div class="privacy-actions-row">
+                <button type="button" class="btn-save" id="saveCookiePolicyBtn">Save Cookie Policy Page</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-emails" class="admin-section">
+          <div class="admin-panel-card">
+            <h3><span>Email Notifications</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">
+                Turn individual notification emails on or off. Changes take effect immediately —
+                no restart needed. Everything is enabled by default.
+              </p>
+              <p class="settings-hint" style="margin-top:-6px;">
+                <strong>Login and registration codes are not listed here.</strong>
+                Without them nobody can sign in or register, so they cannot be switched off.
+              </p>
+
+              @Html.AntiForgeryToken()
+
+              <div class="email-toggle-list">
+                @{
+                    var emailRows = new (string Key, string Title, string Desc)[]
+                    {
+                        ("PaymentConfirmed",     "Payment confirmed",
+                         "Sent when a payment goes through — card, crypto or a confirmed bank transfer."),
+                        ("PaymentPending",       "Bank transfer received",
+                         "Sent when a participant reports they have made an IBAN transfer."),
+                        ("VerificationApproved", "Documents approved",
+                         "Sent when you approve a student or journalist verification."),
+                        ("VerificationRejected", "Documents rejected",
+                         "Sent when you reject a verification. Includes the reason you wrote."),
+                        ("StatusChanged",        "Status changed manually",
+                         "Sent when you change someone's payment status, verification status or participation form from the Registrations tab.")
+                    };
+                }
+
+                @foreach (var row in emailRows)
+                {
+                    var isOn = !Model.EmailToggles.TryGetValue(row.Key, out var v) || v;
+                    <div class="email-toggle-row" data-key="@row.Key">
+                      <div class="email-toggle-text">
+                        <span class="email-toggle-title">@row.Title</span>
+                        <span class="email-toggle-desc">@row.Desc</span>
+                      </div>
+                      <label class="email-switch" title="@(isOn ? "Enabled" : "Disabled")">
+                        <input type="checkbox" class="email-toggle-input"
+                               data-key="@row.Key" @(isOn ? "checked" : "")>
+                        <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                      </label>
+                    </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-paycontrol" class="admin-section">
+          <div class="admin-panel-card">
+            <h3><span>Payment Control</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">
+                Stop payments without touching code or configuration. Changes take effect
+                immediately — a participant who reloads the payment page sees the new state.
+                Nothing already paid or reported is affected.
+              </p>
+
+              @Html.AntiForgeryToken()
+
+              <div class="pay-gate" id="payment-gates">
+
+                @{
+                    bool Gate(string key) => !Model.PaymentGates.TryGetValue(key, out var g) || g;
+                }
+
+                <div class="pay-gate-master">
+                  <div class="pay-gate-master-text">
+                    <span class="pay-gate-master-title">All payments</span>
+                    <span class="pay-gate-state" id="pay-gate-state">Payments are open</span>
+                  </div>
+                  <label class="email-switch" title="All payments">
+                    <input type="checkbox" class="pay-gate-input"
+                           data-gate-key="all" data-gate-level="all"
+                           @(Gate("all") ? "checked" : "")>
+                    <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                  </label>
+                </div>
+
+                <div class="pay-gate-group" data-gate-group="method">
+                  <div class="pay-gate-group-head">
+                    <span class="pay-gate-group-label">Methods</span>
+                    <span class="pay-gate-group-note">All payments are stopped</span>
+                  </div>
+                  <div class="pay-gate-list">
+
+                    <div class="pay-gate-row">
+                      <div class="pay-gate-row-main">
+                        <span class="pay-gate-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><rect x="2" y="5" width="20" height="14"></rect><path d="M2 10h20"></path><path d="M6 15h4"></path></svg>
+                        </span>
+                        <div class="pay-gate-text">
+                          <span class="pay-gate-title">Card</span>
+                          <span class="pay-gate-desc">Stripe Checkout — card, Apple Pay, Google Pay.</span>
+                        </div>
+                      </div>
+                      <label class="email-switch" title="Card">
+                        <input type="checkbox" class="pay-gate-input"
+                               data-gate-key="method.card" data-gate-level="method"
+                               @(Gate("method.card") ? "checked" : "")>
+                        <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                      </label>
+                    </div>
+
+                    <div class="pay-gate-row">
+                      <div class="pay-gate-row-main">
+                        <span class="pay-gate-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"></circle><path d="M9 8h4.5a2 2 0 0 1 0 4H9m0 0h5a2 2 0 0 1 0 4H9M9 8v8m3-10v2m0 8v2"></path></svg>
+                        </span>
+                        <div class="pay-gate-text">
+                          <span class="pay-gate-title">Cryptocurrency</span>
+                          <span class="pay-gate-desc">Go28 payment gateway. Turning this off also stops all four currencies below.</span>
+                        </div>
+                      </div>
+                      <label class="email-switch" title="Cryptocurrency">
+                        <input type="checkbox" class="pay-gate-input"
+                               data-gate-key="method.crypto" data-gate-level="method"
+                               @(Gate("method.crypto") ? "checked" : "")>
+                        <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                      </label>
+                    </div>
+
+                    <div class="pay-gate-row">
+                      <div class="pay-gate-row-main">
+                        <span class="pay-gate-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M3 10h18"></path><path d="M5 10v9h14v-9"></path><path d="M3 10 12 4l9 6"></path><path d="M9 19v-5h6v5"></path></svg>
+                        </span>
+                        <div class="pay-gate-text">
+                          <span class="pay-gate-title">Bank transfer</span>
+                          <span class="pay-gate-desc">IBAN details and the “I have transferred” form. Turn off while the account is changing.</span>
+                        </div>
+                      </div>
+                      <label class="email-switch" title="Bank transfer">
+                        <input type="checkbox" class="pay-gate-input"
+                               data-gate-key="method.iban" data-gate-level="method"
+                               @(Gate("method.iban") ? "checked" : "")>
+                        <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                      </label>
+                    </div>
+
+                  </div>
+
+                  <div class="pay-gate-group pay-gate-group--nested" data-gate-group="currency">
+                    <div class="pay-gate-group-head">
+                      <span class="pay-gate-group-label">Cryptocurrencies</span>
+                      <span class="pay-gate-group-note">Cryptocurrency is off</span>
+                    </div>
+                    <div class="pay-gate-list">
+
+                      <div class="pay-gate-row">
+                        <div class="pay-gate-row-main">
+                          <span class="pay-gate-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"></circle><path d="M9 8h4.5a2 2 0 0 1 0 4H9m0 0h5a2 2 0 0 1 0 4H9M9 8v8m3-10v2m0 8v2"></path></svg>
+                          </span>
+                          <div class="pay-gate-text">
+                            <span class="pay-gate-title">BTC<span class="pay-gate-net">BTC</span></span>
+                            <span class="pay-gate-desc">Bitcoin</span>
+                          </div>
+                        </div>
+                        <label class="email-switch" title="Bitcoin">
+                          <input type="checkbox" class="pay-gate-input"
+                                 data-gate-key="currency.BTC" data-gate-level="currency"
+                                 @(Gate("currency.BTC") ? "checked" : "")>
+                          <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                        </label>
+                      </div>
+
+                      <div class="pay-gate-row">
+                        <div class="pay-gate-row-main">
+                          <span class="pay-gate-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 2 5 12.2 12 16l7-3.8z"></path><path d="M5 13.8 12 22l7-8.2"></path></svg>
+                          </span>
+                          <div class="pay-gate-text">
+                            <span class="pay-gate-title">ETH<span class="pay-gate-net">ETH</span></span>
+                            <span class="pay-gate-desc">Ethereum</span>
+                          </div>
+                        </div>
+                        <label class="email-switch" title="Ethereum">
+                          <input type="checkbox" class="pay-gate-input"
+                                 data-gate-key="currency.ETH" data-gate-level="currency"
+                                 @(Gate("currency.ETH") ? "checked" : "")>
+                          <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                        </label>
+                      </div>
+
+                      <div class="pay-gate-row">
+                        <div class="pay-gate-row-main">
+                          <span class="pay-gate-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 9a4 4 0 1 0 0 6"></path><path d="M7.5 11h6M7.5 13.5h6"></path></svg>
+                          </span>
+                          <div class="pay-gate-text">
+                            <span class="pay-gate-title">EURC<span class="pay-gate-net">ETH</span></span>
+                            <span class="pay-gate-desc">EURC — runs on Ethereum</span>
+                          </div>
+                        </div>
+                        <label class="email-switch" title="EURC">
+                          <input type="checkbox" class="pay-gate-input"
+                                 data-gate-key="currency.EURC" data-gate-level="currency"
+                                 @(Gate("currency.EURC") ? "checked" : "")>
+                          <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                        </label>
+                      </div>
+
+                      <div class="pay-gate-row">
+                        <div class="pay-gate-row-main">
+                          <span class="pay-gate-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><circle cx="12" cy="12" r="9"></circle><path d="M12 6.5v11"></path><path d="M14.6 9.4A2.7 2.7 0 0 0 12 8c-1.5 0-2.6.9-2.6 2s1.1 2 2.6 2 2.6.9 2.6 2-1.1 2-2.6 2a2.7 2.7 0 0 1-2.6-1.4"></path></svg>
+                          </span>
+                          <div class="pay-gate-text">
+                            <span class="pay-gate-title">USDC<span class="pay-gate-net">ETH</span></span>
+                            <span class="pay-gate-desc">USD Coin — runs on Ethereum</span>
+                          </div>
+                        </div>
+                        <label class="email-switch" title="USD Coin">
+                          <input type="checkbox" class="pay-gate-input"
+                                 data-gate-key="currency.USDC" data-gate-level="currency"
+                                 @(Gate("currency.USDC") ? "checked" : "")>
+                          <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                        </label>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-settings" class="admin-section">
+          <div class="admin-panel-card">
+            <h3><span>Social Media Links</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">Leave a field empty to hide that icon on the site — nothing is required.</p>
+              @Html.AntiForgeryToken()
+              <div class="settings-grid">
+                <div class="form-group">
+                  <label>LinkedIn</label>
+                  <input type="text" id="socialLinkedIn" value="@Model.SocialLinks.LinkedInUrl" placeholder="https://linkedin.com/company/...">
+                </div>
+                <div class="form-group">
+                  <label>X (Twitter)</label>
+                  <input type="text" id="socialX" value="@Model.SocialLinks.XUrl" placeholder="https://x.com/...">
+                </div>
+                <div class="form-group">
+                  <label>Instagram</label>
+                  <input type="text" id="socialInstagram" value="@Model.SocialLinks.InstagramUrl" placeholder="https://instagram.com/...">
+                </div>
+                <div class="form-group">
+                  <label>Facebook</label>
+                  <input type="text" id="socialFacebook" value="@Model.SocialLinks.FacebookUrl" placeholder="https://facebook.com/...">
+                </div>
+                <div class="form-group">
+                  <label>TikTok</label>
+                  <input type="text" id="socialTikTok" value="@Model.SocialLinks.TikTokUrl" placeholder="https://tiktok.com/@@...">
+                </div>
+                <div class="form-group">
+                  <label>YouTube</label>
+                  <input type="text" id="socialYouTube" value="@Model.SocialLinks.YouTubeUrl" placeholder="https://youtube.com/@@...">
+                </div>
+              </div>
+              <div class="privacy-actions-row">
+                <button type="button" class="btn-save" id="saveSocialLinksBtn">Save Social Links</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-panel-card">
+            <h3>
+              <span>Homepage Promo Slides</span>
+              <button type="button" class="action-btn btn-add" data-modal-target="edit-promo-modal" data-modal-title="Add Promo Slide" style="margin-left:auto;">+ Add Promo Slide</button>
+            </h3>
+            <div class="card-body">
+              <p class="settings-hint">Drag the <svg class="icon-inline" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg> handle to reorder — this controls the order slides appear in on the mobile navigation menu.</p>
+              <div id="promoSlideList" class="promo-slide-list">
+                @if (!Model.PromoSlides.Any())
+                {
+                    <div class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></span>No promo slides added yet.</div>
+                }
+                else
+                {
+                    @foreach (var promo in Model.PromoSlides)
+                    {
+                        <div class="promo-slide-row @(promo.IsActive ? "" : "is-inactive")" draggable="true" data-id="@promo.Id">
+                          <span class="promo-drag-handle" title="Drag to reorder"><svg class="icon-inline" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></span>
+                          <img src="@(string.IsNullOrEmpty(promo.ImagePath) ? "/images/logos/avatar.png" : promo.ImagePath)" alt="" class="promo-slide-thumb zoomable-image" data-image-src="@(string.IsNullOrEmpty(promo.ImagePath) ? "/images/logos/avatar.png" : promo.ImagePath)">
+                          <div class="promo-slide-info">
+                            <strong>@promo.TitleEn</strong>
+                            <span class="promo-slide-desc">@promo.DescriptionEn</span>
+                          </div>
+                          @if (!promo.IsActive)
+                          {
+                              <span class="tab-badge" style="position:static;margin-right:8px;">Hidden</span>
+                          }
+                          <div class="promo-slide-actions">
+                            <button type="button" class="action-btn toggle-promo-active-btn" data-id="@promo.Id">@(promo.IsActive ? "Hide" : "Show")</button>
+                            <button type="button" class="action-btn btn-edit edit-promo-btn"
+                                    data-modal-target="edit-promo-modal" data-modal-title="Edit Promo Slide: @promo.TitleEn"
+                                    data-id="@promo.Id" data-title-en="@promo.TitleEn" data-title-bg="@promo.TitleBg"
+                                    data-desc-en="@promo.DescriptionEn" data-desc-bg="@promo.DescriptionBg">Edit</button>
+                            <button type="button" class="action-btn btn-delete delete-promo-btn"
+                                    data-modal-target="delete-modal" data-delete-name="@promo.TitleEn" data-id="@promo.Id">Delete</button>
+                          </div>
+                        </div>
+                    }
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-panel-card">
+            <h3>
+              <span>Footer Quick Links</span>
+              <button type="button" class="action-btn btn-add" data-modal-target="edit-footer-link-modal" data-modal-title="Add Quick Link" style="margin-left:auto;">+ Add Quick Link</button>
+            </h3>
+            <div class="card-body">
+              <p class="settings-hint">The public footer shows at most <strong>5</strong> of these at a time, picked at random and re-shuffled on every page load — not curated by admins, so there's no drag-to-reorder here (unlike Promo Slides/FAQ above). Add as many as you like; over time visitors see the full set. Each link's icon is its own inline SVG code (same stroke style as the rest of the site), so every entry is guaranteed to render its own icon instead of falling back to a generic one.</p>
+
+              <div id="footerQuickLinksList" class="promo-slide-list">
+                @if (!Model.FooterQuickLinks.Any())
+                {
+                    <div class="empty-state"><span class="empty-state-icon"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.5"></path><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L12.5 19.5"></path></svg></span>No quick links added yet.</div>
+                }
+                else
+                {
+                    @foreach (var link in Model.FooterQuickLinks)
+                    {
+                        <div class="promo-slide-row @(link.IsVisible ? "" : "is-inactive")" data-id="@link.Id">
+                          <span class="footer-link-icon-preview" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(link.IconSvg)</svg>
+                          </span>
+                          <div class="promo-slide-info">
+                            <strong>@link.LabelEn</strong>
+                            <span class="promo-slide-desc">@link.Url</span>
+                          </div>
+                          @if (!link.IsVisible)
+                          {
+                              <span class="tab-badge" style="position:static;margin-right:8px;">Hidden</span>
+                          }
+                          <div class="promo-slide-actions">
+                            <button type="button" class="action-btn toggle-footerlink-active-btn" data-id="@link.Id">@(link.IsVisible ? "Hide" : "Show")</button>
+                            <button type="button" class="action-btn btn-edit edit-footerlink-btn"
+                                    data-modal-target="edit-footer-link-modal" data-modal-title="Edit Quick Link: @link.LabelEn"
+                                    data-id="@link.Id" data-label-en="@link.LabelEn" data-label-bg="@link.LabelBg" data-url="@link.Url"
+                                    data-icon="@link.IconSvg">Edit</button>
+                            <button type="button" class="action-btn btn-delete delete-footerlink-btn"
+                                    data-modal-target="delete-modal" data-delete-name="@link.LabelEn" data-id="@link.Id">Delete</button>
+                          </div>
+                        </div>
+                    }
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-panel-card">
+            <h3><span>Footer Content</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">The tagline under the logo, the "Organized by..." note, and the contact details shown in the footer's Contact column.</p>
+              <div class="modal-validation-banner" id="footer-content-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please check the highlighted fields below.</div>
+              @Html.AntiForgeryToken()
+
+              <span class="form-section-label">Brand Tagline</span>
+              <p class="settings-hint" style="margin-top:0;">Optional — leave both empty to hide the tagline line entirely (the logo then sizes itself to match the single-line title instead of a two-line block).</p>
+              <div class="settings-grid">
+                <div class="form-group">
+                  <label>Tagline (EN)</label>
+                  <input type="text" id="footerBrandTagline_en" value="@Model.FooterContent.BrandTaglineEn" placeholder="e.g. Shapes the future of finance education" maxlength="45">
+                  <span class="char-counter" id="footerBrandTagline_en_counter">0 / 45</span>
+                </div>
+                <div class="form-group">
+                  <label>Tagline (BG)</label>
+                  <input type="text" id="footerBrandTagline_bg" value="@Model.FooterContent.BrandTaglineBg" placeholder="напр. Оформя бъдещето на финансовото образование" maxlength="45">
+                  <span class="char-counter" id="footerBrandTagline_bg_counter">0 / 45</span>
+                </div>
+              </div>
+
+              <hr class="section-divider">
+
+              <span class="form-section-label">"Organized By" Note</span>
+              <div class="form-group">
+                <label>Note (EN)</label>
+                <textarea id="footerOrgNote_en" maxlength="400" placeholder="Organized by the Institute of Cryptoeconomics, Blockchain and Innovations (ICBI) within the University of National and World Economy (UNWE).">@Model.FooterContent.OrgNoteEn</textarea>
+              <span class="char-counter" id="footerOrgNote_en_counter">0 / 400</span>
+              </div>
+              <div class="form-group">
+                <label>Note (BG)</label>
+                <textarea id="footerOrgNote_bg" maxlength="400" placeholder="Организирано от Института по криптоикономика, блокчейн и иновации (ICBI) към Университета за национално и световно стопанство (УНСС).">@Model.FooterContent.OrgNoteBg</textarea>
+              <span class="char-counter" id="footerOrgNote_bg_counter">0 / 400</span>
+              </div>
+
+              <hr class="section-divider">
+
+              <span class="form-section-label">Contact Details</span>
+              <div class="settings-grid">
+                <div class="form-group">
+                  <label>Address / Location (EN)</label>
+                  <input type="text" id="footerContactLocation_en" value="@Model.FooterContent.ContactLocationEn" placeholder="e.g. Sofia, Bulgaria" maxlength="100">
+                  <span class="char-counter" id="footerContactLocation_en_counter">0 / 100</span>
+                </div>
+                <div class="form-group">
+                  <label>Address / Location (BG)</label>
+                  <input type="text" id="footerContactLocation_bg" value="@Model.FooterContent.ContactLocationBg" placeholder="напр. София, България" maxlength="100">
+                  <span class="char-counter" id="footerContactLocation_bg_counter">0 / 100</span>
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" id="footerContactEmail" value="@Model.FooterContent.ContactEmail" placeholder="conference.education@unwe.bg" maxlength="150">
+                  <span class="char-counter" id="footerContactEmail_counter">0 / 150</span>
+                </div>
+                <div class="form-group">
+                  <label>Phone</label>
+                  <input type="tel" id="footerContactPhone" value="@Model.FooterContent.ContactPhone" placeholder="+359 98 871 1801" maxlength="30">
+                  <span class="char-counter" id="footerContactPhone_counter">0 / 30</span>
+                </div>
+              </div>
+
+              <div class="privacy-actions-row">
+                <button type="button" class="btn-save" id="saveFooterContentBtn">Save Footer Content</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="view-registration-modal">
+    <div class="modal-box" style="max-width:750px;">
+      <div class="modal-header"><h3 id="viewModalTitle">User Details</h3></div>
+      <div class="modal-body">
+        <h4 style="margin-top:0;color:var(--c-text);margin-bottom:15px;font-size:15px;text-transform:uppercase;letter-spacing:0.5px;">Profile</h4>
+        <div class="details-grid">
+          <div class="detail-item"><span>Full Name</span><strong id="viewFullName">—</strong></div>
+          <div class="detail-item"><span>Age</span><strong id="viewAge">—</strong></div>
+          <div class="detail-item"><span>Email</span><strong id="viewEmail" style="word-break:break-all;">—</strong></div>
+          <div class="detail-item"><span>Phone</span><strong id="viewPhone">—</strong></div>
+          <div class="detail-item"><span>Academic Title</span><strong id="viewTitle">—</strong></div>
+          <div class="detail-item"><span>Workplace</span><strong id="viewOrg">—</strong></div>
+          <div class="detail-item"><span>Participation Type</span><strong id="viewPart">—</strong></div>
+          <div class="detail-item"><span>Foreigner</span><strong id="viewForeign">—</strong></div>
+          <div class="detail-item"><span>Account Status</span><strong id="viewAccStatus">—</strong></div>
+          <div class="detail-item"><span>Registered At</span><strong id="viewCreated">—</strong></div>
+        </div>
+
+        <h4 style="margin-top:20px;color:var(--c-text);margin-bottom:15px;font-size:15px;text-transform:uppercase;letter-spacing:0.5px;">Payment</h4>
+        <div class="details-grid">
+          <div class="detail-item"><span>Reference Number</span><strong id="viewRefNum" style="font-family:monospace;font-size:13px;">—</strong></div>
+          <div class="detail-item"><span>Payment Status</span><strong id="viewPayment">—</strong></div>
+          <div class="detail-item"><span>Payment Method</span><strong id="viewPayMethod">—</strong></div>
+          <div class="detail-item"><span>Paid At</span><strong id="viewPaidAt">—</strong></div>
+        </div>
+
+        <div id="viewVerifSection" style="display:none;">
+          <h4 style="margin-top:20px;color:var(--c-text);margin-bottom:15px;font-size:15px;text-transform:uppercase;letter-spacing:0.5px;">Verification</h4>
+          <div class="details-grid">
+            <div class="detail-item"><span>Verification Status</span><strong id="viewVerifStatus">—</strong></div>
+            <div class="detail-item"><span>Institution</span><strong id="viewVerifInstitution">—</strong></div>
+            <div class="detail-item"><span>Specialty / Position</span><strong id="viewVerifSpecialty">—</strong></div>
+            <div class="detail-item"><span>Year / Site</span><strong id="viewVerifYear">—</strong></div>
+            <div class="detail-item" id="viewVerifStudentIdItem"><span>Student ID</span><strong id="viewVerifStudentId">—</strong></div>
+          </div>
+          <div id="viewVerifDocLink" style="margin-top:10px;display:none;">
+            <a id="viewVerifDocAnchor" href="#" class="action-btn btn-download" style="text-decoration:none;">Download Verification Document</a>
+          </div>
+          <div id="viewRejectionReasonBox" style="display:none;margin-top:12px;padding:10px 14px;background:var(--c-red-light,var(--c-accent-tint));border:1px solid var(--c-red-border,var(--c-accent-border));border-radius:4px;font-size:13px;color:var(--c-red,var(--c-accent-ink));">
+            <strong>Rejection Reason:</strong> <span id="viewRejectionReason">—</span>
+          </div>
+        </div>
+
+        <h4 style="margin-top:20px;color:var(--c-text);margin-bottom:15px;font-size:15px;text-transform:uppercase;letter-spacing:0.5px;">Consents &amp; GDPR</h4>
+        <div class="details-grid">
+          <div class="detail-item"><span>GDPR Accepted</span><strong id="viewGdpr">—</strong></div>
+          <div class="detail-item"><span>Marketing Consent</span><strong id="viewMarketing">—</strong></div>
+          <div class="detail-item"><span>Publish Paper Consent</span><strong id="viewPublishConsent">—</strong></div>
+          <div class="detail-item"><span>Paper Submitted</span><strong id="viewDoc">—</strong></div>
+        </div>
+
+        <h4 style="margin-top:20px;color:var(--c-text);margin-bottom:15px;font-size:15px;text-transform:uppercase;letter-spacing:0.5px;">Recent Activity</h4>
+        <div class="table-scroll">
+        <table class="admin-table mini-table">
+          <thead>
+            <tr><th>Action</th><th>IP</th><th>Date &amp; Time</th><th>Details</th></tr>
+          </thead>
+          <tbody id="viewAuditLogsBody">
+            <tr><td colspan="4" style="text-align:center;color:var(--c-text-muted);padding:20px;">Loading...</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Close</button>
+        <button type="button" class="action-btn btn-edit" id="viewModalEditBtn" style="padding:10px 20px;">Edit Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="edit-registration-modal">
+    <div class="modal-box">
+      <div class="modal-header"><h3 id="editRegModalTitle">Edit Attendee</h3></div>
+      <div class="modal-body">
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="regUserId">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name <span class="required-star">*</span></label>
+            <input type="text" id="regFirstName" placeholder="First name">
+          </div>
+          <div class="form-group">
+            <label>Last Name <span class="required-star">*</span></label>
+            <input type="text" id="regLastName" placeholder="Last name">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age <span class="required-star">*</span></label>
+            <input type="number" id="regAge" min="16" max="100" placeholder="Age">
+          </div>
+          <div class="form-group">
+            <label>Phone <span class="required-star">*</span></label>
+            <input type="text" id="regPhone" placeholder="Phone number">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Academic Title</label>
+            <input type="text" id="regTitle" placeholder="e.g. Prof., Dr.">
+          </div>
+          <div class="form-group">
+            <label>Organization <span class="required-star">*</span></label>
+            <input type="text" id="regOrg" placeholder="Workplace / University">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Participation Type</label>
+            <select id="regParticipation">
+              <option value="1">Lector / Academic</option>
+              <option value="2">Student / PhD Candidate</option>
+              <option value="3">Online Participant</option>
+              <option value="4">Journalist / Media</option>
+            </select>
+          </div>
+          <div class="form-group" style="display:flex;flex-direction:column;justify-content:center;">
+            <label>&nbsp;</label>
+            <div class="checkbox-group">
+              <input type="checkbox" id="regForeignCheck">
+              <label for="regForeignCheck">Is Foreigner?</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Submitted Paper</label>
+          <div style="margin-top:8px;">
+            <a href="#" id="regDownloadLink" class="file-download-box" style="display:none;">
+              <span><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'></path><polyline points='14 2 14 8 20 8'></polyline></svg></span> <strong id="regFileName">file.pdf</strong> (Click to Download)
+            </a>
+            <span id="regNoFile" style="display:none;color:var(--c-text-muted);font-style:italic;">No file uploaded</span>
+          </div>
+        </div>
+        <hr style="border-color:var(--c-border);margin:20px 0;">
+        <div class="form-group">
+          <label style="color:var(--c-accent-ink);">Update Payment Status</label>
+          <select id="regPaymentStatus">
+            <option value="Confirmed">Confirmed</option>
+            <option value="Pending">Pending</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Account Verification</label>
+          <div class="checkbox-group">
+            <input type="checkbox" id="regEmailConfirmed">
+            <label for="regEmailConfirmed">Email address verified</label>
+          </div>
+        </div>
+        <div class="form-group" id="regVerifStatusGroup" style="display:none;">
+          <label style="color:var(--c-purple);">Verification Status <span style="font-size:11px;font-weight:normal;color:var(--c-text-faint);">(Student / Journalist only)</span></label>
+          <select id="regVerifStatus">
+            <option value="None">None — No submission</option>
+            <option value="Pending">Pending — Awaiting review</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+          <small style="color:var(--c-text-faint);font-size:11px;margin-top:4px;display:block;">Approving a Student or Journalist will also auto-confirm their payment as Subsidised.</small>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="saveRegistrationBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="reject-verif-modal">
+    <div class="modal-box" style="max-width:450px;">
+      <div class="modal-header"><h3>Reject Verification</h3></div>
+      <div class="modal-body">
+        <p style="color:var(--c-text-secondary);margin-bottom:10px;">Rejecting verification for: <strong id="rejectVerifName">—</strong></p>
+        <label style="font-weight:bold;color:var(--c-text);font-size:14px;">Reason for rejection <span class="required-star">*</span></label>
+        <textarea id="rejectReasonText" placeholder="Please provide a clear reason (minimum 5 characters)..."></textarea>
+        <small style="color:var(--c-text-muted);">This reason is recorded in the audit log.</small>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-confirm-delete" id="confirmRejectBtn">Confirm Rejection</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="edit-member-modal">
+    <div class="modal-box">
+      <div class="modal-header"><h3>Add / Edit Member</h3></div>
+      <div class="modal-body">
+        <div class="modal-validation-banner" id="member-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please fill in all required fields.</div>
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="memberId" value="0">
+        <div class="form-group"><label>Full Name (EN) <span class="required-star">*</span></label><input type="text" id="memberName_en" placeholder="e.g. Prof. Dimitar Dimitrov"></div>
+        <div class="form-group"><label>Full Name (BG) <span class="required-star">*</span></label><input type="text" id="memberName_bg" placeholder="e.g. Проф. Димитър Димитров"></div>
+        <div class="form-group"><label>Role (EN) <span class="required-star">*</span></label><input type="text" id="memberRole_en" placeholder="e.g. Conference Chair"></div>
+        <div class="form-group"><label>Role (BG) <span class="required-star">*</span></label><input type="text" id="memberRole_bg" placeholder="e.g. Председател"></div>
+        <div class="form-group"><label>Organization (EN) <span class="required-star">*</span></label><input type="text" id="memberOrg_en" placeholder="e.g. UNWE, Sofia"></div>
+        <div class="form-group"><label>Organization (BG) <span class="required-star">*</span></label><input type="text" id="memberOrg_bg" placeholder="e.g. УНСС, София"></div>
+        <div class="form-group">
+          <label>Committee Type</label>
+          <select id="memberCommittee">
+            <option>Organizing Committee</option>
+            <option>Program Committee</option>
+            <option>Student Committee</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Avatar Image <span id="memberAvatarRequired" class="required-star">*</span></label>
+          <input type="file" id="memberAvatar" accept="image/*">
+          <div class="image-upload-preview" id="memberAvatarPreview">
+            <img id="memberAvatarPreviewImg" src="" alt="Preview">
+            <span id="memberAvatarPreviewName"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="saveMemberBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="edit-partner-modal">
+    <div class="modal-box">
+      <div class="modal-header"><h3>Add / Edit Partner</h3></div>
+      <div class="modal-body">
+        <div class="modal-validation-banner" id="partner-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please fill in all required fields.</div>
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="partnerId" value="0">
+        <div class="form-group"><label>Partner Name (EN) <span class="required-star">*</span></label><input type="text" id="partnerName_en" placeholder="e.g. UNWE"></div>
+        <div class="form-group"><label>Partner Name (BG) <span class="required-star">*</span></label><input type="text" id="partnerName_bg" placeholder="e.g. УНСС"></div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="partnerCategory">
+            <option>Institutional</option>
+            <option>Business</option>
+            <option>Media</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Website URL <span style="color:var(--c-text-muted);font-size:11px;font-weight:normal;">(Optional)</span></label>
+          <input type="text" id="partnerUrl" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label>Partner Logo <span id="partnerLogoRequired" class="required-star">*</span></label>
+          <input type="file" id="partnerLogo" accept="image/*,.svg">
+          <div class="image-upload-preview" id="partnerLogoPreview">
+            <img id="partnerLogoPreviewImg" src="" alt="Preview">
+            <span id="partnerLogoPreviewName"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="savePartnerBtn">Save Partner</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="edit-event-modal">
+    <div class="modal-box">
+      <div class="modal-header"><h3>Add / Edit Event</h3></div>
+      <div class="modal-body">
+        <div class="modal-validation-banner" id="event-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please fill in all required fields.</div>
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="eventId" value="0">
+        <div class="form-group"><label>Event Title (EN) <span class="required-star">*</span></label><input type="text" id="eventTitle_en" placeholder="e.g. Blockchain Education Summit"></div>
+        <div class="form-group"><label>Event Title (BG) <span class="required-star">*</span></label><input type="text" id="eventTitle_bg" placeholder="e.g. Блокчейн Образование Самит"></div>
+        <div class="form-group"><label>Location &amp; Year (EN) <span class="required-star">*</span></label><input type="text" id="eventLocation_en" placeholder="e.g. Sofia, Bulgaria - 2025"></div>
+        <div class="form-group"><label>Location &amp; Year (BG) <span class="required-star">*</span></label><input type="text" id="eventLocation_bg" placeholder="e.g. София, България - 2025"></div>
+        <div class="form-group"><label>Target URL</label><input type="text" id="eventUrl" placeholder="https://..."></div>
+        <div class="form-group">
+          <label>Background Image <span id="eventImageRequired" class="required-star">*</span></label>
+          <input type="file" id="eventImage" accept="image/*">
+          <div class="image-upload-preview" id="eventImagePreview">
+            <img id="eventImagePreviewImg" src="" alt="Preview">
+            <span id="eventImagePreviewName"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="saveEventBtn">Save Event</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="edit-lecturer-modal">
+    <div class="modal-box" style="max-width:700px;">
+      <div class="modal-header"><h3>Add / Edit Lecturer</h3></div>
+      <div class="modal-body">
+        <div class="modal-validation-banner" id="lecturer-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please fill in all required fields.</div>
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="lecturerId" value="0">
+        <div class="form-row">
+          <div class="form-group"><label>Full Name (EN) <span class="required-star">*</span></label><input type="text" id="lecturerName_en" placeholder="e.g. Prof. Elena Vassileva"></div>
+          <div class="form-group"><label>Full Name (BG) <span class="required-star">*</span></label><input type="text" id="lecturerName_bg" placeholder="e.g. Проф. Елена Василева"></div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="lecturerCategory">
+              <option>Keynote</option>
+              <option>Academic</option>
+              <option>Industry</option>
+              <option>Regulatory &amp; Policy</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Role / Title (EN) <span class="required-star">*</span></label><input type="text" id="lecturerRole_en" placeholder="e.g. Chair of Digital Economics"></div>
+          <div class="form-group"><label>Role / Title (BG) <span class="required-star">*</span></label><input type="text" id="lecturerRole_bg" placeholder="e.g. Катедра Цифрова Икономика"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Organization (EN) <span class="required-star">*</span></label><input type="text" id="lecturerOrg_en" placeholder="e.g. UNWE, Sofia"></div>
+          <div class="form-group"><label>Organization (BG) <span class="required-star">*</span></label><input type="text" id="lecturerOrg_bg" placeholder="e.g. УНСС, София"></div>
+        </div>
+        <div class="form-group"><label>Short Biography (EN)</label><textarea id="lecturerBio_en" placeholder="Brief description..."></textarea></div>
+        <div class="form-group"><label>Short Biography (BG)</label><textarea id="lecturerBio_bg" placeholder="Кратко описание..."></textarea></div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2;"><label>LinkedIn / Website URL</label><input type="text" id="lecturerUrl" placeholder="https://linkedin.com/in/..."></div>
+          <div class="form-group" style="flex:1;">
+            <label>Avatar Image <span id="lecturerAvatarRequired" class="required-star">*</span></label>
+            <input type="file" id="lecturerAvatar" accept="image/*">
+            <div class="image-upload-preview" id="lecturerAvatarPreview">
+              <img id="lecturerAvatarPreviewImg" src="" alt="Preview">
+              <span id="lecturerAvatarPreviewName"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="saveLecturerBtn">Save Lecturer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="edit-schedule-modal">
+    <div class="modal-box" style="max-width:720px;">
+      <div class="modal-header"><h3>Add / Edit Session</h3></div>
+      <div class="modal-body">
+        <div class="modal-validation-banner" id="session-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please fill in all required fields.</div>
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="sessionId" value="0">
+
+        <span class="form-section-label">Timing</span>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Conference Day</label>
+            <select id="sessionDay">
+              <option>Day 1 (Oct 29, 2026)</option>
+              <option>Day 2 (Oct 30, 2026)</option>
+              <option>Day 3 (Oct 31, 2026)</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Start Time <span class="required-star">*</span></label><input type="time" id="sessionStartTime" value="09:00"></div>
+          <div class="form-group"><label>End Time <span class="required-star">*</span></label><input type="time" id="sessionEndTime" value="10:00"></div>
+        </div>
+
+        <hr class="section-divider">
+
+        <span class="form-section-label">Session Details</span>
+        <div class="form-row">
+          <div class="form-group" style="flex:2;"><label>Session Title (EN) <span class="required-star">*</span></label><input type="text" id="sessionTitle_en" placeholder="e.g. Opening Ceremony"></div>
+          <div class="form-group" style="flex:2;"><label>Session Title (BG) <span class="required-star">*</span></label><input type="text" id="sessionTitle_bg" placeholder="e.g. Церемония по Откриването"></div>
+          <div class="form-group" style="flex:1;">
+            <label>Session Type</label>
+            <select id="sessionType">
+              <option>Registration</option>
+              <option>Opening Ceremony</option>
+              <option>Plenary Session</option>
+              <option>Plenary</option>
+              <option>Panel Discussion</option>
+              <option>Panel</option>
+              <option>Workshop</option>
+              <option>Roundtable</option>
+              <option>Networking</option>
+              <option>Coffee Break</option>
+              <option>Refreshment Break</option>
+              <option>Lunch</option>
+              <option>Dinner</option>
+              <option>Farewell Lunch</option>
+              <option>Closing Session</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <span class="form-section-label">Speaker &amp; Location</span>
+        <div class="form-row">
+          <div class="form-group"><label>Speaker (EN)</label><input type="text" id="sessionSpeaker_en" placeholder="e.g. Prof. Dimitar Dimitrov"></div>
+          <div class="form-group"><label>Speaker (BG)</label><input type="text" id="sessionSpeaker_bg" placeholder="e.g. Проф. Димитър Димитров"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Location / Hall (EN)</label><input type="text" id="sessionLocation_en" placeholder="e.g. Aula Maxima"></div>
+          <div class="form-group"><label>Location / Hall (BG)</label><input type="text" id="sessionLocation_bg" placeholder="e.g. Аула Максима"></div>
+        </div>
+        
+        <hr class="section-divider">
+        <span class="form-section-label">Live Streaming</span>
+        <div class="form-group">
+            <label>Live Stream URL</label>
+            <input type="url" id="sessionLiveStreamUrl" placeholder="https://youtube.com/... (optional)">
+        </div>
+
+        <hr class="section-divider">
+
+        <span class="form-section-label">Description</span>
+        <div class="form-row">
+          <div class="form-group"><label>Description (EN)</label><textarea id="sessionDesc_en" placeholder="Brief description..."></textarea></div>
+          <div class="form-group"><label>Description (BG)</label><textarea id="sessionDesc_bg" placeholder="Кратко описание..."></textarea></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="saveSessionBtn">Save Session</button>
+      </div>
+    </div>
+  </div>
+
+  @* Филър модал — избира сесия + линк към живо събитие. *@
+  <div class="modal-overlay" id="add-live-link-modal">
+    <div class="modal-box">
+      <div class="modal-header"><h3>Add Live Link</h3></div>
+      <div class="modal-body">
+        <div class="modal-validation-banner" id="livelink-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please fill in all required fields.</div>
+        <div class="form-group">
+          <label>Session <span class="required-star">*</span></label>
+          <select id="liveLinkSessionId">
+            <option value="">— Select a session —</option>
+            @foreach (var s in Model.ScheduleSessions)
+            {
+                <option value="@s.Id">@s.Day — @s.StartTime @s.TitleEn</option>
+            }
+          </select>
+        </div>
+        <div class="form-group"><label>Live Stream URL <span class="required-star">*</span></label><input type="url" id="liveLinkUrl" placeholder="https://youtube.com/..."></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="saveLiveLinkBtn">Save Link</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="edit-ticket-modal">
+    <div class="modal-box">
+      <div class="modal-header"><h3>Edit Ticket Tier</h3></div>
+      <form method="post" asp-page-handler="EditTicket">
+        <div class="modal-body">
+          <input type="hidden" id="editTicketId" name="EditTicket.Id" value="">
+          <div class="form-group"><label>Tier Name (EN)</label><input type="text" id="ticketName_en" name="EditTicket.NameEn"></div>
+          <div class="form-group"><label>Tier Name (BG)</label><input type="text" id="ticketName_bg" name="EditTicket.NameBg"></div>
+          <div class="form-group"><label>Description (EN)</label><textarea id="ticketDesc_en" name="EditTicket.DescriptionEn" placeholder="e.g. For BSc, MSc, PhD students and Faculty."></textarea></div>
+          <div class="form-group"><label>Description (BG)</label><textarea id="ticketDesc_bg" name="EditTicket.DescriptionBg" placeholder="..."></textarea></div>
+          <p class="settings-hint" style="margin:-4px 0 2px;">Price applies to both languages automatically — no need to enter it twice.</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Regular Price</label>
+              <input type="text" id="ticketRegPrice_en" name="EditTicket.RegularPriceEn" placeholder="e.g. Fully Subsidized or €150">
+              <input type="hidden" id="ticketRegPrice_bg" name="EditTicket.RegularPriceBg">
+            </div>
+            <div class="form-group">
+              <label>Promo Price <span style="font-weight:400;color:var(--c-text-muted);">(optional)</span></label>
+              <input type="text" id="ticketPromoPrice_en" name="EditTicket.PromoPriceEn" placeholder="e.g. €99">
+              <input type="hidden" id="ticketPromoPrice_bg" name="EditTicket.PromoPriceBg">
+            </div>
+          </div>
+          <div class="form-group"><label>Perks (EN) — one per line</label><textarea id="ticketPerks_en" name="EditTicket.PerksEn" style="min-height:100px;" placeholder="- Full access&#10;- Conference materials"></textarea></div>
+          <div class="form-group"><label>Perks (BG) — one per line</label><textarea id="ticketPerks_bg" name="EditTicket.PerksBg" style="min-height:100px;" placeholder="- Пълен достъп&#10;- Конферентни материали"></textarea></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+          <button type="submit" class="btn-save">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="edit-hotel-modal">
+    <div class="modal-box">
+      <div class="modal-header"><h3>Add / Edit Hotel</h3></div>
+      <div class="modal-body">
+        <div class="modal-validation-banner" id="hotel-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please fill in all required fields.</div>
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="hotelId" value="0">
+        <div class="form-row">
+          <div class="form-group"><label>Hotel Name (EN) <span class="required-star">*</span></label><input type="text" id="hotelName_en" placeholder="e.g. Radisson Blu Grand Hotel"></div>
+          <div class="form-group"><label>Hotel Name (BG) <span class="required-star">*</span></label><input type="text" id="hotelName_bg" placeholder="e.g. Радисън Блу Гранд Хотел"></div>
+        </div>
+        <div class="form-group"><label>Description (EN)</label><textarea id="hotelDesc_en" placeholder="Description..."></textarea></div>
+        <div class="form-group"><label>Description (BG)</label><textarea id="hotelDesc_bg" placeholder="Описание..."></textarea></div>
+        <div class="form-group"><label>Hotel Website URL</label><input type="text" id="hotelUrl" placeholder="https://..."></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="saveHotelBtn">Save Hotel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="edit-promo-modal">
+    <div class="modal-box">
+      <div class="modal-header"><h3>Add / Edit Promo Slide</h3></div>
+      <div class="modal-body">
+        <div class="modal-validation-banner" id="promo-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please fill in all required fields.</div>
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="promoId" value="0">
+        <div class="form-group">
+          <label>Title (EN) <span class="required-star">*</span></label>
+          <input type="text" id="promoTitle_en" maxlength="50" placeholder="e.g. Blockchain Education 2026">
+          <span class="char-counter" id="promoTitle_en_counter">0 / 50</span>
+        </div>
+        <div class="form-group">
+          <label>Title (BG) <span class="required-star">*</span></label>
+          <input type="text" id="promoTitle_bg" maxlength="50" placeholder="напр. Blockchain Education 2026">
+          <span class="char-counter" id="promoTitle_bg_counter">0 / 50</span>
+        </div>
+        <div class="form-group">
+          <label>Description (EN) <span class="required-star">*</span></label>
+          <textarea id="promoDesc_en" maxlength="120" placeholder="Short description..."></textarea>
+          <span class="char-counter" id="promoDesc_en_counter">0 / 120</span>
+        </div>
+        <div class="form-group">
+          <label>Description (BG) <span class="required-star">*</span></label>
+          <textarea id="promoDesc_bg" maxlength="120" placeholder="Кратко описание..."></textarea>
+          <span class="char-counter" id="promoDesc_bg_counter">0 / 120</span>
+        </div>
+        <div class="form-group">
+          <label>Slide Image <span id="promoImageRequired" class="required-star">*</span></label>
+          <p class="settings-hint" style="margin-top:0;">
+            Recommended: square image (e.g. 300×300px), <strong>transparent PNG background</strong>, max 1MB. Accepted formats: PNG, JPG, JPEG.
+            The image sits inside a small fixed box on the site — it will not be cropped, just scaled to fit, so keep the subject centered.
+          </p>
+          <input type="file" id="promoImage" accept="image/png,image/jpeg">
+          <div class="image-upload-preview" id="promoImagePreview">
+            <img id="promoImagePreviewImg" src="" alt="Preview">
+            <span id="promoImagePreviewName"></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="savePromoBtn">Save Promo Slide</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ADD / EDIT FOOTER QUICK LINK MODAL ─────────────────────── -->
+  <div class="modal-overlay" id="edit-footer-link-modal">
+    <div class="modal-box">
+      <div class="modal-header"><h3 id="editFooterLinkModalTitle">Add / Edit Quick Link</h3></div>
+      <div class="modal-body">
+        <div class="modal-validation-banner" id="footerlink-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please fill in all required fields.</div>
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="footerLinkId" value="0">
+
+        <div class="form-row">
+          <div class="form-group"><label>Label (EN) <span class="required-star">*</span></label><input type="text" id="footerLinkLabel_en" placeholder="e.g. Conference" maxlength="60"><span class="char-counter" id="footerLinkLabel_en_counter">0 / 60</span></div>
+          <div class="form-group"><label>Label (BG) <span class="required-star">*</span></label><input type="text" id="footerLinkLabel_bg" placeholder="напр. Конференция" maxlength="60"><span class="char-counter" id="footerLinkLabel_bg_counter">0 / 60</span></div>
+        </div>
+
+        <div class="form-group">
+          <label>URL / Path <span class="required-star">*</span></label>
+          <input type="text" id="footerLinkUrl" placeholder="/Conference or https://..." maxlength="300">
+          <span class="char-counter" id="footerLinkUrl_counter">0 / 300</span>
+        </div>
+
+        <div class="form-group">
+          <label>SVG Icon Code <span class="required-star">*</span></label>
+          <p class="settings-hint" style="margin-top:0;">
+            Paste just the inner SVG markup — the shapes only (e.g. <code>&lt;circle .../&gt;&lt;path .../&gt;</code>), not a full <code>&lt;svg&gt;</code> tag. It's wrapped automatically in the site's standard 24×24, stroke-based icon frame, so every quick link is guaranteed to show its own icon instead of a generic fallback.
+          </p>
+          <textarea id="footerLinkIconSvg" style="min-height:90px;font-family:var(--font-mono);font-size:12px;" maxlength="2000" placeholder="&lt;circle cx='9' cy='8' r='3'&gt;&lt;/circle&gt;&#10;&lt;path d='M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1'&gt;&lt;/path&gt;"></textarea>
+          <span class="char-counter" id="footerLinkIconSvg_counter">0 / 2000</span>
+        </div>
+
+        <div class="form-group" style="display:flex;align-items:center;gap:12px;margin-bottom:0;">
+          <span style="font-size:12px;color:var(--c-text-muted);font-weight:600;">Preview</span>
+          <span class="footer-link-icon-preview" id="footerLinkIconPreview" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle></svg>
+          </span>
+          <span style="font-size:11.5px;color:var(--c-text-muted);">Updates once icon-code editing is wired up.</span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="saveFooterLinkBtn">Save Quick Link</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EDIT FAQ MODAL ─────────────────────────────────────────── -->
+  <div class="modal-overlay" id="edit-faq-modal">
+    <div class="modal-box" style="max-width:700px;">
+      <div class="modal-header"><h3 id="editFaqModalTitle">Add / Edit FAQ</h3></div>
+      <div class="modal-body">
+        <div class="modal-validation-banner" id="faq-validation-banner"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Please fill in all required fields.</div>
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="faqId" value="0">
+        
+        <div class="form-group">
+          <label>Question (EN) <span class="required-star">*</span></label>
+          <input type="text" id="faqQuestion_en" placeholder="e.g. How do I submit a paper?">
+        </div>
+        <div class="form-group">
+          <label>Question (BG) <span class="required-star">*</span></label>
+          <input type="text" id="faqQuestion_bg" placeholder="напр. Как да изпратя доклад?">
+        </div>
+        <div class="form-group">
+          <label>Answer (EN) <span class="required-star">*</span></label>
+          <textarea id="faqAnswer_en" style="min-height:100px;" placeholder="Full answer in English..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Answer (BG) <span class="required-star">*</span></label>
+          <textarea id="faqAnswer_bg" style="min-height:100px;" placeholder="Пълен отговор на български..."></textarea>
+        </div>
+        
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="saveFaqBtn">Save FAQ</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="cookieCategoryModal">
+    <div class="modal-box" style="max-width:640px;">
+      <div class="modal-header"><h3 id="cookieModalTitle">Edit Category</h3></div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Key</label>
+            <input type="text" id="cookieModalKeyInput" placeholder="e.g. functional" maxlength="40">
+            <span class="cookie-category-key" id="cookieModalKeyBadge" style="display:none;"></span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name (English)</label>
+            <input type="text" id="cookieModalNameEn" maxlength="60">
+          </div>
+          <div class="form-group">
+            <label>Name (Български)</label>
+            <input type="text" id="cookieModalNameBg" maxlength="60">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:20px;">
+          <label>Description (English)</label>
+          <div id="cookieModalDescEditorEn" class="quill-editor-container quill-editor-container-sm"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+          <label>Description (Български)</label>
+          <div id="cookieModalDescEditorBg" class="quill-editor-container quill-editor-container-sm"></div>
+        </div>
+        <div class="cookie-category-toggles">
+          <div class="checkbox-group">
+            <input type="checkbox" id="cookieModalVisible">
+            <label for="cookieModalVisible">Visible on site</label>
+          </div>
+          <div class="checkbox-group" id="cookieModalToggleableGroup">
+            <input type="checkbox" id="cookieModalToggleable">
+            <label for="cookieModalToggleable">Visitor can switch it</label>
+          </div>
+          <p class="settings-hint" id="cookieModalLockedHint" style="display:none;margin:6px 0 0;">
+            "Strictly Necessary" is always on and can't be made switchable — required by law.
+          </p>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-save" id="cookieModalSaveBtn">Save Category</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal-box" style="max-width:400px;text-align:center;">
+      <div class="modal-header" style="border:none;"><h3>Are you sure?</h3></div>
+      <div class="modal-body">
+        <p style="color:var(--c-text-secondary);margin-bottom:20px;">You are about to permanently delete <strong id="delete-item-name" style="color:var(--c-accent-ink);">this record</strong>. This action cannot be undone.</p>
+      </div>
+      <div class="modal-actions" style="justify-content:center;">
+        <button type="button" class="btn-cancel modal-close-btn">Cancel</button>
+        <button type="button" class="btn-confirm-delete" data-action="delete">Yes, Delete It</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="image-preview-modal">
+    <div class="image-preview-container" style="position:relative;">
+      <button type="button" class="close-preview modal-close-btn">&times;</button>
+      <img id="preview-image-src" src="" alt="Preview">
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="upload-logo-modal" style="display:none;">
+    <div class="modal-box" style="max-width: 400px; margin: 10% auto;">
+      <div class="modal-header">
+          <h3>Add New Home Page Logo</h3>
+      </div>
+      <form method="post" asp-page-handler="UploadLogo" enctype="multipart/form-data">
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Select Image File <span class="required-star">*</span></label>
+                <input type="file" name="logoFile" accept="image/*" required />
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="document.getElementById('upload-logo-modal').style.display='none'">Cancel</button>
+            <button type="submit" class="btn-save">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+@section Scripts {
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+  <script src="~/js/adminPanel.js" asp-append-version="true"></script>
+  <script src="~/js/adminPanelHealth.js" asp-append-version="true"></script>
+
+  @if (TempData["SuccessMessage"] != null)
+  {
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            localStorage.setItem('activeAdminTab', 'tab-attend');
+            window.showToast('@TempData["SuccessMessage"]', 'success');
+        });
+      </script>
+  }
+  @if (TempData["ErrorMessage"] != null)
+  {
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            window.showToast('@TempData["ErrorMessage"]', 'error');
+        });
+      </script>
+  }
+
+  <script>
+  function deleteHomePageLogo(logoId) {
+      if (!confirm("Сигурни ли сте, че искате да изтриете това лого?")) return;
+
+      const formData = new FormData();
+      formData.append("id", logoId);
+
+      const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+      formData.append("__RequestVerificationToken", token);
+
+      fetch('?handler=DeleteLogo', {
+          method: 'POST',
+          body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              const row = document.getElementById(`logo-row-${logoId}`);
+              if (row) row.remove();
+          } else {
+              alert("Грешка при изтриването: " + (data.message || "Неизвестна грешка"));
+          }
+      })
+      .catch(error => {
+          console.error("Error:", error);
+          alert("Възникна мрежова грешка.");
+      });
+  }
+  </script>
+}

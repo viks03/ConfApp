@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <data name="Nav_ICBI" xml:space="preserve"><value>About ICBI</value></data>
+  <data name="ICBI_EstLabel" xml:space="preserve"><value>Est. January 2026</value></data>
+  <data name="ICBI_HeroTitle" xml:space="preserve"><value>Institute of Cryptoeconomics,&lt;br&gt;Blockchain &amp; Innovation</value></data>
+  <data name="ICBI_HeroDesc" xml:space="preserve"><value>Established as a specialized academic unit within the University of National and World Economy (UNWE) by a Council of Ministers Decree on 28 January 2026, the Institute for Cryptoeconomics, Blockchain and Innovation (ICBI) serves as the essential connecting link between traditional higher education, regulatory institutions, and the dynamic Web3 ecosystem.</value></data>
+  <data name="ICBI_HeroQuote" xml:space="preserve"><value>Our core mission is to set the gold standard for cryptoeconomics education, empowering the academic and business sectors to seamlessly navigate new European regulatory frameworks, including MiCA.</value></data>
+  <data name="ICBI_PillarsLabel" xml:space="preserve"><value>CORE DIRECTIONS</value></data>
+  <data name="ICBI_PillarsTitle" xml:space="preserve"><value>Three Pillars of Activity</value></data>
+  <data name="ICBI_Pillar1_Title" xml:space="preserve"><value>Education</value></data>
+  <data name="ICBI_Pillar1_Desc" xml:space="preserve"><value>Development of innovative university programs, certification courses, and specialized training, building upon UNWE's established cryptoeconomics foundation.</value></data>
+  <data name="ICBI_Pillar2_Title" xml:space="preserve"><value>Research</value></data>
+  <data name="ICBI_Pillar2_Desc" xml:space="preserve"><value>In-depth scientific analysis in the field of decentralized finance (DeFi), tokenization of real-world assets (RWA), and the synergy between blockchain and artificial intelligence.</value></data>
+  <data name="ICBI_Pillar3_Title" xml:space="preserve"><value>Partnerships</value></data>
+  <data name="ICBI_Pillar3_Desc" xml:space="preserve"><value>Building a sustainable international network that unites leading universities, regulators, technology pioneers, and companies in joint projects.</value></data>
+  <data name="ICBI_Pillar4_Title" xml:space="preserve"><value>Policy</value></data>
+  <data name="ICBI_Pillar4_Desc" xml:space="preserve"><value>Engaging with government administration and regulatory institutions to support the smooth adaptation of the educational and business sectors to new European frameworks.</value></data>
+  <data name="ICBI_VenueLabel" xml:space="preserve"><value>VENUE</value></data>
+  <data name="ICBI_VenueTitle" xml:space="preserve"><value>University of National and World Economy</value></data>
+  <data name="ICBI_VenueConfTitle" xml:space="preserve"><value>CONFERENCE VENUE</value></data>
+  <data name="ICBI_VenueConfDesc" xml:space="preserve"><value>University of National and World Economy&lt;br&gt;19, 8-mi Dekemvri St. 1700 Sofia, Bulgaria</value></data>
+  <data name="ICBI_VenueHoursTitle" xml:space="preserve"><value>CONFERENCE HOURS</value></data>
+  <data name="ICBI_VenueHoursDesc" xml:space="preserve"><value>Day 1-3: 09:00 - 20:00&lt;br&gt;Registration from 08:30 each day</value></data>
+  <data name="ICBI_VenueEmailTitle" xml:space="preserve"><value>EMAIL</value></data>
+  <data name="ICBI_EventsLabel" xml:space="preserve"><value>Previous Events</value></data>
+  <data name="ICBI_EventsTitle" xml:space="preserve"><value>Our Track Record</value></data>
+</root>

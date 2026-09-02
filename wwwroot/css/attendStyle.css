@@ -1,0 +1,418 @@
+:root {
+    --bg-black: #0a0a0a;
+    --accent-red: #8b0000;
+    --text-white: #ffffff;
+    --text-gray: #a0a0a0;
+    --card-bg: #141414;
+    --card-hover: #1a1a1a;
+    --border-color: #222222;
+}
+
+.center-section {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.pricing-section,
+.access-section,
+.extras-payment-section {
+    margin: 15px;
+    padding: 10px;
+}
+/* Hero Section */
+.attend-hero {
+    background-image: url('../images/attend/bannerAula.png'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Arrow Section */
+.hero.attend-hero {
+  position: relative;
+}
+
+/* Стилът на самата стрелка */
+.scroll-down-arrow {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  color: #ffffff;
+  z-index: 10;
+  transition: color 0.3s ease;
+  animation: bounce 2s infinite;
+}
+
+.scroll-down-arrow:hover {
+  color: #cc0000;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  40% {
+    transform: translateX(-50%) translateY(-15px);
+  }
+  60% {
+    transform: translateX(-50%) translateY(-7px);
+  }
+}
+
+
+/* --- Pricing Section --- */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    width: 100%;
+    margin-top: 30px;
+}
+
+.pricing-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 40px 30px;
+    text-align: left;
+    position: relative;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    background-color: var(--card-hover);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.pricing-card.highlighted {
+    border-color: var(--accent-red);
+    box-shadow: 0 0 20px rgba(139, 0, 0, 0.2);
+}
+
+.pricing-card.highlighted:hover {
+    box-shadow: 0 8px 30px rgba(139, 0, 0, 0.5);
+}
+
+.card-title {
+    font-size: 1.4rem;
+    margin: 0 0 15px 0;
+}
+
+.price {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--accent-red);
+    margin-bottom: 15px;
+}
+
+.price del {
+    color: var(--text-gray);
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+
+.card-desc {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 20px 0 0 0; /* Отстояние отгоре след линията */
+    margin: 0 0 30px 0;
+    flex-grow: 1;
+    border-top: 1px solid var(--border-color); /* СЕПАРАТОР: Линия под описанието */
+}
+
+.feature-list li {
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    position: relative;
+    padding-left: 20px;
+}
+
+.feature-list li::before {
+    content: "✓";
+    color: var(--accent-red);
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+.ribbon {
+    position: absolute;
+    top: 15px;
+    right: -10px;
+    background: var(--accent-red);
+    color: #fff;
+    padding: 5px 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 4px 0 0 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 12px 20px;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.btn-outline {
+    border: 1px solid var(--border-color);
+    color: var(--text-white);
+}
+
+.btn-outline:hover {
+    border-color: var(--text-white);
+    transform: translateY(-2px);
+}
+
+.btn-solid {
+    background-color: var(--accent-red);
+    color: var(--text-white);
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+    border: 1px solid var(--accent-red);
+}
+
+.btn-solid:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.5);
+    background-color: #9c0000;
+    border-color: #9c0000;
+}
+
+/* --- Access Section --- */
+.access-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.access-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 30px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    text-align: left;
+}
+
+.access-card:hover {
+    transform: translateY(-5px);
+    background-color: var(--card-hover);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.access-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.access-icon img,
+.extra-icon img,
+.payment-icon img {
+    width: 100%;
+    height: 100%;
+    filter: invert(15%) sepia(94%) saturate(6000%) hue-rotate(350deg) brightness(90%) contrast(110%);
+    transition: transform 0.3s ease;
+}
+
+.access-card:hover .access-icon img,
+.extra-card:hover .extra-icon img {
+    transform: scale(1.15) rotate(5deg);
+}
+
+.access-info h4 {
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+}
+
+.access-info p {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.red-link {
+    color: var(--accent-red);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.red-link:hover {
+    color: #ff3333;
+    text-decoration: underline;
+}
+
+/* --- Extras & Payment Section --- */
+.extras-payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    width: 100%;
+    text-align: left;
+    margin-top: 30px;
+}
+
+.extra-card, .payment-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 30px;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.extra-card:hover, .payment-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    background-color: var(--card-hover);
+}
+
+.extra-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.extra-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.extra-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+}
+
+.extra-info p {
+    margin: 0;
+    color: var(--text-gray);
+    font-size: 0.85rem;
+}
+
+.payment-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.payment-icon {
+    width: 32px;
+    height: 32px;
+}
+
+.payment-header h4 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+/* ВЪТРЕШНИ МЕТОДИ ЗА ПЛАЩАНЕ */
+.payment-method-item {
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #1c1c1c;
+}
+
+.payment-method-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.method-item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.method-item-icon {
+    display: flex;
+    align-items: center;
+}
+
+.method-item-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--accent-red);
+}
+
+.method-item-header h5 {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-white);
+    font-weight: 600;
+}
+
+.payment-method-item p {
+    color: var(--text-gray);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.method-status-tag {
+    font-family: 'Oswald', Arial, sans-serif;
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 1px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+    margin-left: auto;
+}
+
+.tag-instant {
+    background: rgba(40, 167, 69, 0.08);
+    border: 1px solid rgba(40, 167, 69, 0.25);
+    color: #28a745;
+}
+
+.tag-manual {
+    background: rgba(255, 149, 0, 0.08);
+    border: 1px solid rgba(255, 149, 0, 0.25);
+    color: #ff9500;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .pricing-grid, .access-grid, .extras-payment-grid { grid-template-columns: 1fr; gap: 20px; }
+    .extras-column { margin-bottom: 0; }
+}

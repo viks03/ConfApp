@@ -1,0 +1,237 @@
+/* ══════════════════════════════════════════════════════════════════════
+   BUG REPORT WIDGET — floating button + modal, visible on every page for
+   logged-in admins (see _Layout.cshtml + Pages/Shared/_BugReportWidget.cshtml)
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root {
+    --brw-red: #dc2626;
+    --brw-red-dark: #b91c1c;
+    --brw-red-light: #fef2f2;
+    --brw-red-border: #fecaca;
+    --brw-ink: #0f172a;
+    --brw-ink-soft: #334155;
+    --brw-muted: #64748b;
+    --brw-faint: #94a3b8;
+    --brw-line: #e2e8f0;
+    --brw-line-soft: #f1f5f9;
+    --brw-surface: #ffffff;
+    --brw-radius-lg: 18px;
+    --brw-radius-md: 12px;
+    --brw-radius-sm: 8px;
+    --brw-shadow: 0 20px 50px rgba(15,23,42,0.22), 0 4px 16px rgba(15,23,42,0.08);
+    --brw-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Floating trigger button ─────────────────────────────────────────── */
+.brw-fab {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    z-index: 9998;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px 12px 14px;
+    background: var(--brw-ink);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(15,23,42,0.28);
+    transition: transform 0.2s var(--brw-ease), box-shadow 0.2s var(--brw-ease), background 0.2s var(--brw-ease);
+}
+.brw-fab:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(220,38,38,0.35); background: var(--brw-red); }
+.brw-fab:active { transform: translateY(0) scale(0.97); }
+.brw-fab-icon { display: flex; width: 20px; height: 20px; flex-shrink: 0; }
+.brw-fab-icon svg { width: 100%; height: 100%; }
+
+/* ── Modal overlay + panel ───────────────────────────────────────────── */
+.brw-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(15,23,42,0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(3px);
+    animation: brwFadeIn 0.15s var(--brw-ease);
+}
+.brw-overlay.is-open { display: flex; }
+@keyframes brwFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.brw-panel {
+    background: var(--brw-surface);
+    border-radius: var(--brw-radius-lg);
+    box-shadow: var(--brw-shadow);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    font-family: inherit;
+    animation: brwPopIn 0.22s var(--brw-ease);
+}
+@keyframes brwPopIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: none; } }
+
+.brw-panel-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 20px 22px; border-bottom: 1px solid var(--brw-line-soft);
+}
+.brw-panel-header-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+    background: var(--brw-red-light); color: var(--brw-red);
+}
+.brw-panel-header-icon svg { width: 19px; height: 19px; }
+.brw-panel-header-text { flex: 1; }
+.brw-panel-header-text h3 { margin: 0; font-size: 16px; font-weight: 800; color: var(--brw-ink); }
+.brw-panel-header-text p { margin: 2px 0 0; font-size: 12px; color: var(--brw-muted); }
+.brw-panel-close {
+    background: none; border: none; cursor: pointer; color: var(--brw-faint);
+    padding: 6px; border-radius: 8px; display: flex; flex-shrink: 0;
+    transition: color 0.15s var(--brw-ease), background 0.15s var(--brw-ease);
+}
+.brw-panel-close:hover { color: var(--brw-ink); background: var(--brw-line-soft); }
+.brw-panel-close svg { width: 18px; height: 18px; }
+
+.brw-panel-body { padding: 22px; }
+.brw-field { margin-bottom: 16px; position: relative; }
+.brw-field label {
+    display: block; font-size: 11.5px; font-weight: 700; color: var(--brw-muted);
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 7px;
+}
+.brw-field input[type="text"],
+.brw-field textarea {
+    width: 100%; box-sizing: border-box; padding: 10px 13px; font-size: 13.5px;
+    font-family: inherit; border: 1.5px solid var(--brw-line); border-radius: var(--brw-radius-sm);
+    background: #fff; color: var(--brw-ink); transition: border-color 0.15s var(--brw-ease), box-shadow 0.15s var(--brw-ease);
+}
+.brw-field input[type="text"]:focus,
+.brw-field textarea:focus { outline: none; border-color: var(--brw-red); box-shadow: 0 0 0 3.5px rgba(220,38,38,0.1); }
+.brw-field textarea { min-height: 92px; resize: vertical; line-height: 1.5; }
+.brw-field-row { display: flex; gap: 12px; }
+.brw-field-row .brw-field { flex: 1; }
+
+/* ── Custom SVG-icon dropdowns (native <select> can't render icons inside
+     <option> elements — this is a fully custom, accessible-ish widget) ── */
+.brw-select { position: relative; }
+.brw-select-trigger {
+    width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 9px;
+    padding: 9px 12px; font-size: 13px; font-weight: 650; font-family: inherit;
+    border: 1.5px solid var(--brw-line); border-radius: var(--brw-radius-sm);
+    background: #fff; color: var(--brw-ink); cursor: pointer; text-align: left;
+    transition: border-color 0.15s var(--brw-ease), box-shadow 0.15s var(--brw-ease);
+}
+.brw-select-trigger:hover { border-color: #cbd5e1; }
+.brw-select.is-open .brw-select-trigger { border-color: var(--brw-red); box-shadow: 0 0 0 3.5px rgba(220,38,38,0.1); }
+.brw-select-icon-slot { display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; flex-shrink: 0; color: var(--brw-red); }
+.brw-select-icon-slot svg { width: 100%; height: 100%; }
+.brw-select-icon-slot .brw-dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+.brw-select-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brw-select-chevron { width: 15px; height: 15px; flex-shrink: 0; color: var(--brw-faint); transition: transform 0.18s var(--brw-ease); }
+.brw-select.is-open .brw-select-chevron { transform: rotate(180deg); }
+
+.brw-select-menu {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 20;
+    background: #fff; border: 1px solid var(--brw-line); border-radius: var(--brw-radius-md);
+    box-shadow: 0 10px 30px rgba(15,23,42,0.15);
+    padding: 6px; display: none;
+    max-height: 220px; overflow-y: auto;
+}
+.brw-select.is-open .brw-select-menu { display: block; animation: brwMenuIn 0.14s var(--brw-ease); }
+@keyframes brwMenuIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.brw-select-option {
+    width: 100%; display: flex; align-items: center; gap: 9px; text-align: left;
+    padding: 8px 9px; font-size: 12.5px; font-weight: 600; color: var(--brw-ink-soft);
+    background: none; border: none; border-radius: 8px; cursor: pointer; font-family: inherit;
+    transition: background 0.12s var(--brw-ease);
+}
+.brw-select-option:hover { background: var(--brw-line-soft); }
+.brw-select-option.is-selected { background: var(--brw-red-light); color: var(--brw-red-dark); }
+.brw-select-option .brw-select-icon-slot { color: inherit; }
+.brw-select-option.is-selected .brw-select-icon-slot { color: var(--brw-red); }
+
+/* Severity option colors (icon slot = colored dot, not an SVG) */
+.brw-sev-low .brw-select-icon-slot,
+.brw-sev-low.is-selected { color: #64748b; }
+.brw-sev-medium .brw-select-icon-slot,
+.brw-sev-medium.is-selected { color: #a16207; }
+.brw-sev-high .brw-select-icon-slot,
+.brw-sev-high.is-selected { color: #c2410c; }
+.brw-sev-critical .brw-select-icon-slot,
+.brw-sev-critical.is-selected { color: #b91c1c; }
+.brw-sev-medium.is-selected { background: #fefce8; }
+.brw-sev-high.is-selected { background: #fff7ed; }
+.brw-sev-low.is-selected { background: #f1f5f9; }
+
+/* Same colors again, but for when JS puts the class directly ON the icon-slot
+   itself (the trigger button's icon, after picking an option) rather than on
+   an ancestor — a plain descendant selector doesn't match that same-element case. */
+.brw-select-icon-slot.brw-sev-low { color: #64748b; }
+.brw-select-icon-slot.brw-sev-medium { color: #a16207; }
+.brw-select-icon-slot.brw-sev-high { color: #c2410c; }
+.brw-select-icon-slot.brw-sev-critical { color: #b91c1c; }
+
+.brw-hint {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 11.5px; color: var(--brw-faint); margin-top: 6px; line-height: 1.55;
+    background: var(--brw-line-soft); padding: 10px 12px; border-radius: var(--brw-radius-sm);
+}
+.brw-hint svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; opacity: 0.8; }
+
+.brw-panel-footer {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 16px 22px; border-top: 1px solid var(--brw-line-soft);
+}
+.brw-btn-secondary {
+    background: none; border: 1.5px solid var(--brw-line); color: var(--brw-muted);
+    font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 999px; cursor: pointer;
+    transition: all 0.15s var(--brw-ease);
+}
+.brw-btn-secondary:hover { border-color: var(--brw-ink); color: var(--brw-ink); }
+
+.brw-btn-primary {
+    position: relative; background: var(--brw-red); border: 1.5px solid var(--brw-red); color: #fff;
+    font-size: 13px; font-weight: 700; padding: 10px 20px; border-radius: 999px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px; min-width: 148px; justify-content: center;
+    transition: background 0.15s var(--brw-ease), border-color 0.15s var(--brw-ease), transform 0.15s var(--brw-ease);
+}
+.brw-btn-primary:hover:not(:disabled) { background: var(--brw-red-dark); border-color: var(--brw-red-dark); }
+.brw-btn-primary:active:not(:disabled) { transform: scale(0.97); }
+.brw-btn-primary:disabled { cursor: not-allowed; opacity: 0.85; }
+.brw-btn-primary.is-success { background: #16a34a; border-color: #16a34a; }
+.brw-btn-primary svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* Spinner ring shown while submitting — replaces the send icon entirely
+   rather than just spinning the existing icon, reads more clearly as "busy" */
+.brw-spinner {
+    width: 15px; height: 15px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff;
+    animation: brwSpin 0.7s linear infinite; flex-shrink: 0;
+}
+@keyframes brwSpin { to { transform: rotate(360deg); } }
+
+/* Checkmark draw-in animation on success */
+.brw-check-icon path {
+    stroke-dasharray: 20; stroke-dashoffset: 20;
+    animation: brwCheckDraw 0.35s var(--brw-ease) forwards;
+}
+@keyframes brwCheckDraw { to { stroke-dashoffset: 0; } }
+
+.brw-status-msg {
+    display: none; align-items: flex-start; gap: 9px;
+    padding: 11px 14px; border-radius: var(--brw-radius-sm);
+    font-size: 12.5px; font-weight: 600; margin-bottom: 16px; line-height: 1.5;
+}
+.brw-status-msg svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+.brw-status-msg.is-success { display: flex; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.brw-status-msg.is-error { display: flex; background: var(--brw-red-light); color: var(--brw-red-dark); border: 1px solid var(--brw-red-border); }
+
+@media (max-width: 480px) {
+    .brw-fab { bottom: 14px; right: 14px; padding: 11px 16px 11px 12px; font-size: 12.5px; }
+    .brw-fab-label { display: none; }
+    .brw-field-row { flex-direction: column; gap: 16px; }
+}

@@ -1,0 +1,625 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   DATA-USE NOTICE (cookie banner) — visual only for now.
+   Uses the site's own tokens (--bg, --panel, --text, --muted, --line,
+   --accent, --accent-soft) from mainStyle.css — same theme as the rest of
+   the site, not a bolted-on template look.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@property --dn-beam-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+.dn-banner {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%) translateY(0);
+    width: min(880px, calc(100vw - 32px));
+    max-height: 85vh;
+    overflow: hidden;
+    z-index: 9990;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.4rem;
+    background: color-mix(in srgb, var(--panel) 86%, transparent);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    /* Forces Safari to actually clip its backdrop-filter blur to this
+       element's own border-radius. Without this, Safari on iOS has a
+       documented bug where a heavily-blurred backdrop-filter can "leak"
+       slightly past rounded corners as a faint rectangular halo — reads
+       exactly like an unwanted square shadow sitting behind a rounded
+       card, distinct from (and in addition to) the intentional box-shadow
+       below. The gradient values themselves don't matter, only that a
+       mask is present to force proper layer clipping. */
+    -webkit-mask-image: -webkit-linear-gradient(white, white);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.4rem 1.6rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.02) inset;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    animation: dnSlideUp 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.dn-banner.is-hidden { display: none; }
+
+/* Applied by dataNotice.js while the preferences modal is open. Without
+   this, the banner (with its OWN independent traveling-beam pair) kept
+   rendering behind the modal's dark backdrop whenever someone opened
+   Preferences directly — its beam could bleed through as a stray third,
+   smaller line alongside the modal's two. Pausing the animations too
+   (not just hiding) avoids wasting a rendering cycle on something invisible. */
+.dn-banner.dn-banner-suppressed {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.dn-banner.dn-banner-suppressed::before,
+.dn-banner.dn-banner-suppressed .dn-aurora-blob,
+.dn-banner.dn-banner-suppressed .dn-banner-icon {
+    animation-play-state: paused;
+}
+
+/* Soft, slow-drifting color blobs behind the content — pure transform
+   animation (cheap, GPU-friendly), contained by the banner's own
+   overflow:hidden-on-x so they never spill past the rounded corners. Purely
+   decorative (aria-hidden), sits behind the real content via z-index. */
+.dn-banner-aurora, .dn-modal .dn-banner-aurora {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+}
+.dn-aurora-blob {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.13;
+    filter: blur(60px);
+    will-change: transform;
+}
+.dn-aurora-blob-1 { top: -70px; left: 8%; animation: dnAuroraDrift1 14s ease-in-out infinite; }
+.dn-aurora-blob-2 { bottom: -90px; right: 4%; animation: dnAuroraDrift2 18s ease-in-out infinite; }
+@keyframes dnAuroraDrift1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(34px, 22px) scale(1.18); }
+}
+@keyframes dnAuroraDrift2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(-28px, -18px) scale(1.12); }
+}
+
+.dn-banner-main, .dn-banner-actions,
+.dn-modal-header, .dn-modal-body, .dn-modal-footer {
+    position: relative;
+    z-index: 1;
+}
+
+/* Traveling border beam — TWO soft, tapered comets chasing each other 180°
+   apart around the whole card perimeter, instead of a single arc. Sits as a
+   thin ring (via the padding + dual-mask "exclude" trick below), so the
+   actual base border stays visible underneath and this only adds the
+   moving highlight on top of it.
+
+   NOTE: the banner and modal deliberately do NOT share the exact same
+   angle stops any more (see .dn-banner::before below) — the banner is a
+   very wide, short card (up to 880px × ~150px), and on a box that
+   elongated, raw conic-gradient degrees don't map evenly onto the actual
+   perimeter: a ray from the center hits the long top/bottom edges across
+   most of the angle range, and only a narrow sliver of angle reaches the
+   short left/right edges. With the ORIGINAL 45°-wide comets, each comet's
+   fast, narrow transit across that sliver read as a separate small "third"
+   flicker on the side edge, distinct from the two slow-moving comets on
+   top/bottom — that's the "third line" bug. The modal is close enough to
+   square that this distortion isn't visible, so its comets are untouched
+   below. Widening the banner's comets (and shifting the gap edges to match)
+   spreads that same transit over more of the animation, so it blends into
+   the sweep instead of reading as a separate flicker. */
+.dn-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+        from var(--dn-beam-angle),
+        transparent 0deg,
+        transparent 70deg,
+        var(--accent-soft) 90deg,
+        var(--accent) 108deg,
+        #ffffff 122deg,
+        var(--accent) 136deg,
+        transparent 154deg,
+        transparent 250deg,
+        var(--accent-soft) 270deg,
+        var(--accent) 288deg,
+        #ffffff 302deg,
+        var(--accent) 316deg,
+        transparent 334deg,
+        transparent 360deg
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: dnBeamRotate 9s linear infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+.dn-modal::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+        from var(--dn-beam-angle),
+        transparent 0deg,
+        transparent 85deg,
+        var(--accent-soft) 100deg,
+        var(--accent) 115deg,
+        #ffffff 122deg,
+        var(--accent) 130deg,
+        transparent 145deg,
+        transparent 265deg,
+        var(--accent-soft) 280deg,
+        var(--accent) 295deg,
+        #ffffff 302deg,
+        var(--accent) 310deg,
+        transparent 325deg,
+        transparent 360deg
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: dnBeamRotate 9s linear infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+@keyframes dnBeamRotate {
+    to { --dn-beam-angle: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dn-banner::before, .dn-modal::before,
+    .dn-aurora-blob, .dn-banner-icon { animation: none; }
+}
+
+/* Some WebKit versions freeze CSS animations that are driven by a
+   registered @property custom value (--dn-beam-angle above) once the tab/
+   app is backgrounded and then foregrounded again — the animation just
+   stops advancing instead of resuming. dataNotice.js toggles this class
+   for one frame on visibilitychange to force every affected animation to
+   restart cleanly from its keyframes. */
+.dn-anim-reset .dn-banner::before, .dn-anim-reset .dn-modal::before,
+.dn-anim-reset .dn-aurora-blob, .dn-anim-reset .dn-banner-icon {
+    animation: none !important;
+}
+
+@keyframes dnSlideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Groups the icon + title/description together so they stay a tidy row even
+   when the outer banner switches to a stacked layout on mobile — otherwise
+   the icon would float alone above the text instead of sitting beside it. */
+.dn-banner-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.dn-banner-icon {
+    flex-shrink: 0;
+    width: 46px; height: 46px;
+    border-radius: 13px;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 18px -3px var(--accent-soft), 0 0 0 1px rgba(255,255,255,0.08) inset;
+    animation: dnIconBreathe 3.5s ease-in-out infinite;
+}
+.dn-banner-icon svg { width: 23px; height: 23px; }
+
+@keyframes dnIconBreathe {
+    0%, 100% { box-shadow: 0 8px 18px -3px var(--accent-soft), 0 0 0 1px rgba(255,255,255,0.08) inset; }
+    50%      { box-shadow: 0 8px 26px -2px var(--accent), 0 0 0 1px rgba(255,255,255,0.14) inset; }
+}
+
+.dn-banner-text { flex: 1; min-width: 0; }
+.dn-banner-text h2 {
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: var(--text);
+    margin: 0 0 0.35rem;
+    letter-spacing: 0.01em;
+}
+.dn-banner-text p {
+    font-size: 0.87rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+    font-weight: 300;
+}
+.dn-banner-text a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: var(--accent-soft);
+    text-underline-offset: 2px;
+}
+.dn-banner-text a:hover { color: #fff; text-decoration-color: #fff; }
+
+.dn-banner-actions {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    min-width: 220px;
+}
+.dn-banner-actions .dn-btn { width: 100%; }
+
+/* ── Buttons — Accept and Reject are DELIBERATELY the same visual weight
+     (solid vs. outline, same size/padding) per GDPR/ePrivacy guidance: making
+     one a big colorful button and the other a tiny gray link is a "dark
+     pattern" regulators (CNIL among others) have specifically fined for. ── */
+.dn-btn {
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 150ms ease, background 150ms ease, border-color 150ms ease, color 150ms ease;
+    white-space: nowrap;
+}
+.dn-btn:active { transform: scale(0.97); }
+
+.dn-btn-primary {
+    background: var(--accent);
+    border: 1.5px solid var(--accent);
+    color: #fff;
+}
+.dn-btn-primary:hover { filter: brightness(1.1); }
+
+.dn-btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--line);
+    color: var(--text);
+}
+.dn-btn-outline:hover { border-color: var(--accent-soft); color: var(--accent); }
+
+/* "Save Preferences" — deliberately NOT a copy of Reject's plain outline:
+   a dashed accent border reads as "your own, adjustable choice" (vs the
+   two solid, one-tap commitments beside it), and fills solid on hover/tap
+   for a satisfying confirm feel. */
+.dn-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    background: transparent;
+    border: 1.5px dashed var(--accent-soft);
+    color: var(--text);
+    padding: 0.6rem 1.1rem;
+}
+.dn-btn-ghost:hover {
+    border-style: solid;
+    border-color: var(--accent);
+    background: rgba(255, 54, 54, 0.1);
+    color: #fff;
+}
+.dn-btn-ghost svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* "Preferences" now shares the exact same dn-btn/dn-btn-outline classes as
+   Reject (see _DataNotice.cshtml) — same size, weight and border as a real
+   button. This modifier only adds the icon+label flex layout on top. */
+.dn-manage-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.dn-manage-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ── Small persistent relaunch button — lets a visitor change their mind
+     later, required by GDPR ("withdraw consent as easily as it was given") ── */
+.dn-relaunch {
+    position: fixed;
+    left: 22px;
+    bottom: 22px;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    display: none; /* JS shows it only after the banner has been dismissed */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9985;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    transition: color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+.dn-relaunch.is-visible { display: flex; animation: dnPopIn 300ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.dn-relaunch:hover { color: var(--accent); border-color: var(--accent-soft); transform: translateY(-2px); }
+.dn-relaunch svg { width: 22px; height: 22px; }
+
+@keyframes dnPopIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Preferences modal ────────────────────────────────────────────────── */
+.dn-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9995;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.dn-modal-overlay.is-open { display: flex; animation: dnFadeIn 200ms ease both; }
+@keyframes dnFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.dn-modal {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--panel) 90%, transparent);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+    animation: dnModalPop 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+@keyframes dnModalPop {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.dn-modal-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1.5rem 1.6rem;
+    border-bottom: 1px solid var(--line);
+}
+.dn-modal-header-icon {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    border-radius: 11px;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.dn-modal-header-icon svg { width: 19px; height: 19px; }
+.dn-modal-header-text { flex: 1; min-width: 0; }
+.dn-modal-header-text h3 {
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--text);
+    margin: 0 0 0.3rem;
+}
+.dn-modal-header-text p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+}
+.dn-modal-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    transition: color 150ms ease, background 150ms ease;
+}
+.dn-modal-close:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.dn-modal-close svg { width: 18px; height: 18px; }
+
+/* The ONLY scrolling region in the modal — header and footer are fixed
+   siblings that never move, so the ::before border-beam (traced around the
+   outer .dn-modal frame) stays locked to the true card edge no matter how
+   many categories are in the list or how far the visitor scrolls through
+   them. overscroll-behavior stops a scroll-to-the-end here from chaining
+   through to the page behind the modal. */
+.dn-modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.4rem 1.6rem 0.6rem;
+}
+
+.dn-category {
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--line);
+}
+.dn-category:last-child { border-bottom: none; }
+
+.dn-category-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.4rem;
+}
+.dn-category-row h4 {
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    font-size: 0.98rem;
+    color: var(--text);
+    margin: 0;
+}
+.dn-category-desc,
+.dn-category-desc p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+    font-weight: 300;
+}
+.dn-category-desc a { color: var(--accent); text-decoration: underline; }
+
+/* Custom toggle switch */
+.dn-toggle {
+    flex-shrink: 0;
+    position: relative;
+    width: 42px; height: 24px;
+    border-radius: 999px;
+    background: var(--line);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 200ms ease;
+}
+.dn-toggle-knob {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.dn-toggle.is-on { background: var(--accent); }
+.dn-toggle.is-on .dn-toggle-knob { transform: translateX(18px); }
+.dn-toggle.is-locked { cursor: not-allowed; opacity: 0.65; }
+
+.dn-modal-footer {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.3rem 1.6rem 1.5rem;
+    border-top: 1px solid var(--line);
+}
+.dn-modal-footer-row { display: flex; gap: 0.7rem; }
+.dn-modal-footer-row .dn-btn { flex: 1; text-align: center; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOBILE — reviewed end-to-end: nested flex groups stack cleanly (no
+   overlap), safe-area-inset-bottom respected for notched phones (fixed
+   elements no longer sit under the home-indicator gesture area), banner
+   never exceeds viewport height even with a long admin-written notice.
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+    /* Floats as a proper card with margin on every side — same language as
+       desktop — instead of a bottom sheet glued flush to every screen edge,
+       which read as harsh/"stuck on" rather than smooth. */
+    .dn-banner {
+        flex-direction: column;
+        align-items: stretch;
+        left: 12px;
+        right: 12px;
+        bottom: calc(14px + env(safe-area-inset-bottom));
+        width: auto;
+        max-width: none;
+        transform: none;
+        max-height: 82vh;
+        border-radius: 20px;
+        padding: 1.1rem 1rem;
+        gap: 0.9rem;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255,255,255,0.02) inset;
+    }
+    @keyframes dnSlideUp {
+        from { opacity: 0; transform: translateY(24px) scale(0.96); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .dn-banner-main { gap: 0.7rem; }
+    .dn-banner-icon { width: 38px; height: 38px; border-radius: 10px; }
+    .dn-banner-icon svg { width: 19px; height: 19px; }
+    .dn-banner-text h2 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .dn-banner-text p { font-size: 0.8rem; line-height: 1.45; }
+
+    /* Compact row: Reject + Accept share the width, Preferences shrinks to
+       a small icon-only square button instead of its own full extra row —
+       saves a whole row of vertical space on a screen where every pixel
+       of height matters. */
+    .dn-banner-actions {
+        flex-direction: row;
+        align-items: stretch;
+        width: 100%;
+        min-width: 0;
+        gap: 0.45rem;
+    }
+    .dn-banner-actions .dn-btn { width: auto; flex: 1; padding: 0.55rem 0.5rem; font-size: 0.8rem; }
+    .dn-banner-actions .dn-manage-btn {
+        flex: 0 0 auto;
+        width: 40px;
+        padding: 0;
+        border-radius: 10px;
+    }
+    .dn-manage-label { display: none; }
+    .dn-manage-btn svg { width: 17px; height: 17px; }
+
+    /* Cheaper blur + smaller, fewer-pixels blobs — backdrop-filter blur is
+       the priciest thing here on lower-end phones, worth trimming. */
+    .dn-banner { backdrop-filter: blur(14px) saturate(150%); -webkit-backdrop-filter: blur(14px) saturate(150%); }
+    .dn-modal { backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%); }
+    .dn-aurora-blob { width: 140px; height: 140px; filter: blur(40px); }
+
+    .dn-relaunch {
+        left: 14px;
+        bottom: calc(14px + env(safe-area-inset-bottom));
+    }
+
+    /* Modal — truly floating card (margin on every side, centered), not a
+       bottom sheet anchored to the screen edge — same "floats, doesn't
+       stick" language as the banner above. Tall enough that all 4 built-in
+       categories are visible without scrolling on typical phones — the
+       previous, shorter cap cut the list off mid-way. .dn-modal-body stays
+       internally scrollable as a safety net for admins who add extra
+       custom categories beyond the default 4. */
+    .dn-modal-overlay {
+        padding: 16px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+        align-items: center;
+    }
+    .dn-modal {
+        max-width: 100%;
+        max-height: min(90vh, 660px);
+        border-radius: 20px;
+    }
+    .dn-modal-header { padding: 1.1rem 1.2rem; }
+    .dn-modal-body { padding: 0.2rem 1.2rem 0.3rem; }
+    .dn-modal-footer { padding: 0.9rem 1.2rem 1rem; gap: 0.5rem; }
+    .dn-modal-footer-row { flex-direction: column; gap: 0.5rem; }
+
+    /* Slightly tighter category rows on mobile only — reclaims just enough
+       vertical space, on top of the taller cap above, for the list to
+       comfortably fit in one screen. */
+    .dn-category { padding: 0.8rem 0; }
+    .dn-category-row { margin-bottom: 0.3rem; }
+    .dn-category-desc, .dn-category-desc p { font-size: 0.79rem; line-height: 1.48; }
+}
