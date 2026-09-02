@@ -1,231 +1,590 @@
-/* Specific Hero Background for FAQ Page */
-.hero {
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.52)),
-    url("../images/FAQ/banner.png") center center/cover no-repeat;
+/* ============================================================
+   stylesFAQ.css — FAQ страницата, редизайн.
+   Езикът е същият като authStyle.css / travelStyle.css:
+   Oswald, нулев радиус, тънки линии, червен акцент, ч/б образи.
+   ============================================================ */
+
+.faq-page {
+    background: var(--bg, #050505);
+    color: var(--text, #f4f2ec);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 300;
 }
 
-/* Уверяваме се, че банерът е позициониран правилно, за да държи стрелката */
-.hero.attend-hero {
-  position: relative;
+.faq-page ::selection { background: rgba(255, 54, 54, 0.35); }
+.faq-page :focus-visible { outline: 2px solid var(--accent, #ff3636); outline-offset: 2px; }
+.faq-page input::placeholder { color: #6f6b66; }
+
+html { scroll-behavior: smooth; }
+
+.fq-pad { max-width: 1320px; margin: 0 auto; padding: 0 6vw; }
+.fq-sec { padding: 84px 0 96px; border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08)); }
+.fq-sec--last { border-bottom: 0; }
+
+/* ── Банер ─────────────────────────────────────────────────
+   Лентата е точно колкото собствената височина на снимката. */
+.fq-banner { position: relative; width: 100%; overflow: hidden; }
+
+.fq-banner img {
+    display: block;
+    width: 100%;
+    max-height: 430px;
+    object-fit: cover;
+    object-position: 50% 46%;
+    filter: grayscale(1) contrast(1.15) brightness(0.78);
 }
 
-/* Стилът на самата стрелка */
-.scroll-down-arrow {
-  position: absolute;
-  bottom: 40px; /* На 40px от долния ръб на банера */
-  left: 50%;
-  transform: translateX(-50%); /* Центрираме я перфектно */
-  width: 50px;
-  height: 50px;
-  color: #ffffff; /* Бял цвят */
-  z-index: 10;
-  transition: color 0.3s ease;
-  animation: bounce 2s infinite; /* Извикваме анимацията за подскачане */
+.fq-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0px, rgba(255, 255, 255, 0.035) 1px, transparent 1px, transparent 4px);
 }
 
-/* Ефект при посочване с мишката */
-.scroll-down-arrow:hover {
-  color: #cc0000; /* Става в акцентното ви червено */
+.fq-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(115% 95% at 50% 32%, rgba(0, 0, 0, 0) 38%, rgba(5, 5, 5, 0.6) 100%),
+        linear-gradient(180deg, rgba(5, 5, 5, 0.3) 0%, rgba(5, 5, 5, 0) 26%, rgba(5, 5, 5, 0) 62%, rgba(5, 5, 5, 0.95) 100%);
 }
 
-/* Анимацията (Keyframes) за подскачането */
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateX(-50%) translateY(0);
-  }
-  40% {
-    transform: translateX(-50%) translateY(-15px);
-  }
-  60% {
-    transform: translateX(-50%) translateY(-7px);
-  }
+.fq-banner-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 100% 48px,
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 48px 100%;
 }
 
-/* FAQ Section Styles */
-.faq-section h2 {
-  margin: 0;
-  font-family: "Oswald", Arial, sans-serif;
-  font-weight: 600;
-  line-height: 0.98;
-  letter-spacing: 0.01em;
+.fq-banner-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    background: linear-gradient(180deg, rgba(255, 54, 54, 0.18) 0%, rgba(255, 54, 54, 0) 50%);
 }
 
-.faq-section {
-  padding: 3.3rem 0 5rem;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.98), #050505);
+.fq-frame {
+    position: absolute;
+    inset: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    pointer-events: none;
 }
 
-.faq-section h2 {
-  font-size: clamp(2.3rem, 5vw, 3.6rem);
-  margin-bottom: 2rem;
+.fq-frame span { position: absolute; background: var(--accent, #ff3636); }
+.fq-frame .c-tl-h { top: -1px; left: -1px; width: 26px; height: 2px; }
+.fq-frame .c-tl-v { top: -1px; left: -1px; width: 2px; height: 26px; }
+.fq-frame .c-br-h { bottom: -1px; right: -1px; width: 26px; height: 2px; }
+.fq-frame .c-br-v { bottom: -1px; right: -1px; width: 2px; height: 26px; }
+
+/* ── Заглавен блок под банера ─────────────────────────────── */
+.fq-hero { position: relative; border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08)); }
+
+.fq-hero-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 30px 6vw 26px;
 }
 
-.faq-list {
-  border-top: 1px solid var(--line);
+.fq-topline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
 }
 
-.faq-item {
-  border-bottom: 1px solid var(--line);
-  background: transparent;
-  transition: background-color 220ms ease;
+.fq-wordmark {
+    background: linear-gradient(100deg, #a7a39b 0%, #f4f2ec 42%, #ffffff 50%, #f4f2ec 58%, #a7a39b 100%) 0 0 / 300% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: fqShimmer 14s ease-in-out infinite;
 }
 
-.faq-item:hover {
-  background: rgba(255, 255, 255, 0.02);
+.fq-topline b {
+    flex: none;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--accent, #ff3636);
+    text-shadow: 0 0 14px rgba(255, 54, 54, 0.55);
 }
 
-.faq-question {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.2rem 0;
-  border: 0;
-  background: transparent;
-  color: #fff;
-  cursor: pointer;
-  text-align: left;
+.fq-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
 }
 
-.faq-question span:first-child {
-  font-size: 0.98rem;
-  font-weight: 300;
-  letter-spacing: 0.01em;
-  min-width: 0;
+.fq-eyebrow::before { content: ""; width: 6px; height: 6px; background: var(--accent, #ff3636); }
+
+.fq-title {
+    margin: 0 0 10px;
+    max-width: 16ch;
+    font-weight: 600;
+    font-size: clamp(34px, 5vw, 62px);
+    line-height: 1.06;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
 }
 
-.faq-icon {
-  position: relative;
-  flex: 0 0 1rem;
-  width: 1rem;
-  height: 1rem;
+.fq-rule { display: block; width: 56px; height: 2px; background: var(--accent, #ff3636); }
+.fq-title + .fq-rule { margin-bottom: 28px; }
+
+.fq-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 760px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.faq-icon::before,
-.faq-icon::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  background: rgba(255, 255, 255, 0.8);
-  transform: translate(-50%, -50%);
-  transition: transform 220ms ease, opacity 220ms ease;
+.fq-meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
 }
 
-.faq-icon::before {
-  width: 0.75rem;
-  height: 1px;
+.fq-meta b {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #8a8680;
 }
 
-.faq-icon::after {
-  width: 1px;
-  height: 0.75rem;
+.fq-meta span { font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+@keyframes fqShimmer {
+    0%, 100% { background-position: 0% 0; }
+    50%      { background-position: 100% 0; }
 }
 
-.faq-item.is-open .faq-icon::after {
-  opacity: 0;
-  transform: translate(-50%, -50%) scaleY(0.2);
+/* ── Заглавие на секция + контурен знак ───────────────────── */
+.fq-sec-head { position: relative; margin-bottom: 34px; }
+
+.fq-sec-head h2 {
+    margin: 0 0 10px;
+    max-width: 20ch;
+    font-weight: 600;
+    font-size: clamp(30px, 4vw, 50px);
+    line-height: 1.1;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
 }
 
-.faq-answer {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    max-height 320ms ease,
-    opacity 220ms ease,
-    visibility 220ms ease;
+.fq-ghost {
+    position: absolute;
+    top: -18px;
+    right: 0;
+    font-size: 128px;
+    font-weight: 600;
+    line-height: 0.8;
+    letter-spacing: -0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.08);
+    pointer-events: none;
 }
 
-.faq-answer p {
-  margin: 0;
-  padding: 0 0 1.2rem;
-  max-width: 58rem;
-  color: var(--muted);
-  line-height: 1.75;
-  font-weight: 300;
-  letter-spacing: 0.01em;
+/* ── Лента с търсене и брояч ──────────────────────────────── */
+.fq-toolbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 8px;
 }
 
-.faq-item.is-open .faq-answer {
-  opacity: 1;
-  visibility: visible;
+.fq-search {
+    position: relative;
+    flex: 1;
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 54px;
+    padding: 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* Mobile Responsive (FAQ Only) */
-@media (max-width: 640px) {
-  .faq-section {
-    padding-top: 2.4rem;
-    padding-bottom: 3.8rem;
-  }
-
-  .faq-section h2 {
-    font-size: clamp(2rem, 10vw, 2.7rem);
-    margin-bottom: 1.4rem;
-  }
-
-  .faq-question {
-    padding: 1rem 0;
-    gap: 0.75rem;
-  }
-
-  .faq-question span:first-child {
-    font-size: 0.92rem;
-  }
-
-  .faq-answer p {
-    padding-bottom: 1rem;
-    font-size: 0.92rem;
-    line-height: 1.65;
-  }
+/* Червената линия се изтегля при фокус — както полетата в auth. */
+.fq-search::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
 }
 
-@media (max-width: 425px) {
-  .faq-section h2 {
-    font-size: 1.9rem;
-  }
+.fq-search:focus-within::after { transform: scaleX(1); }
+.fq-search:focus-within svg { stroke: var(--accent, #ff3636); }
+.fq-search svg { width: 17px; height: 17px; flex: none; transition: stroke 0.2s ease; }
 
-  .faq-question span:first-child {
-    font-size: 0.88rem;
-  }
+.fq-search input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: none;
+    color: var(--text, #f4f2ec);
+    font-family: inherit;
+    font-weight: 300;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    caret-color: var(--accent, #ff3636);
 }
 
-@media (max-width: 375px) {
-  .faq-section {
-    padding-top: 2rem;
-  }
+.fq-search input::-webkit-search-cancel-button { display: none; }
 
-  .faq-section h2 {
-    font-size: 1.72rem;
-  }
-
-  .faq-question {
-    padding: 0.9rem 0;
-  }
-
-  .faq-question span:first-child {
-    font-size: 0.84rem;
-  }
-
-  .faq-answer p {
-    font-size: 0.86rem;
-  }
+.fq-clear {
+    flex: none;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: #8a8680;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
 }
 
-@media (max-width: 320px) {
-  .faq-section h2 {
-    font-size: 1.52rem;
-  }
+.fq-clear:hover { color: var(--text, #f4f2ec); }
+.fq-clear[hidden] { display: none; }
 
-  .faq-question span:first-child {
-    font-size: 0.8rem;
-  }
+.fq-toolbar-right { display: flex; align-items: center; gap: 12px; flex: none; }
 
-  .faq-answer p {
-    font-size: 0.82rem;
-    line-height: 1.55;
-  }
+.fq-count {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.fq-tool {
+    min-height: 42px;
+    padding: 0 16px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text, #f4f2ec);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.fq-tool:hover { border-color: rgba(255, 255, 255, 0.4); color: #ffffff; }
+
+/* ── Списък с въпроси ─────────────────────────────────────── */
+.fq-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.fq-item {
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fq-item[hidden] { display: none; }
+
+.fq-item::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.fq-item:hover::after,
+.fq-item.is-open::after { transform: scaleX(1); }
+
+.fq-q {
+    display: grid;
+    grid-template-columns: 74px 1fr 14px;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    padding: 26px 0;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+}
+
+.fq-idx {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    color: #8a8680;
+    transition: color 0.25s ease;
+}
+
+.fq-item:hover .fq-idx,
+.fq-item.is-open .fq-idx { color: var(--accent, #ff3636); }
+
+.fq-q-text {
+    min-width: 0;
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    color: var(--text, #f4f2ec);
+    transition: color 0.25s ease;
+}
+
+.fq-item.is-open .fq-q-text { color: #ffffff; }
+
+/* Плюс/минус знак от два правоъгълника — без иконен шрифт. */
+.fq-sign { position: relative; width: 14px; height: 14px; flex: none; }
+
+.fq-sign::before,
+.fq-sign::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background: var(--muted, #a7a39b);
+    transform: translate(-50%, -50%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.2s ease;
+}
+
+.fq-sign::before { width: 14px; height: 2px; }
+.fq-sign::after { width: 2px; height: 14px; }
+
+.fq-item.is-open .fq-sign::after { transform: translate(-50%, -50%) rotate(90deg); }
+.fq-item.is-open .fq-sign::before,
+.fq-item.is-open .fq-sign::after { background: var(--accent, #ff3636); }
+
+/* Отварянето е чист CSS: 0fr → 1fr. Без мерене на височини от JS,
+   затова дълги отговори и пренареждане на текста не чупят анимацията. */
+.fq-a {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 0.42s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+}
+
+.fq-item.is-open .fq-a { grid-template-rows: 1fr; opacity: 1; }
+.fq-a > div { overflow: hidden; min-height: 0; }
+.fq-a-inner { padding: 0 0 30px 98px; }
+
+.fq-a-inner p {
+    margin: 0;
+    max-width: 68ch;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--muted, #a7a39b);
+}
+
+.fq-a-inner a { color: var(--accent, #ff3636); text-decoration: none; }
+.fq-a-inner a:hover { color: #ff6b6b; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── Празен резултат от търсенето ─────────────────────────── */
+.fq-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 54px 0 10px;
+}
+
+.fq-empty[hidden] { display: none; }
+
+.fq-empty-label {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.fq-empty-text {
+    margin: 0;
+    max-width: 46ch;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--text, #f4f2ec);
+}
+
+/* ── Блок „не намерихте отговор“ ──────────────────────────── */
+.fq-ask {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    background: var(--accent, #ff3636);
+    color: #ffffff;
+}
+
+.fq-ask-left {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 52px 44px 48px;
+}
+
+.fq-ask-left .fq-eyebrow { margin: 0; color: rgba(255, 255, 255, 0.75); }
+.fq-ask-left .fq-eyebrow::before { background: #ffffff; }
+
+.fq-ask-left h2 {
+    margin: 0;
+    max-width: 18ch;
+    font-weight: 600;
+    font-size: clamp(28px, 3.4vw, 44px);
+    line-height: 1.08;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+}
+
+.fq-ask-left p {
+    margin: 0;
+    max-width: 44ch;
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.fq-ask-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 52px 44px 48px;
+    border-left: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.fq-ask-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.fq-ask-fact b {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.fq-ask-fact span { font-size: 17px; letter-spacing: 0.02em; word-break: break-word; }
+
+.fq-ask-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 58px;
+    margin-top: 22px;
+    padding: 0 20px;
+    background: #ffffff;
+    color: #050505;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.fq-ask-btn:hover { background: #f4f2ec; color: #050505; text-decoration: none; }
+.fq-ask-btn:active { background: #e6e3dc; }
+.fq-ask-btn svg { width: 16px; height: 16px; flex: none; }
+
+/* ── Появяване при скрол ──────────────────────────────────────
+   ВАЖНО: съдържанието е видимо по подразбиране. faq.js скрива
+   (is-armed) само това, което е под сгъвката, и веднага го пуска
+   (is-in) — липсващ JS не може да остави страницата черна. */
+.fq-reveal {
+    transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.fq-reveal.is-armed { opacity: 0; transform: translateY(18px); }
+.fq-reveal.is-armed.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .fq-reveal, .fq-reveal.is-armed { opacity: 1; transform: none; transition: none; }
+    .fq-wordmark { animation: none; }
+    .fq-a { transition: none; }
+}
+
+/* ── Таблет ───────────────────────────────────────────────── */
+@media (max-width: 980px) {
+    .fq-banner img { max-height: 300px; }
+    .fq-ask { grid-template-columns: 1fr; }
+    .fq-ask-left { padding-bottom: 34px; }
+    .fq-ask-right {
+        padding: 0 0 48px;
+        margin: 0 44px;
+        border-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.28);
+        padding-top: 0;
+    }
+    .fq-ask-fact { padding-top: 26px; }
+}
+
+/* ── Телефон ──────────────────────────────────────────────── */
+@media (max-width: 820px) {
+    .fq-pad, .fq-hero-inner { padding-left: 22px; padding-right: 22px; }
+    .fq-banner img { max-height: 210px; }
+    .fq-frame { inset: 10px; }
+    .fq-meta { grid-template-columns: 1fr; }
+    .fq-meta > div { padding: 11px 0; }
+    .fq-ghost { display: none; }
+    .fq-toolbar { flex-direction: column; align-items: stretch; gap: 14px; }
+    .fq-search { max-width: none; }
+    .fq-q { grid-template-columns: 42px 1fr 14px; gap: 14px; }
+    .fq-a-inner { padding-left: 56px; }
+    .fq-sec { padding: 52px 0 56px; }
+    .fq-ask-left { padding: 40px 24px 34px; }
+    .fq-ask-right { margin: 0 24px; }
+}
+
+@media (max-width: 480px) {
+    .fq-a-inner { padding-left: 0; }
 }

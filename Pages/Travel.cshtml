@@ -10,98 +10,197 @@
     <link rel="stylesheet" href="~/css/travelStyle.css" asp-append-version="true" />
 }
 
-<main>
-    <section class="hero travel-hero">
-      <div class="hero-overlay"></div>
-      <a href="#venue-section" class="scroll-down-arrow" aria-label="Scroll down">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </a>
+<main class="travel-page">
+
+    @* Банерът е точно колкото собствената височина на снимката. Заглавието
+       НЕ стои върху него — банерът носи свой вграден текст. *@
+    <section class="tv-banner">
+        <img src="~/images/travel/banner.png" alt="" />
+        <div class="tv-banner-grid"></div>
+        <div class="tv-frame">
+            <span class="c-tl-h"></span>
+            <span class="c-tl-v"></span>
+            <span class="c-br-h"></span>
+            <span class="c-br-v"></span>
+        </div>
     </section>
 
-    <section class="venue-section" id="venue-section">
-        <div class="section-inner reveal">
-            <p class="section-label">@Localizer["Venue_Label"]</p>
-            <h2>@Localizer["Venue_Title"]</h2>
-            
-            <div class="venue-grid">
-                <div class="map-container">
-                    <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2934.502395568551!2d23.35165931221768!3d42.650694971047125!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40aa842512f4514d%3A0xd9919f2a033f7215!2z0KPQndCh0KE!5e0!3m2!1sbg!2sbg!4v1713437200000" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+    <section class="tv-hero">
+        <div class="tv-hero-inner">
+            <div class="tv-topline">
+                <span class="tv-wordmark">@Localizer["Travel_Brand"]</span>
+                <b>@Localizer["Travel_Kicker"]</b>
+            </div>
+
+            <div>
+                <p class="tv-eyebrow">@Localizer["Travel_Eyebrow"]</p>
+                <h1 class="tv-title">@Localizer["Travel_Title"]</h1>
+                <span class="tv-rule"></span>
+
+                <div class="tv-hero-meta">
+                    <div>
+                        <b>@Localizer["Travel_Meta_CityLabel"]</b>
+                        <span>@Localizer["Travel_Meta_CityValue"]</span>
+                    </div>
+                    <div>
+                        <b>@Localizer["Travel_Meta_VenueLabel"]</b>
+                        <span>@Localizer["Travel_Meta_VenueValue"]</span>
+                    </div>
+                    <div>
+                        <b>@Localizer["Travel_Meta_AccessLabel"]</b>
+                        <span>@Localizer["Travel_Meta_AccessValue"]</span>
+                    </div>
                 </div>
-                <div class="venue-info">
-                    <div class="info-item">
-                        <div class="icon-box"><img src="~/images/logos/location.png" alt=""></div>
-                        <p><strong>@Localizer["Venue_Item_VenueTitle"]</strong><br>@Localizer["Venue_Item_VenueAddress"]</p>
-                    </div>
-                    <div class="info-item">
-                        <div class="icon-box"><img src="~/images/logos/time.png" alt=""></div>
-                        <p><strong>@Localizer["Venue_Item_HoursTitle"]</strong><br>@Html.Raw(Localizer["Venue_Item_HoursValue"].Value)</p>
-                    </div>
-                    <div class="info-item">
-                        <div class="icon-box"><img src="~/images/logos/mail.png" alt=""></div>
-                        <p><strong>@Localizer["Venue_Item_EmailTitle"]</strong><br>conference.education@unwe.bg</p>
-                    </div>
+            </div>
+
+        </div>
+    </section>
+
+    <nav class="tv-nav">
+        <div class="tv-nav-inner">
+            <a href="#venue-section" class="tv-nav-link" data-nav="venue-section">01 — @Localizer["Venue_Label"]</a>
+            <a href="#transport-section" class="tv-nav-link" data-nav="transport-section">02 — @Localizer["Transport_Label"]</a>
+            @if (Model.Hotels != null && Model.Hotels.Any())
+            {
+                <a href="#hotels" class="tv-nav-link" data-nav="hotels">03 — @Localizer["Hotels_Label"]</a>
+            }
+        </div>
+    </nav>
+
+    <section class="tv-sec" id="venue-section">
+        <div class="tv-pad">
+            <div class="tv-sec-head tv-reveal" data-reveal>
+                <span class="tv-ghost" aria-hidden="true">01</span>
+                <p class="tv-eyebrow">@Localizer["Venue_Label"]</p>
+                <h2>@Localizer["Venue_Title"]</h2>
+                <span class="tv-rule"></span>
+            </div>
+
+            <div class="tv-venue-grid tv-reveal" data-reveal>
+                <div class="tv-map-frame">
+                    <iframe class="tv-map" title="@Localizer["Venue_MapTitle"]" loading="lazy" allowfullscreen
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2934.502395568551!2d23.35165931221768!3d42.650694971047125!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40aa842512f4514d%3A0xd9919f2a033f7215!2z0KPQndCh0KE!5e0!3m2!1sbg!2sbg!4v1713437200000"></iframe>
+                    <span class="c-tl-h"></span>
+                    <span class="c-tl-v"></span>
                 </div>
+
+                <dl class="tv-facts">
+                    <div>
+                        <dt>@Localizer["Venue_Item_VenueTitle"]</dt>
+                        <dd>@Html.Raw(Localizer["Venue_Item_VenueAddress"].Value)</dd>
+                    </div>
+                    <div>
+                        <dt>@Localizer["Venue_Item_HoursTitle"]</dt>
+                        <dd>@Html.Raw(Localizer["Venue_Item_HoursValue"].Value)</dd>
+                    </div>
+                    <div>
+                        <dt>@Localizer["Venue_Item_EmailTitle"]</dt>
+                        <dd><a href="mailto:conference.education@unwe.bg">conference.education@unwe.bg</a></dd>
+                    </div>
+                    <div class="tv-facts-cta">
+                        <a class="tv-btn" href="https://maps.google.com/?q=UNWE+Sofia" target="_blank" rel="noopener">
+                            @Localizer["Venue_MapsCta"]
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="13 6 19 12 13 18"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </dl>
             </div>
         </div>
     </section>
 
-    <section class="transport-section">
-        <div class="section-inner reveal">
-            <p class="section-label">@Localizer["Transport_Label"]</p>
-            <h2>@Localizer["Transport_Title"]</h2>
-            <div class="cards-grid">
-                <div class="info-card">
-                    <div class="card-icon"><img src="~/images/logos/plane.png" alt=""></div>
-                    <h4>@Localizer["Transport_Air_Title"]</h4>
-                    <p>@Localizer["Transport_Air_Desc"]</p>
+    <section class="tv-sec" id="transport-section">
+        <div class="tv-pad">
+            <div class="tv-sec-head tv-reveal" data-reveal>
+                <span class="tv-ghost" aria-hidden="true">02</span>
+                <p class="tv-eyebrow">@Localizer["Transport_Label"]</p>
+                <h2>@Localizer["Transport_Title"]</h2>
+                <span class="tv-rule"></span>
+            </div>
+
+            <div class="tv-rows tv-reveal" data-reveal>
+                <div class="tv-row">
+                    <b class="tv-row-idx">01</b>
+                    <h3 class="tv-row-title">@Localizer["Transport_Air_Title"]</h3>
+                    <div class="tv-row-body">
+                        <p>@Localizer["Transport_Air_Desc"]</p>
+                        <span class="tv-row-note">@Localizer["Transport_Air_Note"]</span>
+                    </div>
                 </div>
-                <div class="info-card">
-                    <div class="card-icon"><img src="~/images/logos/metro.png" alt=""></div>
-                    <h4>@Localizer["Transport_Metro_Title"]</h4>
-                    <p>@Localizer["Transport_Metro_Desc"]</p>
+                <div class="tv-row">
+                    <b class="tv-row-idx">02</b>
+                    <h3 class="tv-row-title">@Localizer["Transport_Metro_Title"]</h3>
+                    <div class="tv-row-body">
+                        <p>@Localizer["Transport_Metro_Desc"]</p>
+                        <span class="tv-row-note">@Localizer["Transport_Metro_Note"]</span>
+                    </div>
                 </div>
-                <div class="info-card">
-                    <div class="card-icon"><img src="~/images/logos/transfer.png" alt=""></div>
-                    <h4>@Localizer["Transport_Transfer_Title"]</h4>
-                    <p>@Localizer["Transport_Transfer_Desc"]</p>
+                <div class="tv-row">
+                    <b class="tv-row-idx">03</b>
+                    <h3 class="tv-row-title">@Localizer["Transport_Transfer_Title"]</h3>
+                    <div class="tv-row-body">
+                        <p>@Localizer["Transport_Transfer_Desc"]</p>
+                        <span class="tv-row-note">@Localizer["Transport_Transfer_Note"]</span>
+                    </div>
                 </div>
+                <div class="tv-rows-end"></div>
             </div>
         </div>
     </section>
 
     @if (Model.Hotels != null && Model.Hotels.Any())
     {
-        <section class="hotels-section" id="hotels">
-            <div class="section-inner reveal">
-                <p class="section-label">@Localizer["Hotels_Label"]</p>
-                <h2>@Localizer["Hotels_Title"]</h2>
-                <div class="cards-grid">
+        <section class="tv-sec tv-sec--last" id="hotels">
+            <div class="tv-pad">
+                <div class="tv-sec-head tv-reveal" data-reveal>
+                    <span class="tv-ghost" aria-hidden="true">03</span>
+                    <p class="tv-eyebrow">@Localizer["Hotels_Label"]</p>
+                    <h2>@Localizer["Hotels_Title"]</h2>
+                    <span class="tv-rule"></span>
+                </div>
+
+                <div class="tv-cards tv-reveal" data-reveal>
+                    @{ var hotelIndex = 0; }
                     @foreach (var hotel in Model.Hotels)
                     {
+                        hotelIndex++;
                         var hotelName = isBg ? hotel.NameBg : hotel.NameEn;
                         var hotelDesc = isBg ? hotel.DescriptionBg : hotel.DescriptionEn;
+                        var hasUrl = !string.IsNullOrEmpty(hotel.Url);
 
-                        <div class="info-card">
-                            <h4>
-                                @if (!string.IsNullOrEmpty(hotel.Url))
-                                {
-                                    <a href="@hotel.Url" target="_blank" style="color: inherit; text-decoration: none;">
-                                        @hotelName <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7em; margin-left: 5px;"></i>
-                                    </a>
-                                }
-                                else
-                                {
+                        @if (hasUrl)
+                        {
+                            <a class="tv-card" href="@hotel.Url" target="_blank" rel="noopener">
+                                <b class="tv-card-idx">@hotelIndex.ToString("00")</b>
+                                <h4>
                                     @hotelName
-                                }
-                            </h4>
-                            <p>@hotelDesc</p>
-                        </div>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#FF3636" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="7" y1="17" x2="17" y2="7"></line>
+                                        <polyline points="8 7 17 7 17 16"></polyline>
+                                    </svg>
+                                </h4>
+                                <p>@hotelDesc</p>
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="tv-card">
+                                <b class="tv-card-idx">@hotelIndex.ToString("00")</b>
+                                <h4>@hotelName</h4>
+                                <p>@hotelDesc</p>
+                            </div>
+                        }
                     }
                 </div>
-                <p class="footer-note">@Localizer["Hotels_FooterNote"]</p>
+
+                <p class="tv-note tv-reveal" data-reveal>@Localizer["Hotels_FooterNote"]</p>
             </div>
         </section>
     }
 </main>
+
+@section Scripts {
+    <script src="~/js/travel.js" asp-append-version="true"></script>
+}

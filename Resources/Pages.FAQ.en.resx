@@ -28,5 +28,31 @@
 
   <data name="Nav_FAQ" xml:space="preserve"><value>FAQ</value></data>
   <data name="FAQ_Label" xml:space="preserve"><value>ASK US</value></data>
-  <data name="FAQ_Title" xml:space="preserve"><value>Frequently Asked Questions</value></data>
+  <data name="FAQ_Title" xml:space="preserve"><value>The full list</value></data>
+  <data name="FAQ_Brand" xml:space="preserve"><value>Blockchain Education 2026</value></data>
+  <data name="FAQ_Kicker" xml:space="preserve"><value>Help</value></data>
+  <data name="FAQ_Eyebrow" xml:space="preserve"><value>Questions &amp; Answers</value></data>
+  <data name="FAQ_Heading" xml:space="preserve"><value>Frequently Asked Questions</value></data>
+  <data name="FAQ_Meta_CountLabel" xml:space="preserve"><value>Questions</value></data>
+  <data name="FAQ_Meta_CountUnit" xml:space="preserve"><value>questions</value></data>
+  <data name="FAQ_Meta_UpdatedLabel" xml:space="preserve"><value>Updated</value></data>
+  <data name="FAQ_Meta_UpdatedValue" xml:space="preserve"><value>September 2026</value></data>
+  <data name="FAQ_Meta_ReplyLabel" xml:space="preserve"><value>Reply within</value></data>
+  <data name="FAQ_Meta_ReplyValue" xml:space="preserve"><value>2 business days</value></data>
+  <data name="FAQ_SearchPlaceholder" xml:space="preserve"><value>Search by keyword — fee, paper, certificate…</value></data>
+  <data name="FAQ_SearchLabel" xml:space="preserve"><value>Search the questions</value></data>
+  <data name="FAQ_SearchClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="FAQ_CountOf" xml:space="preserve"><value>of</value></data>
+  <data name="FAQ_ExpandAll" xml:space="preserve"><value>Expand all</value></data>
+  <data name="FAQ_CollapseAll" xml:space="preserve"><value>Collapse all</value></data>
+  <data name="FAQ_NoResultLabel" xml:space="preserve"><value>No matches</value></data>
+  <data name="FAQ_NoResultTextBefore" xml:space="preserve"><value>Nothing matches</value></data>
+  <data name="FAQ_NoResultTextAfter" xml:space="preserve"><value>Try a different word, or write to us directly.</value></data>
+  <data name="FAQ_ShowAll" xml:space="preserve"><value>Show all questions</value></data>
+  <data name="FAQ_Unavailable" xml:space="preserve"><value>No frequently asked questions available at the moment.</value></data>
+  <data name="FAQ_Ask_Eyebrow" xml:space="preserve"><value>Didn't find an answer?</value></data>
+  <data name="FAQ_Ask_Title" xml:space="preserve"><value>Write to us</value></data>
+  <data name="FAQ_Ask_Desc" xml:space="preserve"><value>We reply within two business days. For questions about a paper, include its title and scientific section.</value></data>
+  <data name="FAQ_Ask_EmailLabel" xml:space="preserve"><value>Email</value></data>
+  <data name="FAQ_Ask_Cta" xml:space="preserve"><value>Send a question</value></data>
 </root>

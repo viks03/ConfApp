@@ -28,5 +28,31 @@
 
   <data name="Nav_FAQ" xml:space="preserve"><value>Често задавани въпроси</value></data>
   <data name="FAQ_Label" xml:space="preserve"><value>ПОПИТАЙТЕ НИ</value></data>
-  <data name="FAQ_Title" xml:space="preserve"><value>Често задавани въпроси</value></data>
+  <data name="FAQ_Title" xml:space="preserve"><value>Пълният списък</value></data>
+  <data name="FAQ_Brand" xml:space="preserve"><value>Blockchain Education 2026</value></data>
+  <data name="FAQ_Kicker" xml:space="preserve"><value>Помощ</value></data>
+  <data name="FAQ_Eyebrow" xml:space="preserve"><value>Въпроси и отговори</value></data>
+  <data name="FAQ_Heading" xml:space="preserve"><value>Често задавани въпроси</value></data>
+  <data name="FAQ_Meta_CountLabel" xml:space="preserve"><value>Въпроси</value></data>
+  <data name="FAQ_Meta_CountUnit" xml:space="preserve"><value>въпроса</value></data>
+  <data name="FAQ_Meta_UpdatedLabel" xml:space="preserve"><value>Актуализирано</value></data>
+  <data name="FAQ_Meta_UpdatedValue" xml:space="preserve"><value>Септември 2026</value></data>
+  <data name="FAQ_Meta_ReplyLabel" xml:space="preserve"><value>Отговор до</value></data>
+  <data name="FAQ_Meta_ReplyValue" xml:space="preserve"><value>2 работни дни</value></data>
+  <data name="FAQ_SearchPlaceholder" xml:space="preserve"><value>Търсете по ключова дума — такса, доклад, сертификат…</value></data>
+  <data name="FAQ_SearchLabel" xml:space="preserve"><value>Търсене във въпросите</value></data>
+  <data name="FAQ_SearchClear" xml:space="preserve"><value>Изчисти</value></data>
+  <data name="FAQ_CountOf" xml:space="preserve"><value>от</value></data>
+  <data name="FAQ_ExpandAll" xml:space="preserve"><value>Разгъни всички</value></data>
+  <data name="FAQ_CollapseAll" xml:space="preserve"><value>Свий всички</value></data>
+  <data name="FAQ_NoResultLabel" xml:space="preserve"><value>Няма съвпадения</value></data>
+  <data name="FAQ_NoResultTextBefore" xml:space="preserve"><value>Нищо не съвпада с</value></data>
+  <data name="FAQ_NoResultTextAfter" xml:space="preserve"><value>Опитайте с друга дума, или пишете ни направо.</value></data>
+  <data name="FAQ_ShowAll" xml:space="preserve"><value>Покажи всички въпроси</value></data>
+  <data name="FAQ_Unavailable" xml:space="preserve"><value>В момента няма публикувани въпроси.</value></data>
+  <data name="FAQ_Ask_Eyebrow" xml:space="preserve"><value>Не намерихте отговор?</value></data>
+  <data name="FAQ_Ask_Title" xml:space="preserve"><value>Пишете ни</value></data>
+  <data name="FAQ_Ask_Desc" xml:space="preserve"><value>Отговаряме в рамките на два работни дни. Ако въпросът е за доклад, приложете заглавие и научна секция.</value></data>
+  <data name="FAQ_Ask_EmailLabel" xml:space="preserve"><value>Имейл</value></data>
+  <data name="FAQ_Ask_Cta" xml:space="preserve"><value>Изпрати въпрос</value></data>
 </root>
