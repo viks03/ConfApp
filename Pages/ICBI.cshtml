@@ -3,94 +3,160 @@
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @{
     ViewData["Title"] = Localizer["Nav_ICBI"].Value ?? "About ICBI";
+
+    var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+
+    // Четирите стълба в масив — оригиналът повтаряше един и същи блок
+    // четири пъти. Индексът се ползва и за номера на картата.
+    var pillars = new[]
+    {
+        new { Icon = "education.png", Title = Localizer["ICBI_Pillar1_Title"].Value, Desc = Localizer["ICBI_Pillar1_Desc"].Value },
+        new { Icon = "research.png", Title = Localizer["ICBI_Pillar2_Title"].Value, Desc = Localizer["ICBI_Pillar2_Desc"].Value },
+        new { Icon = "partnership.png", Title = Localizer["ICBI_Pillar3_Title"].Value, Desc = Localizer["ICBI_Pillar3_Desc"].Value },
+        new { Icon = "policy.png", Title = Localizer["ICBI_Pillar4_Title"].Value, Desc = Localizer["ICBI_Pillar4_Desc"].Value }
+    };
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/icbiStyle.css" asp-append-version="true" />
 }
 
-<main>
-    
-    <section class="hero icbi-hero">
-      <div class="hero-overlay"></div>
-      
-      @* НОВАТА СТРЕЛКА ОТ icbi.html *@
-      <a href="#tickets-section" class="scroll-down-arrow" aria-label="Scroll down">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </a>
+@*
+    Страница „За ICBI", редизайн.
+
+    Model-ът НЕ е променян: същият `Model.Events`, същите полета, същите
+    езикови проверки. Няма промени в `mainStyle.css`, `_Layout.cshtml`,
+    навигацията или футъра. Страницата не ползва свой JS.
+
+    Какво се промени визуално:
+    · .hero с background-image → истински <img> банер. СОБСТВЕНИЯТ мотив
+      на тази страница е милиметрова хартия: точки на 24px плюс редки
+      регистрационни кръстчета на 96px. (FAQ и „Участие" носят квадратна
+      решетка, „Програма" времева скала, „Лектори" диагонално щриховане.)
+    · центрираният подскачащ chevron → технически надпис долу вляво;
+    · заглавният блок е в две колони — име и печат на основаването
+      отляво, описание и мисия отдясно. Центрираните 800px в средата на
+      празен екран бяха най-слабото място на страницата;
+    · четирите стълба са НОМЕРИРАНИ клетки на видима решетка (subgrid
+      изравнява заглавие и описание по редове), не карти с фон и радиус;
+    · мястото: светлото вече е ПЛОЧА с рамка и маркери, а не бяла банда
+      на цялата широчина — виж шапката на icbiStyle.css защо това има
+      значение за бъдещия глобален фон. Данните са спецификационна
+      таблица, картата е ограден и обезцветен кадър, който се връща в
+      цвят при посочване;
+    · събитията: кадърът е ограден и обезцветен, а надписът е ПОД него,
+      не върху снимката със скрим. Затова и `background-image` в inline
+      style е сменен с истински <img> — inline фон не може да се
+      обезцвети без да повлече и текста.
+
+    Нови resx ключове: ICBI_InstituteLabel, ICBI_FoundedLabel,
+      ICBI_JumpToInstitute
+*@
+
+<main class="site-main">
+<div class="icbi-page">
+
+    <section class="ic-banner">
+        <img src="~/images/icbi/bannerMainICBI.png" alt="">
+        <div class="ic-banner-tint"></div>
+        <div class="ic-banner-dots"></div>
+        <div class="ic-frame">
+            <span class="c-tl-h"></span>
+            <span class="c-tl-v"></span>
+            <span class="c-br-h"></span>
+            <span class="c-br-v"></span>
+        </div>
+        <a href="#tickets-section" class="scroll-down-arrow" aria-label="@Localizer["ICBI_JumpToInstitute"]">
+            <span>@Localizer["ICBI_JumpToInstitute"]</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="6 13 12 19 18 13"></polyline>
+            </svg>
+        </a>
     </section>
-    
-    @* ДОБАВЕНО id="tickets-section" *@
-    <section class="hero-section-icbi" id="tickets-section">
-        <div class="section-inner reveal center-section">
+
+    <section class="ic-hero" id="tickets-section">
+        <div class="hero-section-icbi reveal">
+            <div class="ic-topline">
+                <span class="ic-wordmark">BLOCKCHAIN EDUCATION 2026</span>
+                <b>УНСС / ICBI</b>
+            </div>
             <div class="hero-content-narrow">
-                <p class="section-label">@Localizer["ICBI_EstLabel"]</p>
-                <h2>@Html.Raw(Localizer["ICBI_HeroTitle"].Value)</h2>
-                
-                <p class="hero-description">@Localizer["ICBI_HeroDesc"]</p>
-                
-                <blockquote class="hero-quote">
-                    "@Localizer["ICBI_HeroQuote"]"
-                </blockquote>
+                <div>
+                    <p class="section-label">@Localizer["ICBI_InstituteLabel"]</p>
+                    <h2>@Html.Raw(Localizer["ICBI_HeroTitle"].Value)</h2>
+                    <span class="ic-rule"></span>
+                    <div class="ic-stamp">
+                        <b>@Localizer["ICBI_FoundedLabel"]</b>
+                        <span>@Localizer["ICBI_EstLabel"]</span>
+                    </div>
+                </div>
+                <div>
+                    <p class="hero-description">@Localizer["ICBI_HeroDesc"]</p>
+                    @* Кавичките са махнати — рамката отляво върши работата
+                       им по-добре от препинателен знак. *@
+                    <blockquote class="hero-quote">@Localizer["ICBI_HeroQuote"]</blockquote>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="pillars-section">
-        <div class="section-inner reveal center-section">
+    <section class="pillars-section reveal">
+        <div class="ic-sec-head">
             <p class="section-label">@Localizer["ICBI_PillarsLabel"]</p>
             <h2>@Localizer["ICBI_PillarsTitle"]</h2>
-            
-            <div class="grid-4-col">
+            <span class="ic-rule"></span>
+        </div>
+
+        <div class="grid-4-col">
+            @{ var pillarIndex = 0; }
+            @foreach (var p in pillars)
+            {
+                pillarIndex++;
                 <div class="pillar-card">
-                    <div class="icon-box"><img src="~/images/icbi/education.png" alt=""></div>
-                    <h4>@Localizer["ICBI_Pillar1_Title"]</h4>
-                    <p>@Localizer["ICBI_Pillar1_Desc"]</p>
+                    <div class="ic-pillar-head">
+                        <span class="ic-pillar-num">@pillarIndex.ToString("00")</span>
+                        <div class="icon-box"><img src="~/images/icbi/@p.Icon" alt=""></div>
+                    </div>
+                    <h4>@p.Title</h4>
+                    <p>@p.Desc</p>
                 </div>
-                <div class="pillar-card">
-                    <div class="icon-box"><img src="~/images/icbi/research.png" alt=""></div>
-                    <h4>@Localizer["ICBI_Pillar2_Title"]</h4>
-                    <p>@Localizer["ICBI_Pillar2_Desc"]</p>
-                </div>
-                <div class="pillar-card">
-                    <div class="icon-box"><img src="~/images/icbi/partnership.png" alt=""></div>
-                    <h4>@Localizer["ICBI_Pillar3_Title"]</h4>
-                    <p>@Localizer["ICBI_Pillar3_Desc"]</p>
-                </div>
-                <div class="pillar-card">
-                    <div class="icon-box"><img src="~/images/icbi/policy.png" alt=""></div>
-                    <h4>@Localizer["ICBI_Pillar4_Title"]</h4>
-                    <p>@Localizer["ICBI_Pillar4_Desc"]</p>
-                </div>
-            </div>
+            }
         </div>
     </section>
 
-    <section class="venue-section" id="venue">
-        <div class="section-inner reveal">
-            <p class="section-label">@Localizer["ICBI_VenueLabel"]</p>
-            <h2>@Localizer["ICBI_VenueTitle"]</h2>
-            
+    <section class="venue-section reveal" id="venue">
+        @* Плоча, не банда: рамка, маркери, отстояние от ръбовете. *@
+        <div class="ic-plate">
+            <i class="corner tl"></i>
+            <i class="corner tr"></i>
+            <i class="corner bl"></i>
+            <i class="corner br"></i>
+
+            <div class="ic-sec-head">
+                <p class="section-label">@Localizer["ICBI_VenueLabel"]</p>
+                <h2>@Localizer["ICBI_VenueTitle"]</h2>
+                <span class="ic-rule"></span>
+            </div>
+
             <div class="venue-grid">
                 <div class="map-container">
                     <div class="map-placeholder">
-                        <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2934.3486121404135!2d23.348604315465682!3d42.65399597916828!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40aa842188ab6cc9%3A0xcda8d7e00e3bd9c3!2sUniversity%20of%20National%20and%20World%20Economy!5e0!3m2!1sen!2sbg!4v1680000000000!5m2!1sen!2sbg" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <iframe class="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2934.3486121404135!2d23.348604315465682!3d42.65399597916828!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40aa842188ab6cc9%3A0xcda8d7e00e3bd9c3!2sUniversity%20of%20National%20and%20World%20Economy!5e0!3m2!1sen!2sbg!4v1680000000000!5m2!1sen!2sbg" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="@Localizer["ICBI_VenueTitle"]"></iframe>
                     </div>
                 </div>
                 <div class="venue-info">
                     <div class="info-item">
                         <div class="icon-box"><img src="~/images/logos/location.png" alt=""></div>
-                        <p><strong>@Localizer["ICBI_VenueConfTitle"]</strong><br>@Html.Raw(Localizer["ICBI_VenueConfDesc"].Value)</p>
+                        <p><strong>@Localizer["ICBI_VenueConfTitle"]</strong>@Html.Raw(Localizer["ICBI_VenueConfDesc"].Value)</p>
                     </div>
                     <div class="info-item">
                         <div class="icon-box"><img src="~/images/logos/time.png" alt=""></div>
-                        <p><strong>@Localizer["ICBI_VenueHoursTitle"]</strong><br>@Html.Raw(Localizer["ICBI_VenueHoursDesc"].Value)</p>
+                        <p><strong>@Localizer["ICBI_VenueHoursTitle"]</strong>@Html.Raw(Localizer["ICBI_VenueHoursDesc"].Value)</p>
                     </div>
                     <div class="info-item">
                         <div class="icon-box"><img src="~/images/logos/mail.png" alt=""></div>
-                        <p><strong>@Localizer["ICBI_VenueEmailTitle"]</strong><br>conference.education@unwe.bg</p>
+                        <p><strong>@Localizer["ICBI_VenueEmailTitle"]</strong><a href="mailto:conference.education@unwe.bg">conference.education@unwe.bg</a></p>
                     </div>
                 </div>
             </div>
@@ -100,35 +166,59 @@
     @* ДИНАМИЧНА СЕКЦИЯ С ЕЗИКОВИ ПРОВЕРКИ ЗА СЪБИТИЯТА *@
     @if (Model.Events != null && Model.Events.Any())
     {
-        <section class="blog-section">
-            <div class="section-inner reveal center-section">
-                <div class="blog-header">
-                    <p class="section-label">@Localizer["ICBI_EventsLabel"]</p>
-                    <h2>@Localizer["ICBI_EventsTitle"]</h2>
-                </div>
+        <section class="blog-section reveal">
+            <div class="blog-header">
+                <p class="section-label">@Localizer["ICBI_EventsLabel"]</p>
+                <h2>@Localizer["ICBI_EventsTitle"]</h2>
+                <span class="ic-rule"></span>
+            </div>
 
-                <div class="blog-grid">
-                    @foreach (var ev in Model.Events)
+            <div class="blog-grid">
+                @{ var eventIndex = 0; }
+                @foreach (var ev in Model.Events)
+                {
+                    eventIndex++;
+
+                    var title = isBulgarian ? (string.IsNullOrWhiteSpace(ev.TitleBg) ? ev.TitleEn : ev.TitleBg) : ev.TitleEn;
+                    var location = isBulgarian ? (string.IsNullOrWhiteSpace(ev.LocationBg) ? ev.LocationEn : ev.LocationBg) : ev.LocationEn;
+
+                    var shotImage = string.IsNullOrEmpty(ev.ImagePath) ? "/images/lecturers/bannerMainLecturers.png" : ev.ImagePath;
+                    var hasUrl = !string.IsNullOrEmpty(ev.EventUrl);
+                    var linkUrl = hasUrl ? ev.EventUrl : "#";
+
+                    @* Кадърът е <img>, не inline background-image: inline фон
+                       не може да се обезцвети с filter, без филтърът да
+                       повлече и текста върху него. *@
+                    if (hasUrl)
                     {
-                        var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
-                        
-                        var title = isBulgarian ? (string.IsNullOrWhiteSpace(ev.TitleBg) ? ev.TitleEn : ev.TitleBg) : ev.TitleEn;
-                        var location = isBulgarian ? (string.IsNullOrWhiteSpace(ev.LocationBg) ? ev.LocationEn : ev.LocationBg) : ev.LocationEn;
-                        
-                        var bgImage = string.IsNullOrEmpty(ev.ImagePath) ? "/images/lecturers/bannerMainLecturers.png" : ev.ImagePath;
-                        var linkUrl = string.IsNullOrEmpty(ev.EventUrl) ? "#" : ev.EventUrl;
-                        var targetAttr = string.IsNullOrEmpty(ev.EventUrl) ? "" : "target=\"_blank\"";
-
-                        <a href="@linkUrl" @Html.Raw(targetAttr) class="blog-item" style="background-image: url('@bgImage');">
+                        <a href="@linkUrl" target="_blank" rel="noopener" class="blog-item">
+                            <div class="ic-shot">
+                                <span class="ic-shot-index">@eventIndex.ToString("00")</span>
+                                <img src="@shotImage" alt="@title">
+                            </div>
                             <div class="blog-overlay">
                                 <h4>@title</h4>
                                 <p>@location</p>
                             </div>
                         </a>
                     }
-                </div>
+                    else
+                    {
+                        <div class="blog-item">
+                            <div class="ic-shot">
+                                <span class="ic-shot-index">@eventIndex.ToString("00")</span>
+                                <img src="@shotImage" alt="@title">
+                            </div>
+                            <div class="blog-overlay">
+                                <h4>@title</h4>
+                                <p>@location</p>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
         </section>
     }
 
+</div>
 </main>

@@ -34,4 +34,17 @@
   <data name="Filter_Academic" xml:space="preserve"><value>Academic</value></data>
   <data name="Filter_Industry" xml:space="preserve"><value>Industry</value></data>
   <data name="Filter_Regulatory" xml:space="preserve"><value>Regulatory &amp; Policy</value></data>
+  <data name="Lec_JumpToList" xml:space="preserve"><value>Jump to the speakers</value></data>
+  <data name="Lec_MetaLecturers" xml:space="preserve"><value>Speakers</value></data>
+  <data name="Lec_MetaLecturersUnit" xml:space="preserve"><value>confirmed</value></data>
+  <data name="Lec_MetaOrgs" xml:space="preserve"><value>Institutions</value></data>
+  <data name="Lec_MetaOrgsUnit" xml:space="preserve"><value>organizations</value></data>
+  <data name="Lec_MetaCategories" xml:space="preserve"><value>Categories</value></data>
+  <data name="Lec_MetaCategoriesValue" xml:space="preserve"><value>Keynote, academic, industry, policy</value></data>
+  <data name="Lec_Shown" xml:space="preserve"><value>shown</value></data>
+  <data name="Lec_Profile" xml:space="preserve"><value>View profile</value></data>
+  <data name="Lec_EmptyTitle" xml:space="preserve"><value>No entries</value></data>
+  <data name="Lec_ViewPhoto" xml:space="preserve"><value>View enlarged photo</value></data>
+  <data name="Lec_Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Lec_EmptyText" xml:space="preserve"><value>No confirmed speakers in this category yet. Try another category, or view all speakers.</value></data>
 </root>

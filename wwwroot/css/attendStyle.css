@@ -1,418 +1,821 @@
-:root {
-    --bg-black: #0a0a0a;
-    --accent-red: #8b0000;
-    --text-white: #ffffff;
-    --text-gray: #a0a0a0;
-    --card-bg: #141414;
-    --card-hover: #1a1a1a;
-    --border-color: #222222;
+/* ============================================================
+   attendStyle.css — страница „Участие", редизайн.
+   Езикът е същият като stylesFAQ.css / authStyle.css /
+   travelStyle.css: Oswald, нулев радиус, тънки линии, червен
+   акцент, ч/б образи, регистрационни маркери в ъглите.
+
+   ЕДНА СЪЗНАТЕЛНА РАЗЛИКА от FAQ: обвивката .attend-page НЕ
+   рисува плътен фон. Плътният `background: var(--bg)` на
+   .faq-page/.auth-page е точно това, което по-късно ще блокира
+   глобалния ambient слой и ще го принуди да стои НАД съдържанието.
+   Тук фонът идва от <body> (mainStyle.css), затова бъдещ глобален
+   слой може да стои ЗАД тази страница без blend трикове. Всичко,
+   което трябва да е плътно, е плътно локално (банерът, червеното
+   поле, панелите) — не цялата страница.
+   ============================================================ */
+
+.attend-page {
+    background: transparent;
+    color: var(--text, #f4f2ec);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 300;
 }
 
-.center-section {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.pricing-section,
-.access-section,
-.extras-payment-section {
-    margin: 15px;
-    padding: 10px;
-}
-/* Hero Section */
-.attend-hero {
-    background-image: url('../images/attend/bannerAula.png'); 
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
+.attend-page ::selection { background: rgba(255, 54, 54, 0.35); }
+.attend-page :focus-visible { outline: 2px solid var(--accent, #ff3636); outline-offset: 2px; }
 
-/* Arrow Section */
-.hero.attend-hero {
-  position: relative;
-}
+.at-pad { max-width: 1320px; margin: 0 auto; padding: 0 6vw; }
+.at-sec { padding: 84px 0 96px; border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08)); }
+.at-sec--last { border-bottom: 0; }
 
-/* Стилът на самата стрелка */
-.scroll-down-arrow {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50px;
-  height: 50px;
-  color: #ffffff;
-  z-index: 10;
-  transition: color 0.3s ease;
-  animation: bounce 2s infinite;
-}
+/* ── Банер ─────────────────────────────────────────────────
+   Лентата е точно колкото собствената височина на снимката —
+   същият механизъм като .fq-banner, за да не се разминават двете
+   страници по височина и обработка. */
+.at-banner { position: relative; width: 100%; overflow: hidden; }
 
-.scroll-down-arrow:hover {
-  color: #cc0000;
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateX(-50%) translateY(0);
-  }
-  40% {
-    transform: translateX(-50%) translateY(-15px);
-  }
-  60% {
-    transform: translateX(-50%) translateY(-7px);
-  }
-}
-
-
-/* --- Pricing Section --- */
-.pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
+.at-banner img {
+    display: block;
     width: 100%;
-    margin-top: 30px;
+    max-height: 460px;
+    object-fit: cover;
+    object-position: 50% 42%;
+    filter: grayscale(1) contrast(1.15) brightness(0.74);
 }
 
-.pricing-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 40px 30px;
-    text-align: left;
+.at-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0px, rgba(255, 255, 255, 0.035) 1px, transparent 1px, transparent 4px);
+}
+
+.at-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(115% 95% at 50% 32%, rgba(0, 0, 0, 0) 38%, rgba(5, 5, 5, 0.62) 100%),
+        linear-gradient(180deg, rgba(5, 5, 5, 0.32) 0%, rgba(5, 5, 5, 0) 26%, rgba(5, 5, 5, 0) 58%, rgba(5, 5, 5, 0.96) 100%);
+}
+
+.at-banner-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+    background:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 100% 48px,
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 48px 100%;
+}
+
+.at-banner-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    background: linear-gradient(180deg, rgba(255, 54, 54, 0.18) 0%, rgba(255, 54, 54, 0) 50%);
+}
+
+.at-frame {
+    position: absolute;
+    inset: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    pointer-events: none;
+}
+
+.at-frame span { position: absolute; background: var(--accent, #ff3636); }
+.at-frame .c-tl-h { top: -1px; left: -1px; width: 26px; height: 2px; }
+.at-frame .c-tl-v { top: -1px; left: -1px; width: 2px; height: 26px; }
+.at-frame .c-br-h { bottom: -1px; right: -1px; width: 26px; height: 2px; }
+.at-frame .c-br-v { bottom: -1px; right: -1px; width: 2px; height: 26px; }
+
+/* Стрелката „към билетите" — вместо центрирания подскачащ chevron.
+   Технически надпис долу вляво, който води до секцията. Движението е
+   само на 6px и е на самата икона, не на целия бутон, за да не
+   „подскача" текстът. */
+.at-jump {
+    position: absolute;
+    left: 6vw;
+    bottom: 34px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.at-jump span {
     position: relative;
-    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-    flex-direction: column;
+    padding-bottom: 4px;
 }
 
-.pricing-card:hover {
-    transform: translateY(-5px);
-    background-color: var(--card-hover);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-}
-
-.pricing-card.highlighted {
-    border-color: var(--accent-red);
-    box-shadow: 0 0 20px rgba(139, 0, 0, 0.2);
-}
-
-.pricing-card.highlighted:hover {
-    box-shadow: 0 8px 30px rgba(139, 0, 0, 0.5);
-}
-
-.card-title {
-    font-size: 1.4rem;
-    margin: 0 0 15px 0;
-}
-
-.price {
-    font-size: 2.2rem;
-    font-weight: 900;
-    color: var(--accent-red);
-    margin-bottom: 15px;
-}
-
-.price del {
-    color: var(--text-gray);
-    font-size: 1.2rem;
-    margin-right: 10px;
-}
-
-.card-desc {
-    color: var(--text-gray);
-    font-size: 0.9rem;
-    margin-bottom: 25px;
-}
-
-.feature-list {
-    list-style: none;
-    padding: 20px 0 0 0; /* Отстояние отгоре след линията */
-    margin: 0 0 30px 0;
-    flex-grow: 1;
-    border-top: 1px solid var(--border-color); /* СЕПАРАТОР: Линия под описанието */
-}
-
-.feature-list li {
-    margin-bottom: 12px;
-    font-size: 0.95rem;
-    position: relative;
-    padding-left: 20px;
-}
-
-.feature-list li::before {
-    content: "✓";
-    color: var(--accent-red);
+.at-jump span::after {
+    content: "";
     position: absolute;
     left: 0;
-    font-weight: bold;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.ribbon {
-    position: absolute;
-    top: 15px;
-    right: -10px;
-    background: var(--accent-red);
-    color: #fff;
-    padding: 5px 15px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    border-radius: 4px 0 0 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+.at-jump:hover { color: #ffffff; text-decoration: none; }
+.at-jump:hover span::after { transform: scaleX(1); }
+
+.at-jump svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    stroke: var(--accent, #ff3636);
+    animation: atNudge 2.6s ease-in-out infinite;
 }
 
-/* Buttons */
-.btn {
-    display: inline-block;
-    padding: 12px 20px;
-    text-align: center;
-    font-weight: bold;
-    text-transform: uppercase;
-    text-decoration: none;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    width: 100%;
-    box-sizing: border-box;
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
+@keyframes atNudge {
+    0%, 62%, 100% { transform: translateY(0); }
+    76%           { transform: translateY(6px); }
+    88%           { transform: translateY(2px); }
 }
 
-.btn-outline {
-    border: 1px solid var(--border-color);
-    color: var(--text-white);
-}
+/* ── Заглавен блок под банера ─────────────────────────────── */
+.at-hero { position: relative; border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08)); }
 
-.btn-outline:hover {
-    border-color: var(--text-white);
-    transform: translateY(-2px);
-}
-
-.btn-solid {
-    background-color: var(--accent-red);
-    color: var(--text-white);
-    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
-    border: 1px solid var(--accent-red);
-}
-
-.btn-solid:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.5);
-    background-color: #9c0000;
-    border-color: #9c0000;
-}
-
-/* --- Access Section --- */
-.access-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
-    width: 100%;
-    margin-top: 10px;
-}
-
-.access-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 30px;
+.at-hero-inner {
     display: flex;
-    align-items: flex-start;
-    gap: 20px;
-    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-    text-align: left;
-}
-
-.access-card:hover {
-    transform: translateY(-5px);
-    background-color: var(--card-hover);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-}
-
-.access-icon {
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-}
-
-.access-icon img,
-.extra-icon img,
-.payment-icon img {
-    width: 100%;
-    height: 100%;
-    filter: invert(15%) sepia(94%) saturate(6000%) hue-rotate(350deg) brightness(90%) contrast(110%);
-    transition: transform 0.3s ease;
-}
-
-.access-card:hover .access-icon img,
-.extra-card:hover .extra-icon img {
-    transform: scale(1.15) rotate(5deg);
-}
-
-.access-info h4 {
-    margin: 0 0 10px 0;
-    font-size: 1.2rem;
-}
-
-.access-info p {
-    color: var(--text-gray);
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-}
-
-.red-link {
-    color: var(--accent-red);
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 0.95rem;
-    transition: color 0.3s ease;
-}
-
-.red-link:hover {
-    color: #ff3333;
-    text-decoration: underline;
-}
-
-/* --- Extras & Payment Section --- */
-.extras-payment-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    flex-direction: column;
     gap: 40px;
-    width: 100%;
-    text-align: left;
-    margin-top: 30px;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 30px 6vw 26px;
 }
 
-.extra-card, .payment-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 30px;
-    margin-bottom: 20px;
-    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.extra-card:hover, .payment-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-    background-color: var(--card-hover);
-}
-
-.extra-card {
+.at-topline {
     display: flex;
-    align-items: center;
-    gap: 20px;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
 }
 
-.extra-icon {
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
+.at-wordmark {
+    background: linear-gradient(100deg, #a7a39b 0%, #f4f2ec 42%, #ffffff 50%, #f4f2ec 58%, #a7a39b 100%) 0 0 / 300% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: atShimmer 14s ease-in-out infinite;
 }
 
-.extra-info h4 {
-    margin: 0 0 5px 0;
-    font-size: 1.1rem;
+.at-topline b {
+    flex: none;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--accent, #ff3636);
+    text-shadow: 0 0 14px rgba(255, 54, 54, 0.55);
 }
 
-.extra-info p {
-    margin: 0;
-    color: var(--text-gray);
-    font-size: 0.85rem;
+@keyframes atShimmer {
+    0%, 100% { background-position: 0% 0; }
+    50%      { background-position: 100% 0; }
 }
 
-.payment-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 15px;
-}
-
-.payment-icon {
-    width: 32px;
-    height: 32px;
-}
-
-.payment-header h4 {
-    margin: 0;
-    font-size: 1.2rem;
-}
-
-/* ВЪТРЕШНИ МЕТОДИ ЗА ПЛАЩАНЕ */
-.payment-method-item {
-    margin-bottom: 22px;
-    padding-bottom: 18px;
-    border-bottom: 1px solid #1c1c1c;
-}
-
-.payment-method-item:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-}
-
-.method-item-header {
+.at-eyebrow {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 6px;
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
 }
 
-.method-item-icon {
+.at-eyebrow::before { content: ""; width: 6px; height: 6px; background: var(--accent, #ff3636); }
+
+.at-title {
+    margin: 0 0 10px;
+    max-width: 16ch;
+    font-weight: 600;
+    font-size: clamp(34px, 5vw, 62px);
+    line-height: 1.06;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+.at-rule { display: block; width: 56px; height: 2px; background: var(--accent, #ff3636); }
+.at-title + .at-rule { margin-bottom: 28px; }
+
+.at-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 760px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.at-meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.at-meta b {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.at-meta span { font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+/* ── Заглавие на секция + контурен знак ───────────────────── */
+.at-sec-head { position: relative; margin-bottom: 40px; }
+
+.at-sec-head h2 {
+    margin: 0 0 10px;
+    max-width: 20ch;
+    font-weight: 600;
+    font-size: clamp(30px, 4vw, 50px);
+    line-height: 1.1;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+}
+
+.at-ghost {
+    position: absolute;
+    top: -18px;
+    right: 0;
+    font-size: 128px;
+    font-weight: 600;
+    line-height: 0.8;
+    letter-spacing: -0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+}
+
+/* ── Билети ────────────────────────────────────────────────
+   Трите нива са колони на един лист, не три плаващи карти:
+   споделени вертикални хairline-и, изравнени редове (код, име,
+   цена, описание, включено, действие) и голям индекс отгоре.
+   Изравняването е реалната работа тук — цените и разделителите
+   на трите колони стоят на един ред независимо от дължината на
+   имената, защото всяка колона е subgrid по общите редове. */
+.at-tiers {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    border-left: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.at-tier {
+    position: relative;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 6;
+    border-right: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    padding: 26px 30px 30px;
+    transition: background 0.3s ease;
+}
+
+/* Червената линия отгоре — същият жест като .fq-item::after. */
+.at-tier::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.at-tier:hover { background: rgba(255, 255, 255, 0.018); }
+.at-tier:hover::after { transform: scaleX(1); }
+
+/* Ред 1 — код на нивото + индекс */
+.at-tier-code {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.at-tier-code i {
+    font-style: normal;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    color: #6f6b66;
+}
+
+/* Ред 2 — име */
+.at-tier-name {
+    margin: 18px 0 0;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* Ред 3 — цена. Промо цената е основната, старата е зачертана и
+   умишлено по-малка — окото трябва да хване новата първо. */
+.at-tier-price {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0 0;
+    font-weight: 600;
+    font-size: clamp(30px, 3vw, 40px);
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: var(--accent, #ff3636);
+}
+
+.at-tier-price del {
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: #6f6b66;
+    text-decoration-thickness: 1px;
+}
+
+/* Ред 4 — описание */
+.at-tier-desc {
+    margin: 16px 0 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--muted, #a7a39b);
+}
+
+/* Ред 5 — включено */
+.at-tier-perks {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 20px 0 0;
+    border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.at-tier-perks li {
+    position: relative;
+    padding: 0 0 0 26px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+}
+
+.at-tier-perks li:last-child { margin-bottom: 0; }
+
+/* Маркерът е регистрационен кръст от две хairline линии — същият
+   знак като ъглите на банерната рамка. „✓" в Oswald се чете като
+   различен шрифт и чупи вертикалния ритъм. */
+.at-tier-perks li::before,
+.at-tier-perks li::after {
+    content: "";
+    position: absolute;
+    background: var(--accent, #ff3636);
+}
+
+.at-tier-perks li::before { left: 0; top: 11px; width: 9px; height: 1px; }
+.at-tier-perks li::after { left: 4px; top: 7px; width: 1px; height: 9px; }
+
+/* Ред 6 — действие. Празната клетка държи ритъма на колоните, в
+   които няма бутон, затова трите долни ръба са на един ред. */
+.at-tier-action { display: flex; align-items: flex-end; padding-top: 26px; }
+
+.at-tier-btn {
     display: flex;
     align-items: center;
-}
-
-.method-item-icon svg {
-    width: 22px;
-    height: 22px;
-    stroke: var(--accent-red);
-}
-
-.method-item-header h5 {
-    margin: 0;
-    font-size: 0.95rem;
-    color: var(--text-white);
-    font-weight: 600;
-}
-
-.payment-method-item p {
-    color: var(--text-gray);
-    font-size: 0.82rem;
-    line-height: 1.6;
-    margin: 0;
-}
-
-.method-status-tag {
-    font-family: 'Oswald', Arial, sans-serif;
-    font-size: 0.62rem;
-    font-weight: 600;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 58px;
+    padding: 0 20px;
+    background: #ffffff;
+    border: 1px solid #ffffff;
+    color: #050505;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    padding: 1px 8px;
-    border-radius: 3px;
-    letter-spacing: 0.05em;
-    margin-left: auto;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.tag-instant {
-    background: rgba(40, 167, 69, 0.08);
-    border: 1px solid rgba(40, 167, 69, 0.25);
-    color: #28a745;
+.at-tier-btn svg { width: 16px; height: 16px; flex: none; }
+.at-tier-btn:hover { background: #f4f2ec; border-color: #f4f2ec; color: #050505; text-decoration: none; }
+.at-tier-btn:active { background: #e6e3dc; border-color: #e6e3dc; }
+
+.at-tier-note {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #6f6b66;
 }
 
-.tag-manual {
-    background: rgba(255, 149, 0, 0.08);
-    border: 1px solid rgba(255, 149, 0, 0.25);
-    color: #ff9500;
+/* --- Промо нивото ---
+   Единственото плътно поле на страницата: акцентът става фон, а
+   типографията се обръща на бяло. Същият жест като .fq-ask, затова
+   двете страници се четат като един дизайн. */
+.at-tier--promo {
+    background: var(--accent, #ff3636);
+    color: #ffffff;
 }
 
-/* Responsive Design */
-@media (max-width: 992px) {
-    .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+/* БЪГ ФИКС: лентата "LIMITED" е absolute, top:0/right:0, и застъпваше кода
+   на нивото (горе вдясно) — .at-tier има padding-top само 26px, а лентата
+   реално заема ~30px (padding 7px+7px + височина на текста), затова
+   технически кодът стартираше буквално под лентата, не след нея.
+   Бутафорно решение би било да се смали лентата; вместо това добавяме
+   разстояние само на картите С лента — некои без промо не се засягат. */
+.at-tier--promo .at-tier-code {
+    margin-top: 34px;
 }
 
-@media (max-width: 768px) {
-    .pricing-grid, .access-grid, .extras-payment-grid { grid-template-columns: 1fr; gap: 20px; }
-    .extras-column { margin-bottom: 0; }
+.at-tier--promo:hover { background: #f52d2d; }
+.at-tier--promo::after { background: #ffffff; }
+.at-tier--promo .at-tier-code,
+.at-tier--promo .at-tier-code i { color: rgba(255, 255, 255, 0.72); }
+.at-tier--promo .at-tier-price { color: #ffffff; }
+.at-tier--promo .at-tier-price del { color: rgba(255, 255, 255, 0.6); }
+.at-tier--promo .at-tier-desc { color: rgba(255, 255, 255, 0.9); }
+.at-tier--promo .at-tier-perks { border-top-color: rgba(255, 255, 255, 0.3); }
+.at-tier--promo .at-tier-perks li::before,
+.at-tier--promo .at-tier-perks li::after { background: #ffffff; }
+.at-tier--promo .at-tier-note { color: rgba(255, 255, 255, 0.75); }
+
+/* Панделката е ъглов етикет, не залепено knob: линия отгоре и
+   типография, която стои на същата решетка като кода на нивото. */
+.at-ribbon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 7px 12px;
+    background: #ffffff;
+    color: #050505;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+/* ── Достъп (онлайн / журналисти) ─────────────────────────
+   Два широки реда, не карти: индекс, икона, текст, връзка. */
+.at-rows {
+    display: grid;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.at-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 74px 46px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 28px;
+    padding: 30px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.at-row::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.at-row:hover::after { transform: scaleX(1); }
+
+.at-row-idx {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    color: #8a8680;
+    transition: color 0.25s ease;
+}
+
+.at-row:hover .at-row-idx { color: var(--accent, #ff3636); }
+
+.at-row-icon { width: 46px; height: 46px; flex: none; }
+
+/* Иконите са PNG-та от съществуващия проект. Филтърът ги привежда
+   към акцента (същият похват като в стария attendStyle.css), но със
+   стойности, които дават #ff3636, не тъмно бордо. */
+.at-row-icon img,
+.at-extra-icon img,
+.at-pay-icon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(38%) sepia(72%) saturate(4600%) hue-rotate(343deg) brightness(103%) contrast(103%);
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.at-row:hover .at-row-icon img,
+.at-extra:hover .at-extra-icon img { transform: scale(1.08); }
+
+.at-row-body h3 {
+    margin: 0 0 8px;
+    font-weight: 500;
+    font-size: 19px;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.at-row-body p {
+    margin: 0;
+    max-width: 62ch;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--muted, #a7a39b);
+}
+
+.at-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 4px;
+    color: var(--accent, #ff3636);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.at-link svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.at-link:hover { color: #ff6b6b; text-decoration: none; }
+.at-link:hover svg { transform: translateX(5px); }
+
+/* ── Допълнения + плащане ─────────────────────────────────── */
+.at-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.at-split-col { padding: 30px 40px 34px 0; }
+.at-split-col + .at-split-col {
+    padding: 30px 0 34px 40px;
+    border-left: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.at-col-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 24px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.at-extra {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: start;
+    gap: 22px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.at-extra:last-child { border-bottom: 0; }
+.at-extra-icon { width: 40px; height: 40px; flex: none; }
+
+.at-extra-body h4 {
+    margin: 0 0 7px;
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.at-extra-body p {
+    margin: 0;
+    max-width: 46ch;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--muted, #a7a39b);
+}
+
+/* --- Методи на плащане ---
+   Номерирани редове. Статусът е част от типографската решетка, не
+   цветен балон: „моментално" е в акцента, а бавният превод е
+   неутрален контур. Зелено и оранжево са единствените два цвята
+   извън палитрата на редизайна и затова са махнати. */
+.at-pay-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.at-pay-icon { width: 34px; height: 34px; flex: none; }
+
+.at-pay-head h4 {
+    margin: 0;
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.at-method {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.at-method:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.at-method-no {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    color: #8a8680;
+}
+
+.at-method-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.at-method-head svg {
+    width: 21px;
+    height: 21px;
+    flex: none;
+    stroke: var(--accent, #ff3636);
+}
+
+.at-method-head h5 {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    font-weight: 500;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.at-tag {
+    flex: none;
+    padding: 4px 10px;
+    border: 1px solid;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.at-tag--now { border-color: rgba(255, 54, 54, 0.5); color: var(--accent, #ff3636); }
+.at-tag--wait { border-color: rgba(255, 255, 255, 0.2); color: #8a8680; }
+
+.at-method p {
+    margin: 0;
+    max-width: 50ch;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted, #a7a39b);
+}
+
+/* ── Появяване при скрол ──────────────────────────────────────
+   Съдържанието е видимо по подразбиране; JS-ът само въоръжава
+   (is-armed) това под сгъвката. Липсващ JS не може да остави
+   страницата черна — същото правило като в FAQ. */
+.at-reveal {
+    transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.at-reveal.is-armed { opacity: 0; transform: translateY(18px); }
+.at-reveal.is-armed.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .at-reveal, .at-reveal.is-armed { opacity: 1; transform: none; transition: none; }
+    .at-wordmark, .at-jump svg { animation: none; }
+}
+
+/* ── Таблет ───────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+    .at-tiers { grid-template-columns: 1fr; border-left: 0; }
+    .at-tier { grid-row: auto; grid-template-rows: none; border-right: 0; padding: 26px 0 30px; }
+    .at-tier--promo { padding: 26px 24px 30px; }
+    .at-tier-action { padding-top: 22px; }
+    .at-ghost { display: none; }
+
+    /* На една колона редът с кода е на цяла ширина, затова
+       абсолютната панделка би легнала върху него. Влиза в потока
+       като първи ред — същият етикет, без прекриване. */
+    .at-ribbon {
+        position: static;
+        justify-self: start;
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 980px) {
+    .at-banner img { max-height: 320px; }
+    .at-split { grid-template-columns: 1fr; }
+    .at-split-col { padding: 30px 0 12px; }
+    .at-split-col + .at-split-col {
+        padding: 12px 0 34px;
+        border-left: 0;
+        border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    }
+}
+
+/* ── Телефон ──────────────────────────────────────────────── */
+@media (max-width: 820px) {
+    .at-pad, .at-hero-inner { padding-left: 22px; padding-right: 22px; }
+    .at-jump { left: 22px; bottom: 22px; }
+    .at-banner img { max-height: 230px; }
+    .at-frame { inset: 10px; }
+    .at-meta { grid-template-columns: 1fr; }
+    .at-meta > div { padding: 11px 0; }
+    .at-sec { padding: 52px 0 56px; }
+    .at-row {
+        grid-template-columns: 40px minmax(0, 1fr);
+        gap: 14px 16px;
+        padding: 24px 0;
+    }
+    .at-row-icon { grid-column: 1; grid-row: 2; width: 40px; height: 40px; }
+    .at-row-body { grid-column: 2; grid-row: 2; }
+
+    /* На телефон връзката е самостоятелен ред, а не десен край на
+       широк ред — затова трябва и реален таргет за пръст: 22px текстова
+       височина е под прага, за който се цели сигурно. */
+    .at-link {
+        grid-column: 2;
+        grid-row: 3;
+        align-self: start;
+        min-height: 44px;
+        padding-top: 0;
+    }
+    .at-method { grid-template-columns: 34px minmax(0, 1fr); gap: 14px; }
+    .at-method-head { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+    .at-method { grid-template-columns: 1fr; gap: 8px; }
+    .at-method-no { letter-spacing: 0.2em; }
 }

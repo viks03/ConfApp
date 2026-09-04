@@ -91,4 +91,9 @@
   <data name="Conf_InstPartners" xml:space="preserve"><value>INSTITUTIONAL PARTNERS</value></data>
   <data name="Conf_BusPartners" xml:space="preserve"><value>BUSINESS PARTNERS</value></data>
   <data name="Conf_MediaPartners" xml:space="preserve"><value>MEDIA PARTNERS</value></data>
+  <data name="Conf_JumpToConference" xml:space="preserve"><value>To the conference</value></data>
+  <data name="Conf_EditionLabel" xml:space="preserve"><value>Held in</value></data>
+  <data name="Conf_EditionValue" xml:space="preserve"><value>Sofia, three days</value></data>
+  <data name="Conf_CommitteesTitle" xml:space="preserve"><value>Committees</value></data>
+  <data name="Conf_Download" xml:space="preserve"><value>Download</value></data>
 </root>

@@ -1,84 +1,219 @@
-﻿@page
+@page
 @model ConferenceApp.Pages.LecturersModel
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @{
     ViewData["Title"] = Localizer["Nav_Lecturers"].Value ?? "Lecturers";
+
+    var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+    var lecturers = Model.Lecturers ?? new List<ConferenceApp.Models.LecturerModel>();
+
+    // Същата нормализация на категорията като в оригинала — извадена в
+    // локална функция, защото сега се ползва на ДВА места: за
+    // data-category на картата и за броя до всеки филтър. Ако двете се
+    // разминат, филтърът показва число, което не отговаря на резултата.
+    Func<ConferenceApp.Models.LecturerModel, string> normCategory = l =>
+        (l.Category ?? "").ToLower().Replace(" & policy", "").Replace(",", " ");
+
+    // Броят лектори в категория — брои по същите ключове като бутоните.
+    Func<string, int> categoryCount = key =>
+        key == "all"
+            ? lecturers.Count
+            : lecturers.Count(l => normCategory(l).Split(' ', StringSplitOptions.RemoveEmptyEntries).Contains(key));
+
+    var filters = new[]
+    {
+        new { Key = "all", Label = Localizer["Filter_All"].Value },
+        new { Key = "keynote", Label = Localizer["Filter_Keynote"].Value },
+        new { Key = "academic", Label = Localizer["Filter_Academic"].Value },
+        new { Key = "industry", Label = Localizer["Filter_Industry"].Value },
+        new { Key = "regulatory", Label = Localizer["Filter_Regulatory"].Value }
+    };
+
+    // Броят различни организации — показва се в заглавния блок.
+    var orgCount = lecturers
+        .Select(l => isBulgarian
+            ? (string.IsNullOrWhiteSpace(l.OrganizationBg) ? l.OrganizationEn : l.OrganizationBg)
+            : l.OrganizationEn)
+        .Where(o => !string.IsNullOrWhiteSpace(o))
+        .Select(o => o.Trim())
+        .Distinct(StringComparer.CurrentCultureIgnoreCase)
+        .Count();
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/lecturersStyle.css" asp-append-version="true" />
 }
 
-<main>
-    <section class="hero lecturers-hero">
-      <div class="hero-overlay"></div>
+@*
+    Страница „Лектори", редизайн.
 
-      <a href="#tickets-section" class="scroll-down-arrow" aria-label="Scroll down">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </a>
+    Model-ът НЕ е променян: същият `Model.Lecturers`, същите полета,
+    същата нормализация на `Category`. scriptLecturers.js запазва целия
+    си контракт (.filter-btn, [data-filter], .speaker-card,
+    [data-category], .hide) — филтрирането работи както преди.
+
+    Какво се промени визуално:
+    · .hero с background-image → истински <img> банер. СОБСТВЕНИЯТ мотив
+      на тази страница е диагонално щриховане (45° hatch, както се
+      запълва разрез в чертеж) — FAQ и „Участие" носят квадратна
+      решетка, „Програма" носи времева скала;
+    · центрираният подскачащ chevron → технически надпис долу вляво;
+    · заглавният блок е ляво подравнен, с ред техническа метаданни;
+    · филтрите са sticky релса под фиксирания топбар, underline табове
+      с брой лектори до всеки — както релсата с дните на „Програма";
+    · картите не са кутии с фон, радиус и сянка, а клетки на видима
+      решетка; CSS subgrid изравнява портрет, име и биография по редове;
+    · кръглите аватари → КВАДРАТНИ портрети с ъглови маркери, ч/б, които
+      се връщат в цвят при hover. Кръгът беше единствената заоблена
+      форма в целия редизайн;
+    · нов брояч „N показани" и състояние „няма записи" за филтър без
+      резултат — досега филтърът връщаше празно място без обяснение;
+    · клик върху портрета отваря квадратна плоча с голямата снимка в
+      цвят. Разметката й се гради от scriptLecturers.js при първо отваряне,
+      затова тук няма нищо за нея освен двата етикета.
+
+    Нови resx ключове: Lec_MetaLecturers, Lec_MetaLecturersUnit,
+      Lec_MetaOrgs, Lec_MetaOrgsUnit, Lec_MetaCategories,
+      Lec_MetaCategoriesValue, Lec_Shown, Lec_Profile, Lec_JumpToList,
+      Lec_EmptyTitle, Lec_EmptyText, Lec_ViewPhoto, Lec_Close
+*@
+
+<main class="site-main">
+<div class="lecturers-page">
+
+    <section class="lc-banner">
+        <img src="~/images/lecturers/bannerMainLecturers.png" alt="">
+        <div class="lc-banner-tint"></div>
+        <div class="lc-banner-hatch"></div>
+        <div class="lc-frame">
+            <span class="c-tl-h"></span>
+            <span class="c-tl-v"></span>
+            <span class="c-br-h"></span>
+            <span class="c-br-v"></span>
+        </div>
+        <a href="#speakers-section" class="scroll-down-arrow" aria-label="@Localizer["Lec_JumpToList"]">
+            <span>@Localizer["Lec_JumpToList"]</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="6 13 12 19 18 13"></polyline>
+            </svg>
+        </a>
     </section>
 
-    <section class="lecturers-section" id="tickets-section">
-        <div class="section-inner reveal center-section">
-            
+    <section class="lc-hero">
+        <div class="lc-hero-inner">
+            <div class="lc-topline">
+                <span class="lc-wordmark">BLOCKCHAIN EDUCATION 2026</span>
+                <b>УНСС / ICBI</b>
+            </div>
             <div class="page-header">
                 <p class="section-label">@Localizer["Lec_Subtitle"]</p>
                 <h2>@Localizer["Lec_Title"]</h2>
+                <span class="lc-rule"></span>
+                <div class="lc-meta">
+                    <div>
+                        <b>@Localizer["Lec_MetaLecturers"]</b>
+                        <span>@lecturers.Count @Localizer["Lec_MetaLecturersUnit"]</span>
+                    </div>
+                    <div>
+                        <b>@Localizer["Lec_MetaOrgs"]</b>
+                        <span>@orgCount @Localizer["Lec_MetaOrgsUnit"]</span>
+                    </div>
+                    <div>
+                        <b>@Localizer["Lec_MetaCategories"]</b>
+                        <span>@Localizer["Lec_MetaCategoriesValue"]</span>
+                    </div>
+                </div>
             </div>
+        </div>
+    </section>
 
+    @* Sticky релса с филтрите. .filter-menu / .filter-btn / [data-filter]
+       запазват контракта си към scriptLecturers.js. *@
+    <div class="lc-rail">
+        <div class="lc-rail-inner">
             <div class="filter-menu">
-                <button class="filter-btn active" data-filter="all">@Localizer["Filter_All"]</button>
-                <button class="filter-btn" data-filter="keynote">@Localizer["Filter_Keynote"]</button>
-                <button class="filter-btn" data-filter="academic">@Localizer["Filter_Academic"]</button>
-                <button class="filter-btn" data-filter="industry">@Localizer["Filter_Industry"]</button>
-                <button class="filter-btn" data-filter="regulatory">@Localizer["Filter_Regulatory"]</button>
-            </div>
-
-            <div class="speakers-grid">
-                @if (Model.Lecturers != null && Model.Lecturers.Any())
+                @foreach (var f in filters)
                 {
-                    foreach (var lecturer in Model.Lecturers)
+                    <button class="filter-btn @(f.Key == "all" ? "active" : "")" type="button" data-filter="@f.Key">
+                        @f.Label
+                        <i>@categoryCount(f.Key).ToString("00")</i>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <section class="lc-sec" id="speakers-section">
+        <div class="lc-pad">
+            <p class="lc-count"><b>@lecturers.Count</b> @Localizer["Lec_Shown"]</p>
+
+            <div class="speakers-grid" data-close-label="@Localizer["Lec_Close"]">
+                @if (lecturers.Any())
+                {
+                    var index = 0;
+                    foreach (var lecturer in lecturers)
                     {
-                        var isBulgarian = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
-                        
+                        index++;
+
                         var name = isBulgarian ? (string.IsNullOrWhiteSpace(lecturer.FullNameBg) ? lecturer.FullNameEn : lecturer.FullNameBg) : lecturer.FullNameEn;
                         var role = isBulgarian ? (string.IsNullOrWhiteSpace(lecturer.RoleBg) ? lecturer.RoleEn : lecturer.RoleBg) : lecturer.RoleEn;
                         var org = isBulgarian ? (string.IsNullOrWhiteSpace(lecturer.OrganizationBg) ? lecturer.OrganizationEn : lecturer.OrganizationBg) : lecturer.OrganizationEn;
                         var bio = isBulgarian ? (string.IsNullOrWhiteSpace(lecturer.BiographyBg) ? lecturer.BiographyEn : lecturer.BiographyBg) : lecturer.BiographyEn;
                         var avatarSrc = string.IsNullOrEmpty(lecturer.AvatarImagePath) ? "/images/logos/avatar.png" : lecturer.AvatarImagePath;
-                        
+
                         // Форматираме категорията, за да съвпада с data-filter бутоните (напр. "Regulatory & Policy" става "regulatory")
-                        var dataCategory = (lecturer.Category ?? "").ToLower().Replace(" & policy", "").Replace(",", " ");
+                        var dataCategory = normCategory(lecturer);
                         var hasUrl = !string.IsNullOrEmpty(lecturer.ProfileUrl);
 
                         if (hasUrl)
                         {
                             <a class="speaker-card" data-category="@dataCategory"
                                href="@lecturer.ProfileUrl" target="_blank" rel="noopener">
-                                <div class="avatar"><img src="@avatarSrc" alt="@name"></div>
+                                <span class="lc-index">@index.ToString("00")</span>
+                                <div class="avatar" role="button" tabindex="0" aria-label="@Localizer["Lec_ViewPhoto"]"><img src="@avatarSrc" alt="@name"></div>
                                 <h4>@name</h4>
-                                <p class="role">@role</p>
-                                <p class="org">@org</p>
-                                <p class="bio">@bio</p>
+                                <div class="lc-ident">
+                                    <p class="role">@role</p>
+                                    <p class="org">@org</p>
+                                </div>
+                                <div class="lc-body">
+                                    <p class="bio">@bio</p>
+                                    <p class="lc-more">
+                                        @Localizer["Lec_Profile"]
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                    </p>
+                                </div>
                             </a>
                         }
                         else
                         {
                             <div class="speaker-card" data-category="@dataCategory">
-                                <div class="avatar"><img src="@avatarSrc" alt="@name"></div>
+                                <span class="lc-index">@index.ToString("00")</span>
+                                <div class="avatar" role="button" tabindex="0" aria-label="@Localizer["Lec_ViewPhoto"]"><img src="@avatarSrc" alt="@name"></div>
                                 <h4>@name</h4>
-                                <p class="role">@role</p>
-                                <p class="org">@org</p>
-                                <p class="bio">@bio</p>
+                                <div class="lc-ident">
+                                    <p class="role">@role</p>
+                                    <p class="org">@org</p>
+                                </div>
+                                <div class="lc-body">
+                                    <p class="bio">@bio</p>
+                                </div>
                             </div>
                         }
                     }
                 }
             </div>
+
+            @* Показва се от scriptLecturers.js, когато филтърът не върне
+               нищо. Досега потребителят виждаше празно място. *@
+            <div class="lc-empty">
+                <b>@Localizer["Lec_EmptyTitle"]</b>
+                <span>@Localizer["Lec_EmptyText"]</span>
+            </div>
         </div>
     </section>
+</div>
 </main>
 
 @section Scripts {

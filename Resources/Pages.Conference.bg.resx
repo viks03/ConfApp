@@ -91,4 +91,9 @@
   <data name="Conf_InstPartners" xml:space="preserve"><value>ИНСТИТУЦИОНАЛНИ ПАРТНЬОРИ</value></data>
   <data name="Conf_BusPartners" xml:space="preserve"><value>БИЗНЕС ПАРТНЬОРИ</value></data>
   <data name="Conf_MediaPartners" xml:space="preserve"><value>МЕДИЙНИ ПАРТНЬОРИ</value></data>
+  <data name="Conf_JumpToConference" xml:space="preserve"><value>Към конференцията</value></data>
+  <data name="Conf_EditionLabel" xml:space="preserve"><value>Провеждане</value></data>
+  <data name="Conf_EditionValue" xml:space="preserve"><value>София, три дни</value></data>
+  <data name="Conf_CommitteesTitle" xml:space="preserve"><value>Комитети</value></data>
+  <data name="Conf_Download" xml:space="preserve"><value>Изтегли</value></data>
 </root>

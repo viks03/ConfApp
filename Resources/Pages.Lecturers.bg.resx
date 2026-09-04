@@ -34,4 +34,17 @@
   <data name="Filter_Academic" xml:space="preserve"><value>Академични</value></data>
   <data name="Filter_Industry" xml:space="preserve"><value>Индустрия</value></data>
   <data name="Filter_Regulatory" xml:space="preserve"><value>Регулации</value></data>
+  <data name="Lec_JumpToList" xml:space="preserve"><value>Към лекторите</value></data>
+  <data name="Lec_MetaLecturers" xml:space="preserve"><value>Лектори</value></data>
+  <data name="Lec_MetaLecturersUnit" xml:space="preserve"><value>потвърдени</value></data>
+  <data name="Lec_MetaOrgs" xml:space="preserve"><value>Институции</value></data>
+  <data name="Lec_MetaOrgsUnit" xml:space="preserve"><value>организации</value></data>
+  <data name="Lec_MetaCategories" xml:space="preserve"><value>Категории</value></data>
+  <data name="Lec_MetaCategoriesValue" xml:space="preserve"><value>Основни, академични, индустрия, регулация</value></data>
+  <data name="Lec_Shown" xml:space="preserve"><value>показани</value></data>
+  <data name="Lec_Profile" xml:space="preserve"><value>Виж профила</value></data>
+  <data name="Lec_EmptyTitle" xml:space="preserve"><value>Няма записи</value></data>
+  <data name="Lec_ViewPhoto" xml:space="preserve"><value>Виж снимката в едър план</value></data>
+  <data name="Lec_Close" xml:space="preserve"><value>Затвори</value></data>
+  <data name="Lec_EmptyText" xml:space="preserve"><value>В тази категория още няма потвърдени лектори. Изберете друга категория или вижте всички.</value></data>
 </root>

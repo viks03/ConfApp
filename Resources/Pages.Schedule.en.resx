@@ -60,4 +60,18 @@
   <data name="ROUNDTABLE" xml:space="preserve"><value>ROUNDTABLE</value></data>
   <data name="CLOSING SESSION" xml:space="preserve"><value>CLOSING SESSION</value></data>
   <data name="FAREWELL LUNCH" xml:space="preserve"><value>FAREWELL LUNCH</value></data>
+  <data name="Sched_JumpToProgram" xml:space="preserve"><value>Jump to the programme</value></data>
+  <data name="Sched_HeroEyebrow" xml:space="preserve"><value>Programme</value></data>
+  <data name="Sched_MetaDates" xml:space="preserve"><value>Dates</value></data>
+  <data name="Sched_MetaDatesValue" xml:space="preserve"><value>29 – 31 October</value></data>
+  <data name="Sched_MetaSessions" xml:space="preserve"><value>Sessions</value></data>
+  <data name="Sched_MetaSessionsUnit" xml:space="preserve"><value>in the programme</value></data>
+  <data name="Sched_MetaLang" xml:space="preserve"><value>Language</value></data>
+  <data name="Sched_MetaLangValue" xml:space="preserve"><value>Bulgarian and English</value></data>
+  <data name="Sched_DayWord" xml:space="preserve"><value>Day</value></data>
+  <data name="Sched_SessionsShort" xml:space="preserve"><value>sessions</value></data>
+  <data name="Sched_TrackWord" xml:space="preserve"><value>Track</value></data>
+  <data name="Sched_DownloadLabel" xml:space="preserve"><value>The programme as PDF</value></data>
+  <data name="Sched_DownloadNote" xml:space="preserve"><value>All three days, print-ready</value></data>
+  <data name="Sched_NoEventsTitle" xml:space="preserve"><value>No entries</value></data>
 </root>

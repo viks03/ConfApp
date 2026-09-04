@@ -1,4 +1,38 @@
-document.addEventListener("DOMContentLoaded", () => {
+// initSchedule() се вика през guard-а в края на файла, а НЕ директно на
+// DOMContentLoaded: ако скриптът бъде зареден след като събитието вече
+// е минало (defer, async, динамично включване, късно преместване
+// на тага), listener-ът никога не се изпълнява и целият файл става
+// мъртъв — табовете, индикаторът и „прочети повече" престават да
+// работят без никаква грешка в конзолата.
+function initSchedule() {
+    // --- Височината на топбара → --sc-rail-top ---
+    // Релсата с дните е sticky и трябва да се залепи ТОЧНО под
+    // фиксирания топбар. Реалната му височина се мени между
+    // breakpoint-ите (при ≤640px той става grid с други отстояния, виж
+    // mainStyle.css), а при завъртане на телефон и при по-дълги
+    // локализирани етикети тя може да е още различна. Фиксирана
+    // константа в CSS-а ви оставя с процеп или с прикрит ред,
+    // затова тук се измерва. Стойността в CSS-а остава като fallback,
+    // ако JS-ът не се зареди.
+    const schedulePage = document.querySelector('.schedule-page');
+    const topbarEl = document.querySelector('.topbar');
+
+    function syncRailOffset() {
+        if (!schedulePage || !topbarEl) return;
+        const h = Math.round(topbarEl.getBoundingClientRect().height);
+        if (h > 0) schedulePage.style.setProperty('--sc-rail-top', h + 'px');
+    }
+
+    syncRailOffset();
+    window.addEventListener('load', syncRailOffset);
+    window.addEventListener('orientationchange', syncRailOffset);
+
+    // Топбарът може да смени височината си и без resize — напр. когато
+    // мобилното меню го пренарежда или след зареждане на шрифта.
+    if (typeof ResizeObserver === 'function' && topbarEl) {
+        try { new ResizeObserver(syncRailOffset).observe(topbarEl); } catch (e) { /* стар браузър */ }
+    }
+
     const dayButtons = document.querySelectorAll('.day-btn');
     const tabPanes = document.querySelectorAll('.tab-pane');
     const toggleContainer = document.querySelector('.day-toggles');
@@ -12,7 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!toggleContainer || !indicator || !button) return;
         const containerRect = toggleContainer.getBoundingClientRect();
         const btnRect = button.getBoundingClientRect();
-        indicator.style.left = (btnRect.left - containerRect.left) + "px";
+        // scrollLeft: на телефон релсата с дните е хоризонтално
+        // скролируема, затова позицията се смята спрямо СЪДЪРЖАНИЕТО на
+        // контейнера, не спрямо видимата му част — иначе индикаторът
+        // изостава при скролната лента.
+        indicator.style.left = (btnRect.left - containerRect.left + toggleContainer.scrollLeft) + "px";
         indicator.style.width = btnRect.width + "px";
     }
 
@@ -47,12 +85,22 @@ document.addEventListener("DOMContentLoaded", () => {
     moveIndicatorTo(getActiveButton());
     window.addEventListener('load', () => moveIndicatorTo(getActiveButton()));
 
+    // Хоризонталният скрол на релсата (телефон) също мести бутоните —
+    // индикаторът е абсолютно позициониран в същия контейнер, затова
+    // трябва да се преизчисли, за да не изостава.
+    if (toggleContainer) {
+        toggleContainer.addEventListener('scroll', () => {
+            moveIndicatorTo(getActiveButton());
+        }, { passive: true });
+    }
+
     // При resize (завъртане на телефон, преоразмеряване на прозорец) —
     // ширините на бутоните може да са различни, преизчисляваме без анимация.
     let resizeTimeout;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
+            syncRailOffset();
             if (indicator) indicator.style.transition = 'none';
             moveIndicatorTo(getActiveButton());
             if (indicator) {
@@ -170,9 +218,10 @@ document.addEventListener("DOMContentLoaded", () => {
         readMoreResizeTimeout = setTimeout(refreshReadMore, 150);
     });
 
-    // --- Стрелка за скрол (само десктоп — CSS я скрива на мобилен) ---
-    // position: fixed към viewport-а гарантира вярна позиция навсякъде;
-    // тук просто я скриваме, щом потребителят вече е скролнал надолу.
+    // --- Стрелка за скрол ---
+    // Вече е технически надпис в самия банер (position: absolute), не
+    // fixed елемент над съдържанието. JS-ът остава същият: крие я щом
+    // потребителят е скролнал, и гарантира smooth scroll при клик.
     const scrollArrow = document.querySelector('.scroll-down-arrow');
     if (scrollArrow) {
         const toggleArrowVisibility = () => {
@@ -193,4 +242,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSchedule);
+} else {
+    initSchedule();
+}

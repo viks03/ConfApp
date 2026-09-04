@@ -61,4 +61,21 @@
   
   <data name="Attend_Tag_Instant" xml:space="preserve"><value>Моментално</value></data>
   <data name="Attend_Tag_Days" xml:space="preserve"><value>дни</value></data>
+  <data name="Attend_JumpToTickets" xml:space="preserve"><value>Към билетите</value></data>
+  <data name="Attend_HeroEyebrow" xml:space="preserve"><value>Такси и достъп</value></data>
+  <data name="Attend_HeroTitle" xml:space="preserve"><value>Билети и достъп</value></data>
+  <data name="Attend_MetaTiers" xml:space="preserve"><value>Нива</value></data>
+  <data name="Attend_MetaTiersUnit" xml:space="preserve"><value>типа билети</value></data>
+  <data name="Attend_MetaPay" xml:space="preserve"><value>Плащане</value></data>
+  <data name="Attend_MetaPayValue" xml:space="preserve"><value>Карта, крипто, превод</value></data>
+  <data name="Attend_TierWord" xml:space="preserve"><value>Ниво</value></data>
+  <data name="Attend_TierNote_Request" xml:space="preserve"><value>Изберете при регистрация</value></data>
+  <data name="Attend_AccessLabel" xml:space="preserve"><value>Друг достъп</value></data>
+  <data name="Attend_AccessTitle" xml:space="preserve"><value>Онлайн и акредитация</value></data>
+  <data name="Attend_OrgLabel" xml:space="preserve"><value>Логистика</value></data>
+  <data name="Attend_ExtrasSubLabel" xml:space="preserve"><value>2 услуги</value></data>
+  <data name="Attend_PayLabel" xml:space="preserve"><value>3 метода</value></data>
+  <data name="Attend_PayAccept" xml:space="preserve"><value>Приемаме</value></data>
+  <data name="Attend_MetaDeadline" xml:space="preserve"><value>EARLY BIRD</value></data>
+  <data name="Attend_MetaDeadlineValue" xml:space="preserve"><value>До 10 октомври 2026</value></data>
 </root>

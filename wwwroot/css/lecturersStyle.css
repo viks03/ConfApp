@@ -1,194 +1,934 @@
-:root {
-    --bg-black: #0a0a0a;
-    --bg-btn: #1f1f1f;
-    --accent-red: #8b0000;
-    --text-white: #ffffff;
-    --text-gray: #a0a0a0;
-    --text-dark-gray: #666666;
-    --card-bg: #141414;
-    --card-hover: #1a1a1a;
-    --border-color: #222222;
+/* ============================================================
+   lecturersStyle.css — страница „Лектори", редизайн.
+   Езикът е същият като stylesFAQ.css / attendStyle.css /
+   scheduleStyle.css: Oswald, нулев радиус, хairline линии, червен
+   акцент, регистрационни маркери.
+
+   ВАЖНО — scriptLecturers.js запазва контракта си:
+     .filter-btn, .filter-btn.active, [data-filter],
+     .speaker-card, [data-category], .speaker-card.hide
+   Филтрирането работи точно както преди.
+
+   СОБСТВЕНИЯТ МОТИВ НА ТАЗИ СТРАНИЦА е диагонално щриховане —
+   45° hatch, както се запълва разрез в технически чертеж. FAQ и
+   „Участие" носят квадратна решетка, „Програма" носи времева скала;
+   тук е трети знак, със същата плътност и същия soft-light бленд.
+
+   Както в attendStyle.css / scheduleStyle.css, .lecturers-page НЕ
+   рисува плътен фон — идва от <body> (mainStyle.css), за да може
+   по-късно глобален ambient слой да стои ЗАД страницата.
+   ============================================================ */
+
+.lecturers-page {
+    background: transparent;
+    color: var(--text, #f4f2ec);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 300;
+
+    /* Реалната височина на топбара се измерва от scriptLecturers.js
+       и се записва тук — релсата с филтрите се залепва точно под
+       фиксираната навигация. Стойността е само fallback. */
+    --lc-rail-top: 66px;
 }
 
-.center-section {
-    text-align: center;
+.lecturers-page ::selection { background: rgba(255, 54, 54, 0.35); }
+.lecturers-page :focus-visible { outline: 2px solid var(--accent, #ff3636); outline-offset: 2px; }
+
+.lc-pad { max-width: 1320px; margin: 0 auto; padding: 0 6vw; }
+.lc-sec { padding: 56px 0 96px; }
+
+/* ── Банер ───────────────────────────────────────────────── */
+.lc-banner { position: relative; width: 100%; overflow: hidden; }
+
+/* Снимката е цветна и светла, както на „Програма" и travel —
+   само лек контраст, за да не се размива под overlay-ите. */
+.lc-banner img {
+    display: block;
+    width: 100%;
+    max-height: 460px;
+    object-fit: cover;
+    object-position: 50% 38%;
+    filter: contrast(1.06) saturate(1.02);
+}
+
+.lc-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 4px);
+}
+
+.lc-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(5, 5, 5, 0.4) 0%, rgba(5, 5, 5, 0) 20%, rgba(5, 5, 5, 0) 58%, rgba(5, 5, 5, 0.96) 100%);
+}
+
+/* --- Мотивът: диагонално щриховане ---
+   45° hatch на 9px стъпка, както се запълва разрез в чертеж.
+   Плътността е нарочно под тази на решетката: диагоналът покрива
+   повече площ на същия интервал, затова 0.045 тук тежи колкото
+   0.05 при правите линии. Вторият слой е рядък контра-щрих на
+   72px, който дава плитка мрежа само където се пресичат. */
+.lc-banner-hatch {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+    background:
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.045) 0px, rgba(255, 255, 255, 0.045) 1px, transparent 1px, transparent 9px),
+        repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 72px);
+}
+
+.lc-banner-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    background: linear-gradient(180deg, rgba(255, 54, 54, 0.07) 0%, rgba(255, 54, 54, 0) 30%);
+}
+
+.lc-frame {
+    position: absolute;
+    inset: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    pointer-events: none;
+}
+
+.lc-frame span { position: absolute; background: var(--accent, #ff3636); }
+.lc-frame .c-tl-h { top: -1px; left: -1px; width: 26px; height: 2px; }
+.lc-frame .c-tl-v { top: -1px; left: -1px; width: 2px; height: 26px; }
+.lc-frame .c-br-h { bottom: -1px; right: -1px; width: 26px; height: 2px; }
+.lc-frame .c-br-v { bottom: -1px; right: -1px; width: 2px; height: 26px; }
+
+/* Стрелката запазва класа си (scriptLecturers.js не я пипа, но
+   mainStyle.css и другите страници ползват същото име), но е
+   технически надпис долу вляво, не центриран подскачащ chevron. */
+.scroll-down-arrow {
+    position: absolute;
+    left: 6vw;
+    bottom: 34px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    width: auto;
+    height: auto;
+    padding: 12px 0;
+    transform: none;
+    animation: none;
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.scroll-down-arrow span { position: relative; padding-bottom: 4px; }
+
+.scroll-down-arrow span::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.scroll-down-arrow:hover { color: #ffffff; transform: none; }
+.scroll-down-arrow:hover span::after { transform: scaleX(1); }
+.scroll-down-arrow.is-hidden { opacity: 0; pointer-events: none; }
+
+.scroll-down-arrow svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    stroke: var(--accent, #ff3636);
+    animation: lcNudge 2.6s ease-in-out infinite;
+}
+
+@keyframes lcNudge {
+    0%, 62%, 100% { transform: translateY(0); }
+    76%           { transform: translateY(6px); }
+    88%           { transform: translateY(2px); }
+}
+
+/* ── Заглавен блок ───────────────────────────────────────── */
+.lc-hero { position: relative; border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08)); }
+
+.lc-hero-inner {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    gap: 40px;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 30px 6vw 26px;
 }
 
-/* Hero Section */
-.lecturers-hero {
-    /* Променете пътя по-долу, за да сложите вашата снимка */
-    background-image: url('../images/lecturers/bannerMainLecturers.png'); 
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-}
-
-/* Уверяваме се, че банерът е позициониран правилно, за да държи стрелката */
-.hero.attend-hero {
-  position: relative;
-}
-
-/* Стилът на самата стрелка */
-.scroll-down-arrow {
-  position: absolute;
-  bottom: 40px; /* На 40px от долния ръб на банера */
-  left: 50%;
-  transform: translateX(-50%); /* Центрираме я перфектно */
-  width: 50px;
-  height: 50px;
-  color: #ffffff; /* Бял цвят */
-  z-index: 10;
-  transition: color 0.3s ease;
-  animation: bounce 2s infinite; /* Извикваме анимацията за подскачане */
-}
-
-/* Ефект при посочване с мишката */
-.scroll-down-arrow:hover {
-  color: #cc0000; /* Става в акцентното ви червено */
-}
-
-/* Анимацията (Keyframes) за подскачането */
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateX(-50%) translateY(0);
-  }
-  40% {
-    transform: translateX(-50%) translateY(-15px);
-  }
-  60% {
-    transform: translateX(-50%) translateY(-7px);
-  }
-}
-
-/* Header */
-.page-header {
-    margin-bottom: 50px;
-}
-
-/* Filter Menu */
-.filter-menu {
+.lc-topline {
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 50px;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.lc-wordmark {
+    background: linear-gradient(100deg, #a7a39b 0%, #f4f2ec 42%, #ffffff 50%, #f4f2ec 58%, #a7a39b 100%) 0 0 / 300% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: lcShimmer 14s ease-in-out infinite;
+}
+
+.lc-topline b {
+    flex: none;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--accent, #ff3636);
+    text-shadow: 0 0 14px rgba(255, 54, 54, 0.55);
+}
+
+@keyframes lcShimmer {
+    0%, 100% { background-position: 0% 0; }
+    50%      { background-position: 100% 0; }
+}
+
+/* .page-header запазва името си (ползва се от mainStyle.css), но
+   тук е ляво подравнен блок, не центриран заглавен надпис. */
+.page-header { margin: 0; text-align: left; }
+
+.lc-eyebrow,
+.page-header .section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.lc-eyebrow::before,
+.page-header .section-label::before { content: ""; width: 6px; height: 6px; flex: none; background: var(--accent, #ff3636); }
+
+.lc-title,
+.page-header h2 {
+    margin: 0 0 10px;
+    max-width: 18ch;
+    font-weight: 600;
+    font-size: clamp(34px, 5vw, 62px);
+    line-height: 1.06;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+.lc-rule { display: block; width: 56px; height: 2px; background: var(--accent, #ff3636); }
+.lc-title + .lc-rule,
+.page-header h2 + .lc-rule { margin-bottom: 28px; }
+
+.lc-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 760px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.lc-meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.lc-meta b {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.lc-meta span { font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+/* ── Релса с филтрите ────────────────────────────────────
+   Sticky точно под фиксирания топбар, като релсата с дните на
+   „Програма" — при 20+ лектори филтърът трябва да е под ръка,
+   а не на един скрол нагоре. z-index: 5 срещу 20 на топбара:
+   релсата минава ПОД навигацията, не върху нея.
+
+   .filter-menu / .filter-btn / [data-filter] запазват имената си;
+   бутоните вече не са капсули с фон и сянка, а underline табове —
+   същият похват като .day-btn. */
+.lc-rail {
+    position: sticky;
+    top: var(--lc-rail-top);
+    z-index: 5;
+    background: var(--bg, #050505);
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.lc-rail::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -20px;
+    height: 20px;
+    background: var(--bg, #050505);
+    pointer-events: none;
+}
+
+.lc-rail-inner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 6vw;
+}
+
+.filter-menu {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 0;
+    margin: 0;
+    max-width: none;
 }
 
 .filter-btn {
-    background-color: var(--bg-btn);
-    color: var(--text-white);
-    border: none;
-    padding: 10px 25px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.filter-btn:hover {
-    background-color: #333;
-}
-
-.filter-btn.active {
-    background-color: var(--accent-red);
-    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
-}
-
-/* Grid Layout */
-.speakers-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 25px;
-}
-
-/* Speaker Card */
-.speaker-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 40px;
-    text-align: center;
+    position: relative;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.4s ease;
+    gap: 5px;
+    padding: 18px 24px 16px;
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-radius: 0;
+    box-shadow: none;
+    color: #8a8680;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+    transition: color 0.25s ease;
 }
+
+.filter-btn:first-child { padding-left: 0; }
+.filter-btn:last-child { border-right: 0; }
+
+/* Броят на лекторите в категорията — на филтър без число човек
+   не знае дали ще му покаже двама или двадесет. */
+.filter-btn i {
+    font-style: normal;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: #6f6b66;
+    transition: color 0.25s ease;
+}
+
+.filter-btn:hover { color: var(--text, #f4f2ec); background: transparent; }
+
+.filter-btn.active {
+    background: transparent;
+    box-shadow: none;
+    color: #ffffff;
+}
+
+.filter-btn.active i { color: var(--accent, #ff3636); }
+
+/* Долната линия на активния таб. Не е плъзгащ индикатор като на
+   „Програма": филтрите могат да са с различен брой и на телефон
+   релсата се скролва — ::after на самия бутон е точен винаги, без
+   JS да смята позиции. */
+.filter-btn.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    box-shadow: 0 0 12px rgba(255, 54, 54, 0.5);
+}
+
+.filter-btn:first-child.active::after { left: 0; }
+
+/* ── Броячът над решетката ───────────────────────────────── */
+.lc-count {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0 0 26px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #6f6b66;
+}
+
+.lc-count b { color: var(--text, #f4f2ec); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* ── Решетката с лекторите ───────────────────────────────
+   Три равни клетки на видима решетка: хairline-ите се рисуват от
+   ръбовете на самите клетки, а не от gap-ове, така че структурата
+   се чете като чертеж. subgrid изравнява портрет, име и биография
+   по редове — иначе всяка клетка става различно висока и решетката
+   се разпада.
+
+   .speakers-grid и .speaker-card запазват имената си (JS-ът чете
+   .speaker-card и слага .hide). */
+.speakers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    border-left: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+
+.speaker-card {
+    position: relative;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 4;
+    align-content: start;
+    gap: 0;
+    padding: 26px 26px 30px;
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-radius: 0;
+    box-shadow: none;
+    text-align: left;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.32s ease;
+}
+
+/* Решетката има 4 реда на карта: портрет, име, роля/организация
+   и тяло (биография + връзката към профила). Връзката е ВЪТРЕ във
+   .lc-body именно затова — тя съществува само при част от лекторите, а
+   броят на редовете в subgrid трябва да е един и същ за всички. */
+.lc-body { min-width: 0; }
 
 .speaker-card:hover {
-    transform: translateY(-5px);
-    background-color: var(--card-hover);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    transform: none;
+    background: rgba(255, 255, 255, 0.014);
+    box-shadow: none;
 }
 
-/* Клас за скриване на картите през JS */
-.speaker-card.hide {
-    display: none;
+/* Акцентната линия по горния ръб при hover — същият жест като
+   .fq-item, .at-row и .timeline-item. Това връзва страниците. */
+.speaker-card::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
 }
 
+.speaker-card:hover::after { transform: scaleX(1); }
+.speaker-card.hide { display: none; }
+
+/* Индексът на лектора — горе вдясно, като кода на нивото в
+   „Участие". Дава на решетката броене и мащаб. */
+.lc-index {
+    position: absolute;
+    top: 26px;
+    right: 26px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: #4d4a46;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Портретът е КВАДРАТЕН и хairline-ограден с ъглови маркери, не
+   кръгъл аватар: кръгът е единствената заоблена форма в целия
+   редизайн и стърчи. Квадратът показва и повече от лицето. */
 .avatar {
-    width: 80px;
-    height: 80px;
-    background-color: #222;
-    border-radius: 50%;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: relative;
+    width: 100%;
+    max-width: 168px;
+    cursor: zoom-in;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    margin: 0 0 20px;
+    background: #101010;
+    border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    border-radius: 0;
     overflow: hidden;
+    display: block;
 }
 
 .avatar img {
+    position: relative;
+    z-index: 1;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    /* Портретите идват от различни източници и с различна
+       обработка — ч/б ги привежда към един вид, както духът на
+       страницата. При hover се връща цветът. */
+    filter: grayscale(1) contrast(1.06);
+    transition: filter 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .speaker-card:hover .avatar img {
-    transform: scale(1.08);
+    transform: scale(1.03);
+    filter: grayscale(0) contrast(1.02);
 }
 
-.avatar img { position: relative; z-index: 1; }
+/* Порталът е кликаем сам за себе си (отваря снимката в едър план), а
+   цялата карта е <a> към профила — затова портретът има СВОЕ hover и
+   focus състояние, за да е ясно, че е отделен таргет. */
+.avatar:hover img { filter: grayscale(0) contrast(1.02); }
+.avatar:hover::before,
+.avatar:hover::after,
+.avatar:focus-visible::before,
+.avatar:focus-visible::after { width: 20px; height: 20px; }
+
+.avatar::before,
+.avatar::after { transition: width 0.28s ease, height 0.28s ease; }
+
+/* Знакът за увеличение — появява се само при посочване на портрета,
+   за да не спори с индекса и с маркерите в спокойно състояние. */
+.lc-zoom {
+    position: absolute;
+    z-index: 3;
+    right: 8px;
+    bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: rgba(5, 5, 5, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.26s ease, transform 0.26s ease;
+    pointer-events: none;
+}
+
+.lc-zoom svg { width: 15px; height: 15px; stroke: var(--accent, #ff3636); }
+
+.avatar:hover .lc-zoom,
+.avatar:focus-visible .lc-zoom { opacity: 1; transform: none; }
+
+/* Регистрационните маркери на портрета */
+.avatar::before,
+.avatar::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+}
+
+.avatar::before {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid var(--accent, #ff3636);
+    border-left: 2px solid var(--accent, #ff3636);
+}
+
+.avatar::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 2px solid var(--accent, #ff3636);
+    border-right: 2px solid var(--accent, #ff3636);
+}
 
 .speaker-card h4 {
-    margin: 0 0 8px;
-    font-size: 1.1rem;
+    margin: 0 0 10px;
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 1.24;
+    letter-spacing: 0.015em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+    text-wrap: pretty;
+}
+
+/* Роля и организация са един блок: две отделни реда с празнина
+   между тях се четяха като несвързани данни. */
+.lc-ident {
+    margin: 0 0 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.08));
 }
 
 .speaker-card .role {
-    color: var(--accent-red);
-    font-size: 0.85rem;
-    margin: 0 0 5px;
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
 }
 
 .speaker-card .org {
-    color: var(--text-dark-gray);
-    font-size: 0.8rem;
-    margin: 0 0 20px;
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8a8680;
 }
 
 .speaker-card .bio {
-    color: var(--text-gray);
-    font-size: 0.85rem;
-    line-height: 1.5;
     margin: 0;
+    font-size: 14px;
+    line-height: 1.62;
+    color: var(--muted, #a7a39b);
+    /* Биографиите са с много различна дължина; без ограничение
+       една карта става три пъти по-висока от съседната и
+       решетката се разпада. Осем реда стигат за същината. */
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-/* Мобилна адаптация */
+/* Връзката към профила се появява само когато ProfileUrl го има.
+   Цялата карта е <a> в този случай (така е и в оригинала), затова
+   това е надпис, не бутон в бутон. */
+.lc-more {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 18px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.lc-more svg {
+    width: 13px;
+    height: 13px;
+    flex: none;
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.speaker-card:hover .lc-more svg { transform: translateX(4px); }
+
+/* ── Снимката в едър план (модал) ────────────────────────
+   Квадратна плоча в чертожния език на страницата: нулев радиус,
+   хairline рамка, регистрационни маркери в четирите ъгъла. Тук
+   снимката е в ЦВЯТ и голяма — това е целият смисъл на отварянето;
+   ч/б обработката в решетката служи на еднообразието, не на
+   разглеждането.
+
+   Създава се от scriptLecturers.js при първо отваряне, затова в
+   Razor-а няма разметка за нея. */
+.lc-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5vh 6vw;
+    background: rgba(5, 5, 5, 0.9);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+}
+
+/* Диагоналната щриховка на банера се връща тук, много по-тиха —
+   плочата стои на същия чертеж, а не в празно поле. */
+.lc-modal-backdrop::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.022) 0px, rgba(255, 255, 255, 0.022) 1px, transparent 1px, transparent 9px);
+}
+
+.lc-modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+.lc-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(92vw, 540px);
+    max-height: 90vh;
+    background: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 0;
+    overflow: hidden;
+    transform: translateY(12px) scale(0.985);
+    opacity: 0;
+    transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.28s ease;
+}
+
+.lc-modal-backdrop.is-open .lc-modal { transform: none; opacity: 1; }
+
+.lc-modal i.corner {
+    position: absolute;
+    z-index: 2;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+}
+
+.lc-modal i.tl { top: -1px; left: -1px; border-top: 2px solid var(--accent, #ff3636); border-left: 2px solid var(--accent, #ff3636); }
+.lc-modal i.tr { top: -1px; right: -1px; border-top: 2px solid var(--accent, #ff3636); border-right: 2px solid var(--accent, #ff3636); }
+.lc-modal i.bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--accent, #ff3636); border-left: 2px solid var(--accent, #ff3636); }
+.lc-modal i.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--accent, #ff3636); border-right: 2px solid var(--accent, #ff3636); }
+
+/* Квадратна снимка — същата пропорция като портрета в решетката,
+   само че голяма и в цвят. */
+.lc-modal-photo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* flex: 0 1 auto + min-height: 0 — квадратът е ЖЕЛАНАТА пропорция,
+       но при нисък прозорец (или дълго име в описанието) трябва да се
+       свие, вместо да излезе извън плочата. Снимката е object-fit:
+       cover, затова свиването само я подрязва. */
+    flex: 0 1 auto;
+    min-height: 0;
+    background: #101010;
+    overflow: hidden;
+}
+
+.lc-modal-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: contrast(1.04);
+}
+
+/* Индексът на лектора остава горе вляво върху снимката — същият
+   надпис като в решетката, за да е ясно кой ред е отворен. */
+.lc-modal-index {
+    position: absolute;
+    z-index: 2;
+    top: 16px;
+    left: 16px;
+    padding: 5px 9px;
+    background: rgba(5, 5, 5, 0.78);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: #f4f2ec;
+    font-variant-numeric: tabular-nums;
+}
+
+.lc-modal-close {
+    position: absolute;
+    z-index: 3;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: rgba(5, 5, 5, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 0;
+    color: #f4f2ec;
+    cursor: pointer;
+    transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+}
+
+.lc-modal-close svg { width: 17px; height: 17px; stroke: currentColor; }
+
+.lc-modal-close:hover,
+.lc-modal-close:focus-visible {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #050505;
+}
+
+.lc-modal-body {
+    flex: 0 0 auto;
+    padding: 22px 24px 26px;
+    border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+    overflow-y: auto;
+}
+
+.lc-modal-body h3 {
+    margin: 0 0 10px;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.22;
+    letter-spacing: 0.015em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+}
+
+.lc-modal-role {
+    margin: 0 0 4px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.lc-modal-org {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8a8680;
+}
+
+.lc-modal-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    margin-top: 18px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 54, 54, 0.55);
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+}
+
+.lc-modal-link svg { width: 13px; height: 13px; flex: none; transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+.lc-modal-link:hover,
+.lc-modal-link:focus-visible {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #050505;
+    text-decoration: none;
+}
+
+.lc-modal-link:hover svg,
+.lc-modal-link:focus-visible svg { transform: translateX(4px); }
+
+/* Празен резултат от филтъра */
+.lc-empty {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 56px 0 10px;
+}
+
+.lc-empty.is-visible { display: flex; }
+.lc-empty b { font-size: 12px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent, #ff3636); }
+.lc-empty span { max-width: 46ch; font-size: 18px; line-height: 1.5; color: var(--text, #f4f2ec); }
+
+@media (prefers-reduced-motion: reduce) {
+    .lc-wordmark, .scroll-down-arrow svg { animation: none; }
+    .speaker-card, .speaker-card::after, .avatar img, .lc-more svg { transition: none; }
+    .lc-modal, .lc-modal-backdrop, .lc-zoom { transition: none; }
+}
+
+/* ── Таблет ──────────────────────────────────────────────── */
 @media (max-width: 1200px) {
-    .speakers-grid { grid-template-columns: repeat(3, 1fr); }
+    .speakers-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-@media (max-width: 900px) {
-    .speakers-grid { grid-template-columns: repeat(2, 1fr); }
-    .page-header { text-align: center; }
+@media (max-width: 1080px) {
+    .speakers-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .avatar { max-width: 148px; }
 }
 
-@media (max-width: 600px) {
-    .speakers-grid { grid-template-columns: 1fr; }
-    .filter-menu { gap: 10px; }
-    .filter-btn { padding: 8px 15px; font-size: 0.8rem; }
+@media (max-width: 980px) {
+    .lc-banner img { max-height: 320px; }
+}
+
+/* ── Телефон ─────────────────────────────────────────────── */
+@media (max-width: 820px) {
+    /* Топбарът е по-нисък под 640px (виж mainStyle.css); JS-ът
+       мери реалната височина, това е fallback. */
+    .lecturers-page { --lc-rail-top: 58px; }
+
+    .lc-pad, .lc-hero-inner, .lc-rail-inner { padding-left: 22px; padding-right: 22px; }
+    .scroll-down-arrow { left: 22px; bottom: 22px; }
+    .lc-banner img { max-height: 230px; }
+    .lc-frame { inset: 10px; }
+    .lc-meta { grid-template-columns: 1fr; }
+    .lc-meta > div { padding: 11px 0; }
+    .lc-sec { padding: 36px 0 56px; }
+
+    /* Една колона: subgrid вече няма какво да изравнява, а
+       фиксираните 4 реда пречат на естествената височина. */
+    .speakers-grid { grid-template-columns: minmax(0, 1fr); border-left: 0; }
+
+    .speaker-card {
+        grid-template-rows: none;
+        grid-row: auto;
+        padding: 26px 0 30px;
+        border-right: 0;
+    }
+
+    /* Портретът застава до името вместо над него — квадрат на цяла
+       ширина на телефон изяжда целия екран преди първия ред текст. */
+    .speaker-card h4 { font-size: 19px; }
+    .avatar { max-width: 120px; margin-bottom: 18px; }
+    .lc-index { top: 26px; right: 0; }
+    .speaker-card .bio { -webkit-line-clamp: 10; }
+
+    /* На телефон плочата заема почти целия екран; снимката остава
+       квадратна, а описанието се скролва под нея. */
+    .lc-modal-backdrop { padding: 3vh 16px; }
+    .lc-modal { width: 100%; max-height: 94vh; }
+    .lc-modal-body { padding: 20px 18px 24px; }
+    .lc-modal-body h3 { font-size: 20px; }
+
+    /* Релсата с филтрите се скролва хоризонтално — пет категории
+       не се събират на 390px. */
+    .lc-rail-inner { padding-left: 0; padding-right: 0; }
+
+    .filter-menu {
+        width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .filter-menu::-webkit-scrollbar { display: none; }
+    .filter-btn { padding: 15px 16px 13px; font-size: 12px; }
+    .filter-btn:first-child { padding-left: 22px; }
+    .filter-btn:last-child { padding-right: 22px; }
 }
