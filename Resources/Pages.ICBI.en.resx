@@ -27,7 +27,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
 
   <data name="Nav_ICBI" xml:space="preserve"><value>About ICBI</value></data>
-  <data name="ICBI_EstLabel" xml:space="preserve"><value>Est. January 2026</value></data>
+  <data name="ICBI_EstLabel" xml:space="preserve"><value>January 2026</value></data>
   <data name="ICBI_HeroTitle" xml:space="preserve"><value>Institute of Cryptoeconomics,&lt;br&gt;Blockchain &amp; Innovation</value></data>
   <data name="ICBI_HeroDesc" xml:space="preserve"><value>Established as a specialized academic unit within the University of National and World Economy (UNWE) by a Council of Ministers Decree on 28 January 2026, the Institute for Cryptoeconomics, Blockchain and Innovation (ICBI) serves as the essential connecting link between traditional higher education, regulatory institutions, and the dynamic Web3 ecosystem.</value></data>
   <data name="ICBI_HeroQuote" xml:space="preserve"><value>Our core mission is to set the gold standard for cryptoeconomics education, empowering the academic and business sectors to seamlessly navigate new European regulatory frameworks, including MiCA.</value></data>
@@ -50,4 +50,13 @@
   <data name="ICBI_VenueEmailTitle" xml:space="preserve"><value>EMAIL</value></data>
   <data name="ICBI_EventsLabel" xml:space="preserve"><value>Previous Events</value></data>
   <data name="ICBI_EventsTitle" xml:space="preserve"><value>Our Track Record</value></data>
+  <data name="ICBI_JumpToInstitute" xml:space="preserve">
+    <value>To the institute</value>
+  </data>
+  <data name="ICBI_InstituteLabel" xml:space="preserve">
+    <value>About the institute</value>
+  </data>
+  <data name="ICBI_FoundedLabel" xml:space="preserve">
+    <value>Founded</value>
+  </data>
 </root>

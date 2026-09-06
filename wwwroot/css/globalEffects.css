@@ -1,0 +1,915 @@
+/* ============================================================
+   globalEffects.css — глобалният визуален слой на сайта.
+
+   1) #ambient-fx — фонът. СЕДЕМ вида, всеки от които е един и същи
+      DOM (два слоя + курсорно петно) с различен чертеж; видът се
+      задава с ЕДИН атрибут:
+
+        <div id="ambient-fx" data-gfx-bg="grid"> … </div>
+
+      Затова админ панелът може да записва по един низ на страница
+      (grid | paper | hatch | glow | dust | beam | contour | off) и
+      нищо друго не се пипа — нито CSS, нито разметка.
+
+   2) #scroll-progress — тънката прогрес лента най-горе.
+
+   Изцяло CSS: няма canvas и няма JS render loop за фона. JS-ът
+   (globalEffects.js) записва само три променливи —
+   --gfx-cx/--gfx-cy (курсор), --gfx-progress (скрол) и
+   --gfx-shield (лентата, заета от банер) — а CSS-ът ги превръща в
+   transform/translate/mask. Анимира се само transform и opacity.
+
+   Настройки (override където и да е — напр. в @section Styles на
+   една страница, без този файл да се пипа):
+
+     html[data-gfx="off"]      → целият слой не се рендира
+     --gfx-intensity: 0.6      → същият слой, по-тихо
+     --gfx-ink / --gfx-glow    → алфите на линията и на сиянието
+     --gfx-grid / --gfx-step   → стъпката на решетките
+
+   Щитът за банери е на атрибут: сложи data-gfx-shield на секция със
+   собствен ефект (банер, hero) и слоят се изрязва над нея.
+   ============================================================ */
+
+:root {
+    /* Обща сила. 0 = невидим слой; всички алфи по-долу минават през нея. */
+    --gfx-intensity: 1;
+
+    /* Мастилото на чертежа (бяло) и силата на акцентното сияние. */
+    --gfx-ink: 0.05;
+    --gfx-glow: 0.13;
+    --gfx-cursor-alpha: 0.05;
+
+    /* Стъпки: голямата решетка и фината (милиметровата) хартия. */
+    --gfx-grid: 48px;
+    --gfx-step: 8px;
+
+    /* Прогрес лента */
+    --gfx-bar-height: 2px;
+}
+
+/* ── 1. Ambient слой ─────────────────────────────────────────
+   ЗАЩО е над съдържанието (z-index: 1), а не зад него: редизайнатите
+   страници рисуват СОБСТВЕН плътен фон върху целия wrapper (.faq-page,
+   auth, travel, profile, submit, payment — всички background: var(--bg)),
+   затова слой под тях е физически невидим точно там. Слоят е чисто
+   адитивен (mix-blend-mode: screen — само осветлява), не прихваща
+   кликове и стои под .topbar (20), под мобилното меню (25) и под
+   cookie банера.
+
+   Маската отрязва лентата, заета от банер в момента (--gfx-shield), с
+   мек преход под него. На страница без банер и двете са 0. */
+#ambient-fx {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+    contain: strict;
+    opacity: var(--gfx-intensity);
+    -webkit-mask-image: linear-gradient(to bottom,
+        transparent 0,
+        transparent var(--gfx-shield, 0px),
+        #000 calc(var(--gfx-shield, 0px) + var(--gfx-shield-fade, 0px)));
+    mask-image: linear-gradient(to bottom,
+        transparent 0,
+        transparent var(--gfx-shield, 0px),
+        #000 calc(var(--gfx-shield, 0px) + var(--gfx-shield-fade, 0px)));
+}
+
+/* Изричен opt-out — страница, инструмент или админ-подобен изглед. */
+html[data-gfx="off"] #ambient-fx,
+html[data-gfx="off"] #scroll-progress,
+#ambient-fx[data-gfx-bg="off"] {
+    display: none;
+}
+
+/* Двата чертожни слоя. Разделянето на transform (анимациите) и
+   translate (скролът) е нарочно: така бавният дрейф и паралаксът от
+   скрола не се борят за едно и също свойство. */
+#ambient-fx > span {
+    position: absolute;
+    inset: -2px;
+    display: block;
+    mix-blend-mode: screen;
+    /* Собствен composited слой — иначе браузърът пресмята blend-а на
+       CPU при всеки скрол. Не чрез translateZ(0), защото правило с
+       #id селектор би победило transform-а на .afx-cursor. */
+    backface-visibility: hidden;
+    will-change: transform;
+}
+
+.afx-a { translate: 0 calc(var(--gfx-progress, 0) * -3vh); }
+.afx-b { translate: 0 calc(var(--gfx-progress, 0) * -7vh); }
+
+/* Общата маска на чертожните видове: плътна горе, дълга средна част,
+   меко изтичане надолу. Четири стопа вместо два — преходът е
+   забележимо по-плавен от рязкото „изчезва към 60%". */
+.afx-a,
+.afx-b {
+    -webkit-mask-image: radial-gradient(130% 108% at 50% -4%,
+        #000 0%, rgba(0, 0, 0, 0.72) 34%, rgba(0, 0, 0, 0.3) 62%, rgba(0, 0, 0, 0.08) 84%, transparent 100%);
+    mask-image: radial-gradient(130% 108% at 50% -4%,
+        #000 0%, rgba(0, 0, 0, 0.72) 34%, rgba(0, 0, 0, 0.3) 62%, rgba(0, 0, 0, 0.08) 84%, transparent 100%);
+}
+
+/* ── Вид 1: grid — техническата решетка ──────────────────────
+   Статична: никакво движение = никакво трептене на 1px линии при
+   субпикселни позиции, включително на 1.5x/2.75x DPR телефони. */
+#ambient-fx[data-gfx-bg="grid"] .afx-a {
+    background:
+        linear-gradient(rgba(255, 255, 255, var(--gfx-ink)) 1px, transparent 1px) 0 0 / 100% var(--gfx-grid),
+        linear-gradient(90deg, rgba(255, 255, 255, var(--gfx-ink)) 1px, transparent 1px) 0 0 / var(--gfx-grid) 100%;
+}
+
+/* ── Вид 2: paper — милиметрова хартия ───────────────────────
+   Фина стъпка плюс всяка шеста линия по-плътна. Чете се като
+   чертожен лист, а не като таблица. */
+#ambient-fx[data-gfx-bg="paper"] .afx-a {
+    background:
+        linear-gradient(rgba(255, 255, 255, calc(var(--gfx-ink) * 0.45)) 1px, transparent 1px) 0 0 / 100% var(--gfx-step),
+        linear-gradient(90deg, rgba(255, 255, 255, calc(var(--gfx-ink) * 0.45)) 1px, transparent 1px) 0 0 / var(--gfx-step) 100%;
+}
+
+#ambient-fx[data-gfx-bg="paper"] .afx-b {
+    background:
+        linear-gradient(rgba(255, 255, 255, var(--gfx-ink)) 1px, transparent 1px) 0 0 / 100% calc(var(--gfx-step) * 6),
+        linear-gradient(90deg, rgba(255, 255, 255, var(--gfx-ink)) 1px, transparent 1px) 0 0 / calc(var(--gfx-step) * 6) 100%;
+}
+
+/* ── Вид 3: hatch — диагонално щриховане ─────────────────────
+   Дрейфът е по посоката на самите щрихи (135s за един цикъл): така
+   рисунъкът се движи, но линиите не пресичат окото. Слоят е по-широк
+   от екрана, за да няма ръб при движението. */
+#ambient-fx[data-gfx-bg="hatch"] .afx-a {
+    inset: -30% -30%;
+    background: repeating-linear-gradient(45deg,
+        rgba(255, 255, 255, var(--gfx-ink)) 0 1px,
+        transparent 1px 9px);
+    animation: afxSlide 135s linear infinite;
+}
+
+#ambient-fx[data-gfx-bg="hatch"] .afx-b {
+    inset: -30% -30%;
+    background: repeating-linear-gradient(45deg,
+        rgba(255, 54, 54, calc(var(--gfx-ink) * 0.6)) 0 1px,
+        transparent 1px 54px);
+    animation: afxSlide 210s linear infinite reverse;
+}
+
+/* ── Вид 4: glow — акцентното сияние ─────────────────────────
+   Градиентът е с много стопове по гаусова крива и всички са
+   rgba(255,54,54,…) до 0 — две неща, които махат видимия кръг:
+   малко стопове значат резка промяна в наклона (окото вижда наклона,
+   не стойността), а ключовата дума transparent е rgba(0,0,0,0) и на
+   червено петно интерполира през черно, което очертава ръб. */
+#ambient-fx[data-gfx-bg="glow"] .afx-a {
+    inset: auto;
+    top: -32vh;
+    left: 50%;
+    width: 124vmax;
+    height: 124vmax;
+    margin-left: -62vmax;
+    background: radial-gradient(circle closest-side,
+        rgba(255, 54, 54, var(--gfx-glow)) 0%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.94)) 8%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.8)) 16%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.63)) 24%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.46)) 32%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.32)) 40%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.21)) 48%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.13)) 56%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.075)) 64%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.04)) 72%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.018)) 80%,
+        rgba(255, 54, 54, calc(var(--gfx-glow) * 0.006)) 88%,
+        rgba(255, 54, 54, 0) 100%);
+    -webkit-mask-image: none;
+    mask-image: none;
+    animation: afxGlowDrift 68s ease-in-out infinite, afxBreathe 78s ease-in-out infinite;
+    will-change: transform, opacity;
+}
+
+/* ── Вид 6: beam — лъчи ──────────────────────────────────────
+   Меки наклонени ивици светлина, много широки и много тихи. Един
+   цикъл е 150s — движението се вижда само ако човек го търси. */
+#ambient-fx#ambient-fx/* ── Вид 7: contour — контурни линии ─────────────────────────
+   Топографски пръстени от точка извън екрана. Мащабът диша много
+   бавно (96s), затова линиите текат навън като изолинии на карта,
+   вместо да се въртят. */
+#ambient-fx[data-gfx-bg="contour"] .afx-a {
+    background: repeating-radial-gradient(circle at 18% -8%,
+        transparent 0 52px,
+        rgba(255, 255, 255, var(--gfx-ink)) 52px 53px);
+    animation: afxSwell 96s ease-in-out infinite;
+}
+
+#ambient-fx[data-gfx-bg="contour"] .afx-b {
+    background: repeating-radial-gradient(circle at 88% 108%,
+        transparent 0 74px,
+        rgba(255, 54, 54, calc(var(--gfx-ink) * 0.8)) 74px 75px);
+    animation: afxSwell 132s ease-in-out infinite reverse;
+}
+
+/* ── Курсорът (важи за всички видове) ────────────────────────
+   Едно меко accent петно, центрирано под курсора. Полировката е в
+   три неща: ниска алфа, много стопове (мек ръб) и по-бавно догонване
+   в JS-а — петното изостава леко от мишката, което го прави част от
+   фона, а не курсор. */
+.afx-cursor {
+    inset: auto;
+    top: 0;
+    left: 0;
+    width: 38vmax;
+    height: 38vmax;
+    margin: -19vmax 0 0 -19vmax;
+    background: radial-gradient(circle closest-side,
+        rgba(255, 54, 54, var(--gfx-cursor-alpha)) 0%,
+        rgba(255, 54, 54, calc(var(--gfx-cursor-alpha) * 0.92)) 10%,
+        rgba(255, 54, 54, calc(var(--gfx-cursor-alpha) * 0.74)) 20%,
+        rgba(255, 54, 54, calc(var(--gfx-cursor-alpha) * 0.54)) 30%,
+        rgba(255, 54, 54, calc(var(--gfx-cursor-alpha) * 0.36)) 40%,
+        rgba(255, 54, 54, calc(var(--gfx-cursor-alpha) * 0.22)) 50%,
+        rgba(255, 54, 54, calc(var(--gfx-cursor-alpha) * 0.12)) 60%,
+        rgba(255, 54, 54, calc(var(--gfx-cursor-alpha) * 0.055)) 70%,
+        rgba(255, 54, 54, calc(var(--gfx-cursor-alpha) * 0.02)) 82%,
+        rgba(255, 54, 54, 0) 100%);
+    transform: translate3d(var(--gfx-cx, -9999px), var(--gfx-cy, -9999px), 0);
+    opacity: var(--gfx-cursor, 0);
+    transition: opacity 520ms ease;
+    will-change: transform, opacity;
+}
+
+@keyframes afxSlide {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(18%, 0, 0); }
+}
+
+@keyframes afxSwell {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.16); }
+}
+
+@keyframes afxGlowDrift {
+    0%   { transform: translate3d(-4vw, 0, 0); }
+    50%  { transform: translate3d(4vw, 2.5vh, 0); }
+    100% { transform: translate3d(-4vw, 0, 0); }
+}
+
+@keyframes afxBreathe {
+    0%, 100% { opacity: 0.82; }
+    50%      { opacity: 1; }
+}
+
+/* afxTurn — бавно олюляване на орбитите.
+   ВАЖНО: orbit слоевете носят статичен transform: rotate(...). Анимация
+   върху transform ГО ПРЕЗАПИСВА изцяло, затова keyframes-ите съдържат
+   целия ъгъл, не само добавката. Стойностите са +/- 3deg около базовия. */
+@keyframes afxTurn {
+    0%, 100% { transform: rotate(6deg); }
+    50%      { transform: rotate(12deg); }
+}
+
+
+/* Браузър без mask-image (стари Safari/Firefox билдове): чертежът би
+   стоял по цялата височина, без изтичане. Вместо това го сваляме
+   наполовина — по-тихо, но не счупено. */
+@supports not ((mask-image: linear-gradient(#000, #000)) or (-webkit-mask-image: linear-gradient(#000, #000))) {
+    #ambient-fx {
+        opacity: calc(0.5 * var(--gfx-intensity));
+    }
+}
+
+/* ── 2. Прогрес лента ────────────────────────────────────────
+   Над топбара (20), под мобилното меню (25) — при отворено меню се
+   скрива, за да няма червена черта върху overlay-я.
+
+   Не е плътна черта: градиент, който тръгва почти прозрачен и се
+   сгъстява надясно, с тънко сияние в самата „глава". Стойността се
+   догонва плавно в JS-а, затова движението е изтичане. */
+#scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--gfx-bar-height);
+    z-index: 30;
+    pointer-events: none;
+    transition: opacity 240ms ease;
+}
+
+#scroll-progress > span {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        rgba(255, 54, 54, 0.12) 0%,
+        rgba(255, 54, 54, 0.45) 45%,
+        var(--accent, #FF3636) 100%);
+    transform: scaleX(var(--gfx-progress, 0));
+    transform-origin: 0 50%;
+    will-change: transform;
+}
+
+/* „Главата" на лентата. scaleX върху родителя би я разтеглил, затова
+   мащабът се компенсира обратно — остава петно, не размазана черта. */
+#scroll-progress > span::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 42px;
+    height: 6px;
+    transform: translateY(-50%) scaleX(calc(1 / max(var(--gfx-progress, 0.001), 0.02)));
+    transform-origin: 100% 50%;
+    background: radial-gradient(closest-side, rgba(255, 54, 54, 0.6), transparent 100%);
+    opacity: calc(var(--gfx-progress, 0) * 1.4);
+}
+
+/* JS слага hidden, когато страницата няма скролируемо съдържание —
+   празна лента на къса страница е невалидно състояние. */
+#scroll-progress[hidden] {
+    display: none;
+}
+
+body.mobile-nav-open #scroll-progress {
+    opacity: 0;
+}
+
+/* ── Достъпност, слаби устройства и печат ────────────────────
+   При prefers-reduced-motion спира ВСЯКО движение: дрейфът, дишането,
+   паралаксът от скрола и курсорното петно. Чертежът остава — той е
+   статичен и без него страницата губи фон без причина.
+
+   Лентата е индикатор, не декорация, и продължава да работи — но без
+   плавното догонване (виж globalEffects.js). */
+@media (prefers-reduced-motion: reduce) {
+    #ambient-fx > span {
+        animation: none !important;
+        translate: none !important;
+    }
+
+    .afx-cursor {
+        display: none;
+    }
+}
+
+/* Телефон и таблет: курсорно петно няма (няма и курсор), а фината
+   хартия се сгъстява — 8px стъпка на 2.75x DPR екран се слива в
+   сива плоскост. */
+@media (hover: none), (max-width: 768px) {
+    .afx-cursor { display: none; }
+    :root { --gfx-step: 12px; --gfx-grid: 40px; }
+}
+
+@media print {
+    #ambient-fx,
+    #scroll-progress {
+        display: none;
+    }
+}
+
+
+/* ── Движения за собствените фонове ────────────────────────────────────
+   Тези keyframes съществуваха само в adminPanelStyles.css, тоест само в
+   прегледа на панела. На публичния сайт ги нямаше — собствен фон с
+   движение би бил статичен, без никаква грешка никъде. Затова са и тук.
+   При промяна: и на двете места. */
+@keyframes gfx-c-slide {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(18%, 0, 0); }
+}
+
+@keyframes gfx-c-swell {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.16); }
+}
+
+@keyframes gfx-c-drift {
+    0%   { transform: translate3d(-3%, 0, 0); }
+    50%  { transform: translate3d(3%, 2%, 0); }
+    100% { transform: translate3d(-3%, 0, 0); }
+}
+
+/* Уважава се същото правило като за вградените фонове. */
+@media (prefers-reduced-motion: reduce) {
+    #ambient-fx .afx-a,
+    #ambient-fx .afx-b { animation: none !important; }
+}
+
+[data-gfx-bg="fiber"] .afx-a {
+    inset: -30% -30%;
+    background:
+        repeating-linear-gradient(82deg, transparent 0 20px, rgba(255,255,255,calc(var(--gfx-ink) * 0.4)) 21px, rgba(255,255,255,calc(var(--gfx-ink) * 1.2)) 22px, rgba(255,255,255,calc(var(--gfx-ink) * 0.4)) 23px, transparent 24px 43px),
+        repeating-linear-gradient(83.5deg, transparent 0 30px, rgba(255,255,255,calc(var(--gfx-ink) * 0.3)) 31px, rgba(255,255,255,calc(var(--gfx-ink) * 0.8)) 32px, rgba(255,255,255,calc(var(--gfx-ink) * 0.3)) 33px, transparent 34px 61px),
+        repeating-linear-gradient(81deg, transparent 0 44px, rgba(255,255,255,calc(var(--gfx-ink) * 0.5)) 46px, transparent 48px 79px);
+    animation: afxSlide 420s linear infinite;
+}
+[data-gfx-bg="fiber"] .afx-b {
+    inset: -30% -30%;
+    background:
+        repeating-linear-gradient(82.6deg, transparent 0 60px, rgba(255,54,54,calc(var(--gfx-glow) * 0.1)) 62px, rgba(255,54,54,calc(var(--gfx-glow) * 0.28)) 64px, rgba(255,54,54,calc(var(--gfx-glow) * 0.1)) 66px, transparent 68px 103px),
+        repeating-linear-gradient(80.4deg, transparent 0 70px, rgba(255,255,255,calc(var(--gfx-ink) * 0.35)) 72px, transparent 74px 151px);
+    animation: afxSlide 610s linear infinite reverse;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   БЪГ ФИКС: изрязани фонове при завъртане и при разширен слой
+   ══════════════════════════════════════════════════════════════════════
+   Маската на .afx-a / .afx-b избледнява до ПРОЗРАЧНО на ръба на самия
+   слой. Докато слоят съвпада с екрана, това е желаното — фонът гасне
+   надолу.
+
+   Присет, който разширява слоя (inset: -30%) и после го ЗАВЪРТА, обаче
+   внася този избледняващ ръб наклонено в екрана: вижда се коса линия,
+   след която фонът просто свършва. Същото важи и за силно разширени
+   слоеве без завъртане — маската се разтяга и горната ѝ част покрива
+   целия видим екран, тоест избледняването изчезва.
+
+   Решение: слой, който е разширен или завъртян, получава СОБСТВЕНА
+   маска, изчислена спрямо ЕКРАНА (vmax), не спрямо себе си. Така ръбът
+   ѝ винаги остава извън видимото, независимо от ъгъла.  */
+
+#ambient-fx [class*="afx-"][style],
+[data-gfx-bg="hatch"] .afx-a,
+[data-gfx-bg="hatch"] .afx-b,
+[data-gfx-bg="fiber"] .afx-a,
+[data-gfx-bg="fiber"] .afx-b {
+    -webkit-mask-image: radial-gradient(190vmax 150vmax at 50% -8vmax,
+        #000 0%, rgba(0,0,0,0.72) 34%, rgba(0,0,0,0.3) 62%,
+        rgba(0,0,0,0.08) 84%, transparent 100%);
+    mask-image: radial-gradient(190vmax 150vmax at 50% -8vmax,
+        #000 0%, rgba(0,0,0,0.72) 34%, rgba(0,0,0,0.3) 62%,
+        rgba(0,0,0,0.08) 84%, transparent 100%);
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
+/* Завъртените получават и по-голям запас: при 13° правоъгълник 1920×1080
+   иска поне 19% отгоре и отдолу, за да няма празен ъгъл. -30% стигаше на
+   хартия, но не оставяше нищо за маската — сега е с двоен резерв. */
+/* ══════════════════════════════════════════════════════════════════════
+   ЖИВИТЕ ПРИСЕТИ
+   ══════════════════════════════════════════════════════════════════════
+   Тези шест не рисуват мотив, който стои — рисуват се спрямо човека.
+   Четат --gfx-cx / --gfx-cy (курсора) и --gfx-progress (скрола).
+
+   ЗАТОВА СА ЗАКЛЮЧЕНИ ОТ НАСТРОЙКАТА ЗА ДВИЖЕНИЕ (виж блока по-долу):
+   те смятат позицията си в координати на екрана, а движението мести
+   целия слой. Ако и двете работят, чертежът се отмества, а курсорът не —
+   фонарчето спира да е под мишката. Движението им идва от ръката и от
+   скрола, което е по-добро от всяка анимация.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── lantern — фонарче върху чертеж ───────────────────────────
+   Жест: чертежът се вижда само там, където гледаш.
+
+   Под слоя стои фина решетка, но маската я показва в кръг около
+   курсора. Ефектът е като лупа върху милиметрова хартия: страницата
+   изглежда празна, докато не преместиш мишката.
+
+   Кръстът от втория слой е инструментален жест — казва „това е
+   уред", не „това е декорация". */
+#ambient-fx[data-gfx-bg="lantern"] .afx-a {
+    background:
+        linear-gradient(rgba(255,255,255,calc(var(--gfx-ink) * 1.4)) 1px, transparent 1px) 0 0 / 100% 13px,
+        linear-gradient(90deg, rgba(255,255,255,calc(var(--gfx-ink) * 1.4)) 1px, transparent 1px) 0 0 / 13px 100%,
+        linear-gradient(rgba(255,255,255,calc(var(--gfx-ink) * 2.2)) 1px, transparent 1px) 0 0 / 100% 65px,
+        linear-gradient(90deg, rgba(255,255,255,calc(var(--gfx-ink) * 2.2)) 1px, transparent 1px) 0 0 / 65px 100%;
+    -webkit-mask-image: radial-gradient(circle 300px at var(--gfx-cx, 32vw) var(--gfx-cy, 26vh),
+        #000 0 22%, rgba(0,0,0,0.72) 44%, rgba(0,0,0,0.34) 66%, rgba(0,0,0,0.1) 84%, transparent 100%);
+    mask-image: radial-gradient(circle 300px at var(--gfx-cx, 32vw) var(--gfx-cy, 26vh),
+        #000 0 22%, rgba(0,0,0,0.72) 44%, rgba(0,0,0,0.34) 66%, rgba(0,0,0,0.1) 84%, transparent 100%);
+}
+
+#ambient-fx[data-gfx-bg="lantern"] .afx-b {
+    /* Кръст, центриран в курсора: две ивици от 1px, чиято позиция е
+       самата променлива. Без анимация — движението идва от ръката. */
+    background:
+        linear-gradient(90deg, transparent 0, rgba(255,54,54,calc(var(--gfx-glow) * 0.34)) 50%, transparent 100%) calc(var(--gfx-cx, 32vw) - 90px) 0 / 180px 100% no-repeat,
+        linear-gradient(180deg, transparent 0, rgba(255,54,54,calc(var(--gfx-glow) * 0.34)) 50%, transparent 100%) 0 calc(var(--gfx-cy, 26vh) - 90px) / 100% 180px no-repeat;
+}
+
+/* ── prism — сноп от една точка ───────────────────────────────
+   Жест: лъчите излизат от там, където е курсорът.
+
+   repeating-conic-gradient е единственият градиент, който се
+   повтаря по ЪГЪЛ, не по разстояние: разстоянието между лъчите расте
+   с отдалечаване от центъра, затова мотивът няма стъпка. Досега
+   нищо в системата не ползва conic — точно затова изглежда друго.
+
+   Различава се от падналия beam по това, че лъчите не са паралелни
+   ивици, а се разбягват от точка, и точката е под ръката ти. */
+#ambient-fx[data-gfx-bg="prism"] .afx-a {
+    background: repeating-conic-gradient(from 8deg at var(--gfx-cx, 22vw) var(--gfx-cy, 14vh),
+        rgba(255,255,255,calc(var(--gfx-ink) * 1.1)) 0 0.35deg,
+        rgba(255,255,255,calc(var(--gfx-ink) * 0.4)) 0.7deg,
+        transparent 1.1deg 4.6deg);
+}
+
+#ambient-fx[data-gfx-bg="prism"] .afx-b {
+    background: repeating-conic-gradient(from 2deg at var(--gfx-cx, 22vw) var(--gfx-cy, 14vh),
+        rgba(255,54,54,calc(var(--gfx-glow) * 0.22)) 0 0.8deg,
+        rgba(255,54,54,calc(var(--gfx-glow) * 0.06)) 1.6deg,
+        transparent 2.6deg 19deg);
+    animation: afxBreathe 160s ease-in-out infinite;
+}
+
+/* ── sonar — пръстени под ръката ──────────────────────────────
+   Жест: от курсора тръгват пръстени.
+
+   Разстоянието е 58px в първия слой и 79px във втория — взаимно
+   прости, затова двата никога не се подреждат в едно и също
+   изображение. Мащабът диша 190s, значи и при неподвижна мишка
+   пръстените живеят.
+
+   Различава се от contour по това, че центърът е човекът. */
+#ambient-fx[data-gfx-bg="sonar"] .afx-a {
+    background: repeating-radial-gradient(circle at var(--gfx-cx, 50%) var(--gfx-cy, 28vh),
+        transparent 0 52px,
+        rgba(255,255,255,calc(var(--gfx-ink) * 0.45)) 55px,
+        rgba(255,255,255,calc(var(--gfx-ink) * 1.4)) 57px,
+        rgba(255,255,255,calc(var(--gfx-ink) * 0.45)) 59px,
+        transparent 62px 58px);
+    animation: afxSwell 190s ease-in-out infinite;
+}
+
+#ambient-fx[data-gfx-bg="sonar"] .afx-b {
+    background: repeating-radial-gradient(circle at var(--gfx-cx, 50%) var(--gfx-cy, 28vh),
+        transparent 0 72px,
+        rgba(255,54,54,calc(var(--gfx-glow) * 0.14)) 75px,
+        rgba(255,54,54,calc(var(--gfx-glow) * 0.38)) 77px,
+        rgba(255,54,54,calc(var(--gfx-glow) * 0.14)) 79px,
+        transparent 82px 79px);
+    animation: afxSwell 310s ease-in-out infinite reverse;
+}
+
+/* ── caustic — интерференция под ръката ───────────────────────
+   Жест: две вълни се срещат и ти движиш едната.
+
+   Първият слой е пръстени в курсора, вторият — пръстени от
+   неподвижна точка извън екрана. Рисунъкът, който се вижда, е
+   бийтът между тях: при всяко движение на мишката възлите се
+   пренареждат по цялата височина на екрана. Това е ефектът, който
+   най-малко изглежда като CSS.
+
+   Стъпките са 43 и 61px — прости, значи бийтът е широк. */
+#ambient-fx[data-gfx-bg="caustic"] .afx-a {
+    background: repeating-radial-gradient(circle at var(--gfx-cx, 62vw) var(--gfx-cy, 30vh),
+        transparent 0 38px,
+        rgba(255,255,255,calc(var(--gfx-ink) * 0.5)) 40px,
+        rgba(255,255,255,calc(var(--gfx-ink) * 1.5)) 41.5px,
+        rgba(255,255,255,calc(var(--gfx-ink) * 0.5)) 43px,
+        transparent 45px 43px);
+}
+
+#ambient-fx[data-gfx-bg="caustic"] .afx-b {
+    background: repeating-radial-gradient(circle at 8% 106%,
+        transparent 0 55px,
+        rgba(255,54,54,calc(var(--gfx-glow) * 0.12)) 57px,
+        rgba(255,54,54,calc(var(--gfx-glow) * 0.3)) 58.5px,
+        rgba(255,54,54,calc(var(--gfx-glow) * 0.12)) 60px,
+        transparent 62px 61px);
+    animation: afxSwell 340s ease-in-out infinite;
+}
+
+/* ── spine — колона светлина ──────────────────────────────────
+   Жест: една колона светлина стои там, където е курсорът.
+
+   Широка е 460px и е с меки краища, затова не се чете като линия, а
+   като осветена ивица от страницата — сякаш зад съдържанието има
+   лампа, която следваш. Вторият слой добавя хоризонталната сестра
+   на колоната, много по-тиха: заедно правят кръст от светлина, без
+   да рисуват кръст.
+
+   Статичен. Движението е твоята ръка. */
+#ambient-fx[data-gfx-bg="spine"] .afx-a {
+    background:
+        linear-gradient(90deg,
+            transparent 0%,
+            rgba(255,255,255,calc(var(--gfx-ink) * 0.3)) 22%,
+            rgba(255,255,255,calc(var(--gfx-ink) * 1.3)) 50%,
+            rgba(255,255,255,calc(var(--gfx-ink) * 0.3)) 78%,
+            transparent 100%) calc(var(--gfx-cx, 46vw) - 230px) 0 / 460px 100% no-repeat,
+        linear-gradient(90deg, transparent 0, rgba(255,255,255,calc(var(--gfx-ink) * 2)) 50%, transparent 100%) calc(var(--gfx-cx, 46vw) - 1px) 0 / 2px 100% no-repeat;
+}
+
+#ambient-fx[data-gfx-bg="spine"] .afx-b {
+    background:
+        linear-gradient(180deg,
+            transparent 0%,
+            rgba(255,54,54,calc(var(--gfx-glow) * 0.1)) 26%,
+            rgba(255,54,54,calc(var(--gfx-glow) * 0.3)) 50%,
+            rgba(255,54,54,calc(var(--gfx-glow) * 0.1)) 74%,
+            transparent 100%) 0 calc(var(--gfx-cy, 32vh) - 130px) / 100% 260px no-repeat;
+}
+
+/* ── ascent — хоризонт, който се вдига със скрола ─────────────
+   Жест: докато четеш, хоризонтът изгрява.
+
+   Позицията на пояса е --gfx-progress (0..1) — същата променлива,
+   която движи прогрес лентата. На върха на страницата поясът е
+   долу; на края е горе. Значи фонът е ИНДИКАТОР: човек усеща
+   докъде е стигнал, без да гледа лентата.
+
+   Това е единственият присет в системата, чийто чертеж се мени със
+   скрола, а не само се измества (паралаксът остава отделно и не е
+   пипан). Работи и спрян в смисъла на брифа: без анимация поясът
+   просто стои там, докъдето е стигнал скролът. */
+#ambient-fx[data-gfx-bg="ascent"] .afx-a {
+    background:
+        linear-gradient(180deg,
+            transparent 0%,
+            rgba(255,255,255,calc(var(--gfx-ink) * 0.4)) 26%,
+            rgba(255,255,255,calc(var(--gfx-ink) * 1.5)) 47%,
+            rgba(255,255,255,calc(var(--gfx-ink) * 0.4)) 68%,
+            transparent 100%) 0 calc(88vh - var(--gfx-progress, 0) * 128vh) / 100% 78vh no-repeat,
+        linear-gradient(rgba(255,255,255,calc(var(--gfx-ink) * 0.5)) 1px, transparent 1px) 0 0 / 100% 47px;
+}
+
+#ambient-fx[data-gfx-bg="ascent"] .afx-b {
+    /* Самата линия на хоризонта плюс сияние точно под нея. */
+    background:
+        linear-gradient(180deg, transparent 0, rgba(255,54,54,calc(var(--gfx-glow) * 0.45)) 48%, rgba(255,54,54,calc(var(--gfx-glow) * 0.45)) 52%, transparent 100%) 0 calc(88vh - var(--gfx-progress, 0) * 128vh + 37vh) / 100% 4px no-repeat,
+        linear-gradient(180deg, rgba(255,54,54,calc(var(--gfx-glow) * 0.18)) 0%, transparent 100%) 0 calc(88vh - var(--gfx-progress, 0) * 128vh + 39vh) / 100% 22vh no-repeat;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   УПРАВЛЕНИЕ НА ДВИЖЕНИЕТО ОТ АДМИН ПАНЕЛА
+   ══════════════════════════════════════════════════════════════════════
+
+   БЪГ ФИКС — защо избраната динамика „не се появяваше":
+   Първата версия преизползваше анимациите НА ПРИСЕТИТЕ (afxSlide и др.).
+   Техните амплитуди обаче са смятани за 96–610 секунди: afxGlowDrift
+   измества 8vw за половин цикъл, което при 180s дава 1.28 пиксела в
+   секунда. Това е под прага на забележимост — избираш „плъзгане", нищо
+   видимо не се случва, изглежда като счупено.
+
+   Затова изборът от панела ползва СОБСТВЕНИ анимации (afxU*) с амплитуда
+   и продължителност, смятани за целта: администраторът е поискал изрично
+   движение, значи движението трябва да се вижда.
+
+   Присетите продължават да ползват своите — не са пипани.
+
+   Две независими настройки на #ambient-fx:
+     data-gfx-motion : off | drift | slide | swell | breathe | turn
+     data-gfx-speed  : slower | slow | fast | faster
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Базова продължителност за ИЗБРАНО движение. 70s е компромисът: видимо
+   е за няколко секунди гледане, но не привлича вниманието към себе си. */
+#ambient-fx[data-gfx-motion] { --gfx-u-dur: 70s; }
+
+#ambient-fx[data-gfx-speed="slower"] { --gfx-u-dur: 200s; }
+#ambient-fx[data-gfx-speed="slow"]   { --gfx-u-dur: 120s; }
+#ambient-fx[data-gfx-speed="fast"]   { --gfx-u-dur: 40s;  }
+#ambient-fx[data-gfx-speed="faster"] { --gfx-u-dur: 22s;  }
+
+/* ── Спряно ─────────────────────────────────────────────────────────── */
+#ambient-fx[data-gfx-motion="off"] .afx-a,
+#ambient-fx[data-gfx-motion="off"] .afx-b,
+#ambient-fx[data-gfx-motion="off"] .afx-cursor {
+    animation: none !important;
+}
+
+/* ── Общо за всички избрани видове ──────────────────────────────────────
+   Вторият слой върви с 1.4× продължителност — иначе двата слоя се движат
+   в такт и фонът изглежда като един плосък пласт. */
+#ambient-fx[data-gfx-motion="drift"] .afx-a,
+#ambient-fx[data-gfx-motion="drift"] .afx-b,
+#ambient-fx[data-gfx-motion="slide"] .afx-a,
+#ambient-fx[data-gfx-motion="slide"] .afx-b,
+#ambient-fx[data-gfx-motion="swell"] .afx-a,
+#ambient-fx[data-gfx-motion="swell"] .afx-b,
+#ambient-fx[data-gfx-motion="breathe"] .afx-a,
+#ambient-fx[data-gfx-motion="breathe"] .afx-b,
+#ambient-fx[data-gfx-motion="turn"] .afx-a,
+#ambient-fx[data-gfx-motion="turn"] .afx-b {
+    animation-duration: var(--gfx-u-dur, 70s) !important;
+    animation-iteration-count: infinite !important;
+    animation-play-state: running !important;
+}
+
+#ambient-fx[data-gfx-motion="drift"] .afx-b,
+#ambient-fx[data-gfx-motion="slide"] .afx-b,
+#ambient-fx[data-gfx-motion="swell"] .afx-b,
+#ambient-fx[data-gfx-motion="breathe"] .afx-b,
+#ambient-fx[data-gfx-motion="turn"] .afx-b {
+    animation-duration: calc(var(--gfx-u-dur, 70s) * 1.4) !important;
+}
+
+/* ── Видовете ───────────────────────────────────────────────────────── */
+#ambient-fx[data-gfx-motion="drift"] .afx-a,
+#ambient-fx[data-gfx-motion="drift"] .afx-b {
+    animation-name: afxUDrift !important;
+    animation-timing-function: ease-in-out !important;
+}
+
+#ambient-fx[data-gfx-motion="slide"] .afx-a,
+#ambient-fx[data-gfx-motion="slide"] .afx-b {
+    animation-name: afxUSlide !important;
+    animation-timing-function: linear !important;
+}
+
+#ambient-fx[data-gfx-motion="swell"] .afx-a,
+#ambient-fx[data-gfx-motion="swell"] .afx-b {
+    animation-name: afxUSwell !important;
+    animation-timing-function: ease-in-out !important;
+}
+
+#ambient-fx[data-gfx-motion="breathe"] .afx-a,
+#ambient-fx[data-gfx-motion="breathe"] .afx-b {
+    animation-name: afxUBreathe !important;
+    animation-timing-function: ease-in-out !important;
+}
+
+#ambient-fx[data-gfx-motion="turn"] .afx-a,
+#ambient-fx[data-gfx-motion="turn"] .afx-b {
+    animation-name: afxUTurn !important;
+    animation-timing-function: linear !important;
+}
+
+/* ── Анимациите за ИЗБРАНО движение ─────────────────────────────────────
+   Амплитудите са ~3× по-големи от тези на присетите, защото вървят на
+   70s вместо на 200+. Целта е да се ВИДИ, че изборът е приложен. */
+
+@keyframes afxUDrift {
+    0%   { transform: translate3d(-9vw, -2vh, 0); }
+    50%  { transform: translate3d(9vw, 4vh, 0); }
+    100% { transform: translate3d(-9vw, -2vh, 0); }
+}
+
+@keyframes afxUSlide {
+    from { transform: translate3d(-14%, 0, 0); }
+    to   { transform: translate3d(14%, 0, 0); }
+}
+
+@keyframes afxUSwell {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.42); }
+}
+
+/* Прозрачността се мени от 0.28 до 1 — при фон с алфа 0.05 по-малък
+   диапазон просто не се вижда. */
+@keyframes afxUBreathe {
+    0%, 100% { opacity: 0.28; }
+    50%      { opacity: 1; }
+}
+
+@keyframes afxUTurn {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* ── Запас за движението ────────────────────────────────────────────────
+   БЪГ ФИКС. Слоят по подразбиране съвпада с екрана. Всяко движение —
+   плъзгане, плаване, въртене — го измества и открива ръба: рисунъкът
+   свършва рязко и се вижда празнина.
+
+   Процентният запас (inset: -45%) НЕ решава въртенето, защото расте
+   пропорционално, а нуждата е квадратна: за да покрие екран 1920×1080
+   при всеки ъгъл, слоят трябва да е поне 2203px в ДВЕТЕ посоки.
+   -45% дава 3648×2052 — широк достатъчно, висок недостатъчно. Оттам
+   идва диагоналната ивица.
+
+   Затова: за преместващите се движения — процентен запас; за въртенето —
+   КВАДРАТ със страна 160vmax. Диагоналът на всеки екран е под 1.42vmax,
+   значи 160vmax покрива с резерв всяко съотношение. */
+#ambient-fx[data-gfx-motion="drift"] .afx-a,
+#ambient-fx[data-gfx-motion="drift"] .afx-b,
+#ambient-fx[data-gfx-motion="slide"] .afx-a,
+#ambient-fx[data-gfx-motion="slide"] .afx-b {
+    inset: -25% -25%;
+}
+
+#ambient-fx[data-gfx-motion="turn"] .afx-a,
+#ambient-fx[data-gfx-motion="turn"] .afx-b {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: 160vmax;
+    height: 160vmax;
+    margin: -80vmax 0 0 -80vmax;
+    /* Изричен център: без него завъртането зависи от размера на
+       съдържанието и оста „плава“ при смяна на присет. */
+    transform-origin: 50% 50%;
+    -webkit-mask-image: radial-gradient(190vmax 150vmax at 50% -8vmax,
+        #000 0%, rgba(0,0,0,0.72) 34%, rgba(0,0,0,0.3) 62%,
+        rgba(0,0,0,0.08) 84%, transparent 100%);
+    mask-image: radial-gradient(190vmax 150vmax at 50% -8vmax,
+        #000 0%, rgba(0,0,0,0.72) 34%, rgba(0,0,0,0.3) 62%,
+        rgba(0,0,0,0.08) 84%, transparent 100%);
+}
+
+/* Системната настройка за намалено движение бие всичко по-горе. */
+@media (prefers-reduced-motion: reduce) {
+    #ambient-fx .afx-a,
+    #ambient-fx .afx-b,
+    #ambient-fx .afx-cursor { animation: none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ЗАКЛЮЧВАНЕ НА ЖИВИТЕ ПРИСЕТИ
+   ══════════════════════════════════════════════════════════════════════
+   Шестте живи присета рисуват спрямо курсора и скрола, в координати на
+   ЕКРАНА. Настройката за движение мести целия слой с transform. Ако и
+   двете действат, чертежът се отмества, а курсорът остава на място —
+   фонарчето вече не е под мишката, лъчите не тръгват от нея.
+
+   Затова изборът на движение НЕ ги засяга. Идва последно във файла и
+   бие всички правила за движение по-горе.
+
+   Изключение: prism, sonar и caustic имат собствено бавно дишане,
+   което не мести координатната система. То се пази — освен когато
+   администраторът е избрал изрично „спряно".                          */
+
+#ambient-fx[data-gfx-motion] .afx-a,
+#ambient-fx[data-gfx-motion] .afx-b { }   /* специфичност-котва */
+
+#ambient-fx[data-gfx-bg="lantern"] .afx-a,
+#ambient-fx[data-gfx-bg="lantern"] .afx-b,
+#ambient-fx[data-gfx-bg="spine"] .afx-a,
+#ambient-fx[data-gfx-bg="spine"] .afx-b,
+#ambient-fx[data-gfx-bg="ascent"] .afx-a,
+#ambient-fx[data-gfx-bg="ascent"] .afx-b {
+    animation: none !important;
+    inset: 0 !important;
+    transform: none !important;
+}
+
+/* Тези три пазят собственото си дишане, но не приемат чужд вид, чужда
+   продължителност и не се местят. */
+#ambient-fx[data-gfx-bg="prism"] .afx-a,
+#ambient-fx[data-gfx-bg="prism"] .afx-b,
+#ambient-fx[data-gfx-bg="sonar"] .afx-a,
+#ambient-fx[data-gfx-bg="sonar"] .afx-b,
+#ambient-fx[data-gfx-bg="caustic"] .afx-a,
+#ambient-fx[data-gfx-bg="caustic"] .afx-b {
+    inset: 0 !important;
+}
+
+#ambient-fx[data-gfx-bg="prism"] .afx-a { animation: none !important; }
+#ambient-fx[data-gfx-bg="prism"] .afx-b { animation: afxBreathe 160s ease-in-out infinite !important; }
+
+#ambient-fx[data-gfx-bg="sonar"] .afx-a { animation: afxSwell 190s ease-in-out infinite !important; }
+#ambient-fx[data-gfx-bg="sonar"] .afx-b { animation: afxSwell 310s ease-in-out infinite reverse !important; }
+
+#ambient-fx[data-gfx-bg="caustic"] .afx-a { animation: none !important; }
+#ambient-fx[data-gfx-bg="caustic"] .afx-b { animation: afxSwell 340s ease-in-out infinite !important; }
+
+/* „Спряно" важи и за тях — това е единствената настройка, която ги
+   засяга, и не чупи нищо: чертежът остава, само дишането спира. */
+#ambient-fx[data-gfx-motion="off"][data-gfx-bg="prism"] .afx-b,
+#ambient-fx[data-gfx-motion="off"][data-gfx-bg="sonar"] .afx-a,
+#ambient-fx[data-gfx-motion="off"][data-gfx-bg="sonar"] .afx-b,
+#ambient-fx[data-gfx-motion="off"][data-gfx-bg="caustic"] .afx-b {
+    animation: none !important;
+}
+
+/* Курсорните присета имат нужда от координатите И при намалено движение:
+   без тях чертежът се заковава в резервната си позиция. Затова .afx-cursor
+   спира, но чертежът остава жив — той не е анимация, а следва ръката. */
+@media (prefers-reduced-motion: reduce) {
+    #ambient-fx .afx-a,
+    #ambient-fx .afx-b,
+    #ambient-fx .afx-cursor { animation: none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   МОБИЛНО И ПОКАЗВАЩИ УСТРОЙСТВА БЕЗ МИШКА
+   ══════════════════════════════════════════════════════════════════════
+   Две отделни причини, затова две отделни правила.
+
+   1) ТЕЛЕФОН — слоят е скрит ПО ПОДРАЗБИРАНЕ.
+      На малък екран банерът заема почти целия изглед, а фонът се вижда
+      само в тесните ивици между секциите — печалбата е малка. Срещу нея
+      стои цена: пълноекранен градиент, който се преизчислява при скрол,
+      върху устройство с батерия. Администраторът може да го включи от
+      панела за конкретна страница.
+
+   2) БЕЗ МИШКА — курсорните фонове НЕ се показват изобщо.
+      lantern, prism, sonar, caustic и spine се рисуват спрямо позицията
+      на курсора. Без мишка тази позиция е резервната стойност и остава
+      там завинаги — фонарче, заковано в ъгъла. Това не е „по-слаба
+      версия на ефекта", а счупен ефект. По-добре нищо.                */
+
+@media (max-width: 820px) {
+    /* Изключване по подразбиране. Атрибутът data-gfx-mobile="on" се задава
+       от панела и връща слоя за конкретната страница. */
+    #ambient-fx:not([data-gfx-mobile="on"]) { display: none; }
+}
+
+/* pointer: fine значи истинска мишка или стилус. Всичко друго — пръст. */
+@media (pointer: coarse), (hover: none) {
+    #ambient-fx[data-gfx-bg="lantern"],
+    #ambient-fx[data-gfx-bg="prism"],
+    #ambient-fx[data-gfx-bg="sonar"],
+    #ambient-fx[data-gfx-bg="caustic"],
+    #ambient-fx[data-gfx-bg="spine"] { display: none; }
+
+    /* Петното под курсора също няма смисъл без курсор. */
+    #ambient-fx .afx-cursor { display: none; }
+}

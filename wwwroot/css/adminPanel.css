@@ -2250,3 +2250,245 @@ code {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Общо: атрибутът hidden трябва да бие всеки display в панела. Без това
+   всеки нов елемент с display: flex/block и hidden ще се показва. */
+[hidden] { display: none !important; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ТАБ „КАКВО Е НОВО"
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* БЪГ ФИКС: `display: inline-block` надписва вграденото правило на браузъра
+   за атрибута hidden ([hidden] { display: none }). Затова точката оставаше
+   видима и след като табът е отворен — JS-ът задаваше hidden коректно, но
+   CSS-ът го надписваше.
+
+   Правилото по-долу е нужно навсякъде, където елемент с display в CSS се
+   скрива с hidden. По-надеждно от .style.display в JS, защото пази
+   декларацията на едно място. */
+.cl-dot[hidden] { display: none; }
+
+/* Точката до таба. Малка нарочно — известие, не аларма. */
+.cl-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 7px;
+    vertical-align: middle;
+    border-radius: 50%;
+    background: var(--admin-accent, #ff3636);
+}
+
+.cl-entry {
+    padding: 0 0 22px;
+    margin: 0 0 22px;
+    border-bottom: 1px solid var(--admin-line, #e2e8f0);
+}
+
+.cl-entry:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+
+/* Версия в подготовка е приглушена: тя още не е стигнала до сайта. */
+.cl-entry.is-unreleased { opacity: 0.62; }
+
+.cl-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0 0 12px;
+}
+
+.cl-ver {
+    font-size: 15px;
+    letter-spacing: 0.02em;
+}
+
+.cl-date,
+.cl-tag {
+    font-size: 12px;
+    color: var(--admin-muted, #7b8794);
+}
+
+.cl-tag {
+    padding: 2px 7px;
+    border: 1px solid var(--admin-line, #e2e8f0);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 10.5px;
+}
+
+.cl-list {
+    margin: 0 0 12px;
+    padding-left: 18px;
+    font-size: 13px;
+    line-height: 1.62;
+}
+
+.cl-list li { margin-bottom: 6px; }
+
+.cl-list code {
+    padding: 1px 5px;
+    background: rgba(0, 0, 0, 0.06);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+}
+
+.cl-empty {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: var(--admin-muted, #7b8794);
+}
+
+/* Техническата част — сгъната, работи без JS. */
+.cl-tech { margin-top: 4px; }
+
+.cl-tech > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    cursor: pointer;
+    list-style: none;
+    font-size: 12px;
+    color: var(--admin-muted, #7b8794);
+    user-select: none;
+}
+
+.cl-tech > summary::-webkit-details-marker { display: none; }
+
+.cl-tech > summary::before {
+    content: "";
+    width: 0; height: 0;
+    border-left: 4px solid currentColor;
+    border-top: 3.5px solid transparent;
+    border-bottom: 3.5px solid transparent;
+    transition: transform 0.18s ease;
+}
+
+.cl-tech[open] > summary::before { transform: rotate(90deg); }
+
+.cl-tech-body {
+    padding-left: 12px;
+    border-left: 2px solid var(--admin-line, #e2e8f0);
+}
+
+.cl-tech-body .cl-list {
+    margin-bottom: 0;
+    font-size: 12.5px;
+    color: var(--admin-muted, #7b8794);
+}
+
+
+/* Полето за файл е скрито — етикетът е бутонът. */
+.dl-upload-btn { cursor: pointer; }
+
+@media (max-width: 720px) {
+    .dl-row { flex-direction: column; align-items: stretch; }
+    .dl-actions { justify-content: flex-end; }
+}
+
+/* ── Таб „Downloads" ─────────────────────────────────────────────────── */
+.dl-group {
+    margin: 24px 0 10px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--c-text-faint);
+}
+
+.dl-group:first-of-type { margin-top: 8px; }
+
+.dl-list { border: 1px solid var(--c-border); }
+
+.dl-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--c-border);
+    transition: background var(--transition), opacity var(--transition);
+}
+
+.dl-row:last-child { border-bottom: 0; }
+.dl-row:hover { background: var(--c-surface-sunk); }
+.dl-row.is-busy { opacity: 0.5; pointer-events: none; }
+
+/* Ляв кант, който показва състоянието с един поглед — качен или не. */
+.dl-row { border-left: 2px solid transparent; }
+.dl-row:has(.dl-remove) { border-left-color: var(--c-accent); }
+
+.dl-info { flex: 1; min-width: 0; }
+
+.dl-info b {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 3px;
+}
+
+.dl-state {
+    display: block;
+    font-size: 12px;
+    color: var(--c-text-faint);
+    word-break: break-word;
+}
+
+.dl-actions {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── Бутоните ────────────────────────────────────────────────────────────
+   Всички са с еднаква височина и центриране. <a> и <label> не наследяват
+   height и подравняване от <button>, затова се изравняват изрично —
+   иначе трите бутона на реда са три различни височини.                  */
+.dl-actions .gfx-mini-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 13px;
+    text-decoration: none;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Качването е главното действие на реда — акцентно, не сиво като другите. */
+.dl-upload-btn {
+    border-color: var(--c-accent) !important;
+    color: var(--c-accent-ink) !important;
+    background: var(--c-accent-tint) !important;
+    font-weight: 500;
+}
+
+.dl-upload-btn:hover {
+    background: var(--c-accent) !important;
+    color: #fff !important;
+}
+
+/* „Премахни" е разрушително — червено ЧАК при насочване, за да не крещи
+   от списъка, но да предупреди, преди да се кликне. */
+.dl-remove:hover {
+    border-color: #d32f2f !important;
+    background: rgba(211, 47, 47, 0.08) !important;
+    color: #d32f2f !important;
+}
+
+/* Иконките в бутоните. */
+.dl-actions svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+}
+
+@media (max-width: 720px) {
+    .dl-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 11px;
+    }
+    .dl-actions { justify-content: flex-end; }
+    .dl-actions .gfx-mini-btn { flex: 1; }
+}

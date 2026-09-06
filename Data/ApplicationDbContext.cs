@@ -39,6 +39,14 @@ namespace ConferenceApp.Data
         public DbSet<PaymentGateSetting> PaymentGateSettings { get; set; }
         public DbSet<FaqModel> Faqs { get; set; }
 
+        // ── Визуални стилове по страници (админ таб „Стилове") ───────────
+        public DbSet<PageStyleSetting>  PageStyleSettings  => Set<PageStyleSetting>();
+        public DbSet<CustomBackground>  CustomBackgrounds  => Set<CustomBackground>();
+        public DbSet<PageStyleRevision> PageStyleRevisions => Set<PageStyleRevision>();
+
+        /// <summary>Програмата и документите за автори — качват се от панела.</summary>
+        public DbSet<DownloadableFile> DownloadableFiles => Set<DownloadableFile>();
+
         // ── Плащания и одит ───────────────────────────────────────────────────
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<OtpCode> OtpCodes { get; set; }
@@ -80,6 +88,13 @@ namespace ConferenceApp.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            // Един запис на страница и уникален slug — иначе два записа за
+            // "/Index" биха дали недетерминиран резултат при четене.
+            builder.Entity<PageStyleSetting>().HasIndex(x => x.PageKey).IsUnique();
+            builder.Entity<CustomBackground>().HasIndex(x => x.Slug).IsUnique();
+            builder.Entity<DownloadableFile>().HasIndex(x => x.FileKey).IsUnique();
+            builder.Entity<PageStyleRevision>().HasIndex(x => x.PageKey);
 
             // Всеки index/seed за конкретен модел живее в собствен
             // IEntityTypeConfiguration<T> файл — виж Data/Configurations/.

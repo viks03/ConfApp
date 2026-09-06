@@ -26,4 +26,9 @@
     <Folder Include="wwwroot\pdfs\" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <Content Include="CHANGELOG.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

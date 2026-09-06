@@ -43,7 +43,15 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 // ---------------- 3. LOCALIZATION & RAZOR PAGES ----------------
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-builder.Services.AddRazorPages()
+builder.Services.AddRazorPages(options =>
+    {
+        // Закача се веднъж тук, вместо ред във всяка от 20+ публични страници:
+        // ръчното попълване се забравя при добавяне на нова страница и фонът
+        // мълчаливо спира да работи там. Филтърът сам се изключва в /Admin.
+        options.Conventions.ConfigureFilter(
+            new Microsoft.AspNetCore.Mvc.ServiceFilterAttribute(
+                typeof(ConferenceApp.Services.Styles.GlobalStylesFilter)));
+    })
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
 
@@ -73,6 +81,13 @@ builder.Services.AddSingleton<ConferenceApp.Services.IPaymentGateSettings,
 // Автоматичен одит на административните действия. Scoped, защото ползва
 // ApplicationDbContext — филтърът живее колкото заявката.
 builder.Services.AddScoped<ConferenceApp.Services.Audit.AdminAuditFilter>();
+
+// Попълва ViewData за визуалния слой на всяка публична страница. Scoped,
+// защото чете от ApplicationDbContext.
+builder.Services.AddScoped<ConferenceApp.Services.Styles.GlobalStylesFilter>();
+
+// Singleton: файлът не се мени между рестарти, а четецът пази кеш.
+builder.Services.AddSingleton<ConferenceApp.Services.Changelog.ChangelogReader>();
 
 builder.Services.AddHttpClient();   // за проверката на Go28
 builder.Services.AddSingleton<ConferenceApp.Services.Health.IHealthCheckService,

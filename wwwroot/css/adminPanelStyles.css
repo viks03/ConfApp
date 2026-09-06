@@ -1,0 +1,931 @@
+/* ============================================================
+   adminPanelStyles.css — таб „Визуални стилове" в админ панела.
+
+   Отделен файл, а НЕ добавка към adminPanel.css: интеграцията се
+   проверява с един <link> и се маха с един <link>. Всички класове са с
+   представка gfx- и не пресичат съществуващи имена.
+
+   Взима токените на панела (--c-*, --f-*, --transition) от
+   adminPanel.css — затова се зарежда СЛЕД него.
+
+   ВАЖНО за миниатюрите: осемте фона тук са НАРИСУВАНИ НАНОВО, в
+   миниатюра, върху тъмна плочка. НЕ се преизползва globalEffects.css —
+   той е за публичния сайт (position: fixed, #ambient-fx, blend
+   screen) и вкаран в светъл панел или би покрил екрана, или би бил
+   невидим. Затова: същите рисунки, друг контекст. Ако някой промени
+   рисунък в globalEffects.css, тук се променя ръчно — цената на това да
+   не се пипа работещият слой.
+   ============================================================ */
+
+/* ── Плочката с рисунката ─────────────────────────────────────
+   Един и същ елемент за миниатюрата в реда, за избора в модала и за
+   големия преглед. Мащабът е една променлива (--ga-scale). */
+.gfx-art {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: #050505;
+    --ga-ink: 0.5;
+    --ga-glow: 0.85;
+    --ga-grid: 14px;
+    --ga-step: 4px;
+    --ga-intensity: 1;
+}
+
+.gfx-art > span {
+    position: absolute;
+    inset: -2px;
+    display: block;
+    opacity: var(--ga-intensity);
+}
+
+/* Маската повтаря тази на сайта: плътно горе, изтичане надолу. */
+.gfx-art > span {
+    -webkit-mask-image: radial-gradient(130% 108% at 50% -4%, #000 0%, rgba(0,0,0,0.72) 34%, rgba(0,0,0,0.3) 62%, rgba(0,0,0,0.08) 84%, transparent 100%);
+    mask-image: radial-gradient(130% 108% at 50% -4%, #000 0%, rgba(0,0,0,0.72) 34%, rgba(0,0,0,0.3) 62%, rgba(0,0,0,0.08) 84%, transparent 100%);
+}
+
+.gfx-art[data-bg="grid"] .gfx-art-a {
+    background:
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.14)) 1px, transparent 1px) 0 0 / 100% var(--ga-grid),
+        linear-gradient(90deg, rgba(255,255,255,calc(var(--ga-ink) * 0.14)) 1px, transparent 1px) 0 0 / var(--ga-grid) 100%;
+}
+
+.gfx-art[data-bg="paper"] .gfx-art-a {
+    background:
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.07)) 1px, transparent 1px) 0 0 / 100% var(--ga-step),
+        linear-gradient(90deg, rgba(255,255,255,calc(var(--ga-ink) * 0.07)) 1px, transparent 1px) 0 0 / var(--ga-step) 100%;
+}
+.gfx-art[data-bg="paper"] .gfx-art-b {
+    background:
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.16)) 1px, transparent 1px) 0 0 / 100% calc(var(--ga-step) * 6),
+        linear-gradient(90deg, rgba(255,255,255,calc(var(--ga-ink) * 0.16)) 1px, transparent 1px) 0 0 / calc(var(--ga-step) * 6) 100%;
+}
+
+.gfx-art[data-bg="hatch"] .gfx-art-a {
+    background: repeating-linear-gradient(45deg, rgba(255,255,255,calc(var(--ga-ink) * 0.15)) 0 1px, transparent 1px 7px);
+}
+.gfx-art[data-bg="hatch"] .gfx-art-b {
+    background: repeating-linear-gradient(45deg, rgba(255,54,54,calc(var(--ga-ink) * 0.5)) 0 1px, transparent 1px 34px);
+}
+
+.gfx-art[data-bg="glow"] .gfx-art-a {
+    background: radial-gradient(60% 90% at 50% -18%,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.4)) 0%,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.26)) 26%,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.14)) 46%,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.06)) 66%,
+        rgba(255,54,54,0) 100%);
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+.gfx-art.gfx-art.gfx-art[data-bg="contour"] .gfx-art-a {
+    background: repeating-radial-gradient(circle at 18% -8%, transparent 0 13px, rgba(255,255,255,calc(var(--ga-ink) * 0.16)) 13px 14px);
+}
+.gfx-art[data-bg="contour"] .gfx-art-b {
+    background: repeating-radial-gradient(circle at 88% 108%, transparent 0 18px, rgba(255,54,54,calc(var(--ga-ink) * 0.4)) 18px 19px);
+}
+
+/* off — празна тъмна плочка с диагонал, за да не се чете като „грешка" */
+.gfx-art[data-bg="off"] .gfx-art-a {
+    background: linear-gradient(135deg, transparent calc(50% - 1px), rgba(255,255,255,0.14) 50%, transparent calc(50% + 1px));
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+/* Непозната стойност (стар запис, изтрит custom ефект): плочката не е
+   празна, а показва въпросителен растер — иначе изглежда като off. */
+.gfx-art[data-bg="unknown"] .gfx-art-a {
+    background: repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 6px);
+}
+
+/* ── Ред за страница ──────────────────────────────────────────
+   Плоски редове с една линия между тях — същият език като
+   .email-toggle-row и .pay-gate-row, не нови карти. */
+.gfx-safety {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    background: var(--c-amber-light);
+    border: 1px solid var(--c-amber-border);
+}
+
+.gfx-safety-text { max-width: 78ch; margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--c-text-secondary); }
+.gfx-safety-text b { color: var(--c-amber); font-weight: 600; }
+
+.gfx-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+
+.gfx-filter-btn {
+    height: 30px;
+    padding: 0 12px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border-strong);
+    color: var(--c-text-secondary);
+    font-family: var(--f-text);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.gfx-filter-btn:hover { border-color: var(--c-accent); color: var(--c-text); }
+.gfx-filter-btn.active { background: var(--c-accent-tint); border-color: var(--c-accent); color: var(--c-accent-ink); }
+.gfx-filter-btn:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.gfx-filter-btn i { font-style: normal; margin-left: 6px; color: var(--c-text-faint); font-variant-numeric: tabular-nums; }
+
+.gfx-group { margin-bottom: 18px; }
+.gfx-group:last-child { margin-bottom: 0; }
+
+.gfx-group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 0 0 7px;
+    border-bottom: 1px solid var(--c-border-strong);
+}
+.gfx-group-title {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-text);
+}
+.gfx-group-note { font-size: 12px; color: var(--c-text-muted); }
+
+.gfx-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 2px;
+    border-bottom: 1px solid var(--c-border);
+}
+.gfx-row:last-child { border-bottom: 0; }
+.gfx-row.is-saving { opacity: 0.55; pointer-events: none; }
+.gfx-row[hidden] { display: none; }
+
+.gfx-row .gfx-art { flex: none; width: 84px; height: 48px; border: 1px solid var(--c-border-strong); }
+
+.gfx-row-text { flex: 1 1 auto; min-width: 0; }
+.gfx-row-name {
+    display: block;
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    color: var(--c-text);
+}
+.gfx-row-key { display: block; margin-top: 1px; font-family: var(--f-mono); font-size: 11.5px; color: var(--c-text-faint); }
+
+.gfx-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; flex: none; }
+
+.gfx-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px;
+    border: 1px solid var(--c-border-strong);
+    background: var(--c-surface-sunk);
+    font-size: 11.5px;
+    color: var(--c-text-secondary);
+    white-space: nowrap;
+}
+.gfx-tag-value { font-family: var(--f-mono); font-size: 11.5px; color: var(--c-text); }
+.gfx-tag.is-manual { background: var(--c-blue-light); border-color: var(--c-blue-border); color: var(--c-blue); }
+.gfx-tag.is-default { background: var(--c-surface-sunk); }
+.gfx-tag.is-css { background: var(--c-amber-light); border-color: var(--c-amber-border); color: var(--c-amber); }
+.gfx-tag.is-css-off { background: var(--c-slate-light); border-color: var(--c-slate-border); color: var(--c-slate); }
+
+.gfx-row-actions { display: flex; align-items: center; gap: 7px; flex: none; }
+
+.gfx-mini-btn {
+    height: 30px;
+    padding: 0 12px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border-strong);
+    color: var(--c-text);
+    font-family: var(--f-text);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.gfx-mini-btn:hover { border-color: var(--c-accent); background: var(--c-accent-tint); color: var(--c-accent-ink); }
+.gfx-mini-btn:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.gfx-mini-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+@media (max-width: 860px) {
+    .gfx-row { flex-wrap: wrap; }
+    .gfx-row-text { flex: 1 1 100%; order: 2; }
+    .gfx-row-meta { order: 3; }
+    .gfx-row-actions { order: 4; margin-left: auto; }
+}
+
+/* ── Редакторът (в съществуващия .modal-overlay) ──────────────
+   Прегледът е тъмен блок в светъл панел — това е нарочно: ефектът
+   съществува само на тъмно и всяко „преведено" в светло изображение би
+   лъгало. Затова прегледът е рамкиран като екран, с етикет, а не като
+   част от формата. */
+.gfx-preview {
+    position: relative;
+    margin: 0 0 16px;
+    border: 1px solid var(--c-rule);
+    background: #050505;
+}
+
+.gfx-preview .gfx-art {
+    width: 100%;
+    height: 200px;
+    --ga-grid: 34px;
+    --ga-step: 7px;
+}
+
+.gfx-preview-label {
+    position: absolute;
+    z-index: 2;
+    top: 8px;
+    left: 8px;
+    padding: 3px 7px;
+    background: rgba(5,5,5,0.8);
+    border: 1px solid rgba(255,255,255,0.18);
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: #f4f2ec;
+}
+
+.gfx-preview-copy {
+    position: absolute;
+    z-index: 2;
+    left: 22px;
+    right: 22px;
+    bottom: 18px;
+    pointer-events: none;
+}
+.gfx-preview-copy b {
+    display: block;
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 19px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #f4f2ec;
+}
+.gfx-preview-copy span { display: block; margin-top: 4px; font-size: 12.5px; color: #a7a39b; }
+
+/* Курсорното петно в прегледа — същият жест като на сайта. */
+.gfx-preview-cursor {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 260px;
+    margin: -130px 0 0 -130px;
+    pointer-events: none;
+    background: radial-gradient(circle closest-side,
+        rgba(255,54,54,calc(var(--ga-cursor, 0.05) * 3)) 0%,
+        rgba(255,54,54,calc(var(--ga-cursor, 0.05) * 1.6)) 30%,
+        rgba(255,54,54,calc(var(--ga-cursor, 0.05) * 0.6)) 60%,
+        rgba(255,54,54,0) 100%);
+    transform: translate3d(var(--ga-cx, -9999px), var(--ga-cy, -9999px), 0);
+    opacity: 0;
+    transition: opacity 380ms ease;
+}
+.gfx-preview:hover .gfx-preview-cursor { opacity: 1; }
+
+/* ── Изборът на фон ───────────────────────────────────────────
+   Осем плочки, не падащ списък: думата „hatch" не казва нищо. */
+.gfx-choices {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 0 16px;
+}
+
+.gfx-choice {
+    position: relative;
+    display: block;
+    padding: 0;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border-strong);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+.gfx-choice:hover { border-color: var(--c-accent); }
+.gfx-choice input { position: absolute; opacity: 0; width: 0; height: 0; }
+.gfx-choice .gfx-art { width: 100%; height: 52px; --ga-grid: 11px; --ga-step: 3px; }
+.gfx-choice-name {
+    display: block;
+    padding: 6px 8px;
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    color: var(--c-text-secondary);
+    border-top: 1px solid var(--c-border);
+}
+.gfx-choice.is-selected { border-color: var(--c-accent); box-shadow: inset 0 0 0 1px var(--c-accent); }
+.gfx-choice.is-selected .gfx-choice-name { background: var(--c-accent-tint); color: var(--c-accent-ink); }
+.gfx-choice input:focus-visible ~ .gfx-choice-name { outline: 2px solid var(--c-accent); outline-offset: -2px; }
+
+@media (max-width: 640px) {
+    .gfx-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── Плъзгачи ─────────────────────────────────────────────────
+   Силата е видим ефект, не число — плъзгач с прегледа над него.
+   Числото остава отдясно, защото админът трябва да може да повтори
+   същата стойност на друга страница. */
+.gfx-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.gfx-slider-row label {
+    flex: 0 0 148px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--c-text-secondary);
+}
+.gfx-slider-row input[type="range"] { flex: 1 1 auto; min-width: 0; accent-color: var(--c-accent); }
+.gfx-slider-row output {
+    flex: 0 0 62px;
+    text-align: right;
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--c-text);
+}
+.gfx-slider-row .gfx-inherit {
+    flex: none;
+    font-size: 11.5px;
+    color: var(--c-text-faint);
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.gfx-slider-row.is-inherited output { color: var(--c-text-faint); }
+
+/* ── Разширени / custom CSS: и двете са сгънати ───────────────
+   Посоката от брифа: сложното да е достъпно, но да не е първото,
+   което админът вижда. */
+.gfx-fold { border: 1px solid var(--c-border-strong); margin-bottom: 12px; background: var(--c-surface); }
+.gfx-fold > summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--c-text);
+    list-style: none;
+}
+.gfx-fold > summary::-webkit-details-marker { display: none; }
+.gfx-fold > summary::before { content: "+"; font-family: var(--f-mono); color: var(--c-accent); }
+.gfx-fold[open] > summary::before { content: "–"; }
+.gfx-fold > summary:focus-visible { outline: 2px solid var(--c-accent); outline-offset: -2px; }
+.gfx-fold-body { padding: 12px; border-top: 1px solid var(--c-border); }
+
+.gfx-css-area {
+    width: 100%;
+    min-height: 132px;
+    padding: 10px 11px;
+    background: var(--c-surface-sunk);
+    border: 1px solid var(--c-border-strong);
+    font-family: var(--f-mono);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--c-text);
+    resize: vertical;
+}
+.gfx-css-area:focus { outline: none; border-color: var(--c-accent); box-shadow: inset 0 -2px 0 var(--c-accent); }
+
+.gfx-css-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
+.gfx-css-switch-text { font-size: 12.5px; color: var(--c-text-secondary); }
+
+.gfx-css-report {
+    margin: 9px 0 0;
+    padding: 9px 11px;
+    border: 1px solid var(--c-border-strong);
+    background: var(--c-surface-sunk);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--c-text-secondary);
+}
+.gfx-css-report[hidden] { display: none; }
+.gfx-css-report.is-ok { background: var(--c-green-light); border-color: var(--c-green-border); color: var(--c-green); }
+.gfx-css-report.is-warn { background: var(--c-amber-light); border-color: var(--c-amber-border); color: var(--c-amber); }
+.gfx-css-report.is-bad { background: var(--c-red-light); border-color: var(--c-red-border); color: var(--c-red); }
+.gfx-css-report ul { margin: 6px 0 0; padding-left: 18px; }
+.gfx-css-report code { font-family: var(--f-mono); font-size: 11.5px; }
+
+.gfx-editor-foot-note { margin: 0; font-size: 12px; color: var(--c-text-muted); }
+
+/* ── Преглед на собствен фон ──────────────────────────────────
+   Правилото за .gfx-art[data-bg="custom-preview"] се генерира от
+   adminPanelStyles.js в <style id="gfx-custom-preview-style">, защото
+   параметрите се менят на всяко влачене. Тук са само анимациите — те са
+   фиксирани четири и няма смисъл да се пишат наново на всеки кадър. */
+@keyframes gfx-c-slide {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(18%, 0, 0); }
+}
+
+@keyframes gfx-c-swell {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.16); }
+}
+
+@keyframes gfx-c-drift {
+    0%   { transform: translate3d(-3%, 0, 0); }
+    50%  { transform: translate3d(3%, 2%, 0); }
+    100% { transform: translate3d(-3%, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gfx-art > span { animation: none !important; }
+}
+
+/* ── Ръководство ─────────────────────────────────────────────────────── */
+/* Сгънато по подразбиране: който вече знае, не бива да прескача екран
+   текст всеки път. <details> работи без JS. */
+.gfx-guide {
+    margin: 0 0 18px;
+    border: 1px solid var(--admin-line, #e2e8f0);
+    background: var(--admin-soft, #f7f9fb);
+}
+
+.gfx-guide > summary {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.gfx-guide > summary::-webkit-details-marker { display: none; }
+
+.gfx-guide > summary::before {
+    content: "";
+    width: 0; height: 0;
+    border-left: 5px solid currentColor;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    transition: transform 0.18s ease;
+}
+
+.gfx-guide[open] > summary::before { transform: rotate(90deg); }
+
+.gfx-guide > summary b { font-size: 14px; }
+.gfx-guide > summary span { font-size: 12px; color: var(--admin-muted, #7b8794); }
+
+.gfx-guide-body {
+    padding: 4px 18px 20px;
+    max-width: 760px;
+    font-size: 13px;
+    line-height: 1.62;
+}
+
+.gfx-guide-body h4 {
+    margin: 22px 0 6px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--admin-muted, #7b8794);
+}
+
+.gfx-guide-body h4:first-child { margin-top: 8px; }
+.gfx-guide-body p { margin: 0 0 10px; }
+
+.gfx-guide-list { margin: 0 0 12px; padding-left: 18px; }
+.gfx-guide-list li { margin-bottom: 5px; }
+
+.gfx-guide-body code {
+    padding: 1px 5px;
+    background: rgba(0, 0, 0, 0.06);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+}
+
+.gfx-guide-code {
+    margin: 0 0 12px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    border-left: 2px solid var(--admin-accent, #ff3636);
+    background: #131c25;
+    color: #e6edf3;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.gfx-guide-note {
+    padding-left: 12px;
+    border-left: 2px solid var(--admin-line, #e2e8f0);
+    color: var(--admin-muted, #7b8794);
+    font-size: 12.5px;
+}
+
+/* ── Превключвател за режима на собствения фон ───────────────────────── */
+.gfx-mode-switch {
+    display: flex;
+    gap: 0;
+    margin: 0 0 16px;
+    border: 1px solid var(--admin-line, #e2e8f0);
+}
+
+.gfx-mode-opt { flex: 1; }
+.gfx-mode-opt input { position: absolute; opacity: 0; pointer-events: none; }
+
+.gfx-mode-opt span {
+    display: block;
+    padding: 9px 12px;
+    text-align: center;
+    font-size: 12.5px;
+    cursor: pointer;
+    color: var(--admin-text, #131c25);
+    background: #fff;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.gfx-mode-opt label:hover span,
+.gfx-mode-opt:hover span { background: var(--admin-soft, #f7f9fb); }
+
+.gfx-mode-opt + .gfx-mode-opt span { border-left: 1px solid var(--admin-line, #e2e8f0); }
+
+.gfx-mode-opt input:checked + span {
+    background: var(--admin-accent, #ff3636);
+    color: #fff;
+}
+
+.gfx-mode-opt input:focus-visible + span {
+    outline: 2px solid var(--admin-accent, #ff3636);
+    outline-offset: -2px;
+}
+
+#gfx-custom-css {
+    width: 100%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+
+/* ── Миниатюри на новите фонове ──────────────────────────────────────── */
+
+/* ── Миниатюри v3 ─────────────────────────────────────────────────── */
+[data-bg="fiber"] .gfx-art-a {
+    background:
+        repeating-linear-gradient(82deg, transparent 0 7px, rgba(255,255,255,calc(var(--ga-ink) * 0.1)) 7.6px, rgba(255,255,255,calc(var(--ga-ink) * 0.3)) 8px, transparent 8.6px 15px),
+        repeating-linear-gradient(83.5deg, transparent 0 10px, rgba(255,255,255,calc(var(--ga-ink) * 0.2)) 11px, transparent 12px 21px);
+}
+[data-bg="fiber"] .gfx-art-b {
+    background: repeating-linear-gradient(82.6deg, transparent 0 18px, rgba(255,54,54,calc(var(--ga-glow) * 0.3)) 19.4px, transparent 21px 35px);
+}
+
+/* ── Управление на движението ────────────────────────────────────────── */
+.gfx-motion-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 14px;
+}
+
+.gfx-motion-label {
+    flex: none;
+    min-width: 74px;
+    font-size: 12.5px;
+    color: var(--admin-muted, #7b8794);
+}
+
+.gfx-motion-opts {
+    display: flex;
+    flex: 1;
+    border: 1px solid var(--admin-line, #e2e8f0);
+}
+
+.gfx-motion-opts label { flex: 1; }
+.gfx-motion-opts input { position: absolute; opacity: 0; pointer-events: none; }
+
+.gfx-motion-opts span {
+    display: block;
+    padding: 7px 6px;
+    text-align: center;
+    font-size: 12px;
+    cursor: pointer;
+    /* БЪГ ФИКС: без изричен color неизбраните наследяваха много бледа
+       стойност от родителя и практически не се четяха. */
+    color: var(--admin-text, #131c25);
+    background: #fff;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.gfx-motion-opts label:hover span { background: var(--admin-soft, #f7f9fb); }
+
+.gfx-motion-opts label + label span { border-left: 1px solid var(--admin-line, #e2e8f0); }
+
+.gfx-motion-opts input:checked + span {
+    background: var(--admin-accent, #ff3636);
+    color: #fff;
+}
+
+.gfx-motion-opts input:focus-visible + span {
+    outline: 2px solid var(--admin-accent, #ff3636);
+    outline-offset: -2px;
+}
+
+/* Седем опции на един ред стават твърде тесни — при малко място минават
+   на два реда вместо да се смачкат до нечетимост. */
+.gfx-motion-opts--wide { flex-wrap: wrap; }
+
+.gfx-motion-opts--wide label { flex: 1 0 auto; min-width: 84px; }
+
+.gfx-motion-opts--wide label span { padding-left: 10px; padding-right: 10px; }
+
+/* Предупреждение за рискова комбинация. Появява се само когато има такава —
+   постоянното предупреждение се научава да се пренебрегва. */
+.gfx-motion-warn {
+    margin: -6px 0 14px;
+    padding: 10px 12px;
+    border-left: 2px solid var(--admin-accent, #ff3636);
+    background: rgba(255, 54, 54, 0.05);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--admin-text, #131c25);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ДВИЖЕНИЕ В ПРЕГЛЕДА
+   ══════════════════════════════════════════════════════════════════════
+   Миниатюрите нямаха никаква анимация — затова изборът на движение не се
+   виждаше никъде, докато не се запише и не се отвори реалната страница.
+
+   Плочката е ~150×90px, тоест около десет пъти по-малка от екрана. Ако се
+   ползват същите амплитуди, движението излиза извън нея и се вижда само
+   как нещо влиза и излиза. Затова амплитудите тук са смалени, а
+   продължителността е СЪКРАТЕНА до 8–14s: в преглед се гледа няколко
+   секунди, не минути. Целта е да се разбере ВИДЪТ, не скоростта.       */
+
+.gfx-art[data-motion="drift"] .gfx-art-a,
+.gfx-art[data-motion="drift"] .gfx-art-b { animation: gfxPvDrift 11s ease-in-out infinite; }
+
+.gfx-art[data-motion="slide"] .gfx-art-a,
+.gfx-art[data-motion="slide"] .gfx-art-b { animation: gfxPvSlide 9s linear infinite; }
+
+.gfx-art[data-motion="swell"] .gfx-art-a,
+.gfx-art[data-motion="swell"] .gfx-art-b { animation: gfxPvSwell 8s ease-in-out infinite; }
+
+.gfx-art[data-motion="breathe"] .gfx-art-a,
+.gfx-art[data-motion="breathe"] .gfx-art-b { animation: gfxPvBreathe 8s ease-in-out infinite; }
+
+.gfx-art[data-motion="turn"] .gfx-art-a,
+.gfx-art[data-motion="turn"] .gfx-art-b { animation: gfxPvTurn 14s linear infinite; }
+
+/* Вторият слой изостава — същият принцип като на живо. */
+.gfx-art[data-motion] .gfx-art-b { animation-duration: 13s; }
+
+.gfx-art[data-motion="off"] .gfx-art-a,
+.gfx-art[data-motion="off"] .gfx-art-b { animation: none; }
+
+/* БЪГ ФИКС: слоевете в плочката имат inset: -2px — два пиксела запас.
+   Всяко движение веднага открива ръба и рисунъкът свършва рязко.
+
+   За преместващите се стига процентен запас. За въртенето НЕ стига:
+   плочка 150×90 има диагонал 175px, значи слоят трябва да е поне 175 и
+   на височина — а -45% дава само 171. Оттам диагоналната ивица.
+   Затова тук слоят става КВАДРАТ, по-голям от диагонала. */
+.gfx-art[data-motion="drift"] .gfx-art-a,
+.gfx-art[data-motion="drift"] .gfx-art-b,
+.gfx-art[data-motion="slide"] .gfx-art-a,
+.gfx-art[data-motion="slide"] .gfx-art-b {
+    inset: -22%;
+}
+
+.gfx-art[data-motion="swell"] .gfx-art-a,
+.gfx-art[data-motion="swell"] .gfx-art-b {
+    inset: -10%;
+}
+
+.gfx-art[data-motion="turn"] .gfx-art-a,
+.gfx-art[data-motion="turn"] .gfx-art-b {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: 320%;
+    height: 320%;
+    margin: 0;
+    translate: -50% -50%;
+    transform-origin: 50% 50%;
+}
+
+@keyframes gfxPvDrift {
+    0%   { transform: translate3d(-7%, -4%, 0); }
+    50%  { transform: translate3d(7%, 4%, 0); }
+    100% { transform: translate3d(-7%, -4%, 0); }
+}
+
+@keyframes gfxPvSlide {
+    from { transform: translate3d(-12%, 0, 0); }
+    to   { transform: translate3d(12%, 0, 0); }
+}
+
+@keyframes gfxPvSwell {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.35); }
+}
+
+@keyframes gfxPvBreathe {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 1; }
+}
+
+@keyframes gfxPvTurn {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gfx-art[data-motion] .gfx-art-a,
+    .gfx-art[data-motion] .gfx-art-b { animation: none !important; }
+}
+
+/* ── Миниатюри на живите присети ─────────────────────────────────── */
+
+.gfx-art[data-bg="lantern"] .gfx-art-a {
+    background:
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.3)) 1px, transparent 1px) 0 0 / 100% 5px,
+        linear-gradient(90deg, rgba(255,255,255,calc(var(--ga-ink) * 0.3)) 1px, transparent 1px) 0 0 / 5px 100%,
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.5)) 1px, transparent 1px) 0 0 / 100% 25px;
+    -webkit-mask-image: radial-gradient(circle 78px at var(--ga-cx, 38%) var(--ga-cy, 34%),
+        #000 0 24%, rgba(0,0,0,0.7) 48%, rgba(0,0,0,0.25) 72%, transparent 100%);
+    mask-image: radial-gradient(circle 78px at var(--ga-cx, 38%) var(--ga-cy, 34%),
+        #000 0 24%, rgba(0,0,0,0.7) 48%, rgba(0,0,0,0.25) 72%, transparent 100%);
+}
+
+.gfx-art[data-bg="lantern"] .gfx-art-b {
+    background:
+        linear-gradient(90deg, transparent 0, rgba(255,54,54,calc(var(--ga-glow) * 0.45)) 50%, transparent 100%) calc(var(--ga-cx, 38%) - 30px) 0 / 60px 100% no-repeat,
+        linear-gradient(180deg, transparent 0, rgba(255,54,54,calc(var(--ga-glow) * 0.45)) 50%, transparent 100%) 0 calc(var(--ga-cy, 34%) - 30px) / 100% 60px no-repeat;
+}
+
+.gfx-art[data-bg="prism"] .gfx-art-a {
+    background: repeating-conic-gradient(from 8deg at var(--ga-cx, 24%) var(--ga-cy, 22%),
+        rgba(255,255,255,calc(var(--ga-ink) * 0.3)) 0 0.8deg,
+        transparent 1.6deg 9deg);
+}
+
+.gfx-art[data-bg="prism"] .gfx-art-b {
+    background: repeating-conic-gradient(from 2deg at var(--ga-cx, 24%) var(--ga-cy, 22%),
+        rgba(255,54,54,calc(var(--ga-glow) * 0.35)) 0 1.6deg,
+        transparent 3deg 34deg);
+}
+
+.gfx-art[data-bg="sonar"] .gfx-art-a {
+    background: repeating-radial-gradient(circle at var(--ga-cx, 50%) var(--ga-cy, 34%),
+        transparent 0 14px,
+        rgba(255,255,255,calc(var(--ga-ink) * 0.4)) 16px,
+        transparent 18px 17px);
+}
+
+.gfx-art[data-bg="sonar"] .gfx-art-b {
+    background: repeating-radial-gradient(circle at var(--ga-cx, 50%) var(--ga-cy, 34%),
+        transparent 0 20px,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.45)) 22px,
+        transparent 24px 23px);
+}
+
+.gfx-art[data-bg="caustic"] .gfx-art-a {
+    background: repeating-radial-gradient(circle at var(--ga-cx, 62%) var(--ga-cy, 32%),
+        transparent 0 10px,
+        rgba(255,255,255,calc(var(--ga-ink) * 0.42)) 11.5px,
+        transparent 13px 13px);
+}
+
+.gfx-art[data-bg="caustic"] .gfx-art-b {
+    background: repeating-radial-gradient(circle at 8% 106%,
+        transparent 0 15px,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.4)) 16.5px,
+        transparent 18px 19px);
+}
+
+.gfx-art[data-bg="spine"] .gfx-art-a {
+    background:
+        linear-gradient(90deg, transparent 0%, rgba(255,255,255,calc(var(--ga-ink) * 0.1)) 22%, rgba(255,255,255,calc(var(--ga-ink) * 0.34)) 50%, rgba(255,255,255,calc(var(--ga-ink) * 0.1)) 78%, transparent 100%) calc(var(--ga-cx, 46%) - 46px) 0 / 92px 100% no-repeat,
+        linear-gradient(90deg, transparent 0, rgba(255,255,255,calc(var(--ga-ink) * 0.5)) 50%, transparent 100%) calc(var(--ga-cx, 46%) - 1px) 0 / 2px 100% no-repeat;
+}
+
+.gfx-art[data-bg="spine"] .gfx-art-b {
+    background:
+        linear-gradient(180deg, transparent 0%, rgba(255,54,54,calc(var(--ga-glow) * 0.3)) 50%, transparent 100%) 0 calc(var(--ga-cy, 34%) - 26px) / 100% 52px no-repeat;
+}
+
+.gfx-art[data-bg="ascent"] .gfx-art-a {
+    /* В плочката няма скрол, затова поясът стои на 46% — там, където
+       би бил някъде по средата на страницата. */
+    background:
+        linear-gradient(180deg, transparent 0%, rgba(255,255,255,calc(var(--ga-ink) * 0.12)) 26%, rgba(255,255,255,calc(var(--ga-ink) * 0.4)) 47%, rgba(255,255,255,calc(var(--ga-ink) * 0.12)) 68%, transparent 100%) 0 22% / 100% 62% no-repeat,
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.12)) 1px, transparent 1px) 0 0 / 100% 15px;
+}
+
+.gfx-art[data-bg="ascent"] .gfx-art-b {
+    background:
+        linear-gradient(180deg, transparent 0, rgba(255,54,54,calc(var(--ga-glow) * 0.55)) 45%, rgba(255,54,54,calc(var(--ga-glow) * 0.55)) 55%, transparent 100%) 0 51% / 100% 3px no-repeat,
+        linear-gradient(180deg, rgba(255,54,54,calc(var(--ga-glow) * 0.22)) 0%, transparent 100%) 0 53% / 100% 22% no-repeat;
+}
+
+/* Заключена опция за движение — при живите присети. Не се крие, за да е
+   ясно, че изборът съществува, но не важи тук. */
+.gfx-motion-opts label.is-locked span {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--admin-soft, #f7f9fb);
+}
+
+.gfx-motion-opts label.is-locked:hover span { background: var(--admin-soft, #f7f9fb); }
+
+/* Превключвател „и на телефон" — единичен избор, не група, затова е
+   обикновена отметка, а не лента с опции. */
+/* ── Глобален превключвател за телефон ───────────────────────────────── */
+.gfx-global-row {
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--admin-line, #e2e8f0);
+    background: var(--admin-soft, #f7f9fb);
+}
+
+/* Когато глобалното е изключено, настройките по редове са без значение —
+   приглушават се, за да не изглежда, че работят. */
+.gfx-mobile-off /* ── Превключвател на реда ───────────────────────────────────────────── */
+
+/* ── Превключватели за телефон ───────────────────────────────────────────
+   Ползват .email-switch от adminPanel.css — същият, който е в Email
+   Notifications и Payment Control. Едно и също действие трябва да изглежда
+   по един и същи начин, иначе всеки таб учи наново.                      */
+
+.gfx-global-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--admin-line, #e2e8f0);
+    background: var(--admin-soft, #f7f9fb);
+}
+
+.gfx-global-text { flex: 1; min-width: 0; }
+.gfx-global-text b { display: block; font-size: 13px; }
+
+.gfx-global-text i {
+    display: block;
+    margin-top: 3px;
+    font-style: normal;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--admin-muted, #7b8794);
+}
+
+/* Умален вариант за реда: 44×24 стърчи между бутоните „Настрой" и
+   „Върни резервния". Пропорциите са същите, за да е разпознаваем. */
+.email-switch--sm .email-switch-track { width: 32px; height: 18px; }
+
+.email-switch--sm .email-switch-thumb {
+    width: 12px;
+    height: 12px;
+    top: 2px;
+    left: 2px;
+}
+
+/* Оригиналът: следа 44, палец 18, left 2, мести с 20 — палецът спира на
+   4px от десния ръб. Тук: 32-12-2-4 = 14. Същият отстъп, друг мащаб. */
+.email-switch--sm input:checked + .email-switch-track .email-switch-thumb {
+    transform: translateX(14px);
+}
+
+.gfx-row-mobile {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-right: 4px;
+}
+
+.gfx-row-mobile i {
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--admin-muted, #7b8794);
+}
+
+/* Глобално изключено → настройките по редове са без значение. */
+.gfx-mobile-off .gfx-row-mobile { opacity: 0.35; pointer-events: none; }

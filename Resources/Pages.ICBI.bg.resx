@@ -27,7 +27,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
 
   <data name="Nav_ICBI" xml:space="preserve"><value>За ICBI</value></data>
-  <data name="ICBI_EstLabel" xml:space="preserve"><value>Осн. Януари 2026</value></data>
+  <data name="ICBI_EstLabel" xml:space="preserve"><value>Януари 2026</value></data>
   <data name="ICBI_HeroTitle" xml:space="preserve"><value>Институт по криптоикономика,&lt;br&gt;блокчейн и иновации</value></data>
   <data name="ICBI_HeroDesc" xml:space="preserve"><value>Създаден като специализирано академично звено към Университета за национално и световно стопанство (УНСС) с Постановление на Министерския съвет от 28 януари 2026 г., Институтът по криптоикономика, блокчейн и иновации (ICBI) служи като съществена свързваща връзка между традиционното висше образование, регулаторните институции и динамичната Web3 екосистема.</value></data>
   <data name="ICBI_HeroQuote" xml:space="preserve"><value>Нашата основна мисия е да установим златен стандарт за образование по криптоикономика, давайки възможност на академичния и бизнес сектора да се ориентират безпроблемно в новите европейски регулаторни рамки, включително MiCA.</value></data>
@@ -50,4 +50,13 @@
   <data name="ICBI_VenueEmailTitle" xml:space="preserve"><value>ИМЕЙЛ</value></data>
   <data name="ICBI_EventsLabel" xml:space="preserve"><value>Предишни събития</value></data>
   <data name="ICBI_EventsTitle" xml:space="preserve"><value>Нашият опит</value></data>
+  <data name="ICBI_JumpToInstitute" xml:space="preserve">
+    <value>Към института</value>
+  </data>
+  <data name="ICBI_InstituteLabel" xml:space="preserve">
+    <value>За института</value>
+  </data>
+  <data name="ICBI_FoundedLabel" xml:space="preserve">
+    <value>Основан</value>
+  </data>
 </root>

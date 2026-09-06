@@ -100,4 +100,8 @@
   <data name="Home_StudyDesc" xml:space="preserve"><value>Select your educational journey within the Digital Finance landscape.</value></data>
   <data name="Home_BtnBachelor" xml:space="preserve"><value>BACHELOR PROGRAM</value></data>
   <data name="Home_BtnMaster" xml:space="preserve"><value>MASTER PROGRAM</value></data>
+  <data name="Home_CountdownSuffix" xml:space="preserve"><value>days until the conference</value></data>
+  <data name="Home_CountdownSuffixOne" xml:space="preserve"><value>day until the conference</value></data>
+  <data name="Home_CountdownToday" xml:space="preserve"><value>The conference is today</value></data>
+  <data name="Nav_Register" xml:space="preserve"><value>Register</value></data>
 </root>

@@ -124,6 +124,7 @@
     <meta name="theme-color" content="#050505">
     <title>@ViewData["Title"] | Blockchain Education 2026</title>
     <link rel="stylesheet" href="~/css/mainStyle.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/globalEffects.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/dataNotice.css" asp-append-version="true">
     @if (isAdminUser)
     {
@@ -449,6 +450,12 @@
        viewport-а дори на страници с малко съдържание (напр. Login) — виж
        body { display:flex; flex-direction:column } + .site-main { flex:1 }
        в mainStyle.css. *@
+    @* Глобалният визуален слой. Рендира се ПРЕДИ <main>, за да е под
+       съдържанието; сам се изключва в /Admin. Vars partial-ът идва веднага
+       след него, за да печели по ред на каскадата. *@
+    <partial name="_GlobalEffects" />
+    <partial name="_GlobalEffectsVars" />
+
     <main class="site-main">
         @RenderBody()
     </main>
@@ -692,6 +699,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/scriptMain.js" asp-append-version="true"></script>
+    <script src="~/js/globalEffects.js" asp-append-version="true"></script>
     <script src="~/js/dataNotice.js" asp-append-version="true"></script>
     @if (isAdminUser)
     {

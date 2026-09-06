@@ -100,14 +100,10 @@
             }
         }
 
-        // ── Scroll progress bar ──────────────────────────────────────────
-        var progressBar = document.getElementById('privacyProgressBar');
-        function updateProgress() {
-            if (!progressBar) return;
-            var scrollable = document.documentElement.scrollHeight - window.innerHeight;
-            var pct = scrollable > 0 ? Math.min(100, (window.scrollY / scrollable) * 100) : 0;
-            progressBar.style.width = pct + '%';
-        }
+        // Собствената прогрес лента е премахната: глобалният визуален слой
+        // вече рисува такава на всяка страница (--gfx-bar-height). Две ленти
+        // една върху друга са и излишна работа на всеки скрол, и визуален
+        // дубликат.
 
         // ── Back to top ───────────────────────────────────────────────────
         var backToTop = document.getElementById('privacyBackToTop');
@@ -122,10 +118,8 @@
         }
 
         window.addEventListener('scroll', function () {
-            updateProgress();
             updateBackToTop();
         }, { passive: true });
-        updateProgress();
         updateBackToTop();
 
         // ── Print ─────────────────────────────────────────────────────────

@@ -37,19 +37,6 @@
     .privacy-toc-wrapper { order: 2; }
 }
 
-/* ── Scroll progress bar — fixed at the very top of the viewport ─────── */
-.privacy-progress-bar {
-    position: fixed;
-    top: 0; left: 0;
-    height: 3px;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent-soft), var(--accent));
-    border-radius: 0 3px 3px 0;
-    box-shadow: 0 0 10px var(--accent-soft);
-    z-index: 9999;
-    transition: width 0.1s linear;
-}
-
 /* ── Header ────────────────────────────────────────────────────────── */
 .privacy-header {
     margin-bottom: 2.6rem;
@@ -249,7 +236,7 @@
     margin: 2.8rem 0 1.1rem;
     padding-top: 2rem;
     border-top: 1px solid var(--line);
-    scroll-margin-top: 1.5rem; /* so smooth-scroll from the TOC doesn't tuck it under the fixed progress bar */
+    scroll-margin-top: 1.5rem; /* за да не залепва заглавието за горния ръб при скок от съдържанието */
     position: relative;
     display: flex;
     align-items: baseline;
@@ -385,8 +372,7 @@
 
 /* ── Print — a clean, ink-friendly version with no site chrome ───────── */
 @media print {
-    .privacy-progress-bar,
-    .privacy-back-to-top,
+        .privacy-back-to-top,
     .privacy-print-btn,
     .privacy-toc-wrapper,
     .privacy-copy-link,

@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model IndexModel
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @{
@@ -11,11 +11,13 @@
 }
 
 @section Scripts {
-    <script src="~/js/auroraGlow.js" asp-append-version="true"></script>
+        @* Живото броене в hero-то + измерването на височината на топбара. *@
+    <script src="~/js/homeCountdown.js" asp-append-version="true"></script>
+    @* Ротацията на четирите карти с лектори — беше inline скрипт тук. *@
+    <script src="~/js/homeLecturers.js" asp-append-version="true"></script>
 }
 
 <main>
-    <canvas id="site-particles-bg" aria-hidden="true"></canvas>
     @* ── HERO (нов) ───────────────────────────────────────────────────────
        Твърдо разсечен екран: тъмен панел със заглавието отляво, снимката
        отдясно, и „пропуск" лента с данните най-долу.
@@ -41,7 +43,28 @@
                    градиент, без изображение. *@
                 <span class="hero-seatmap" aria-hidden="true"></span>
 
-                <p class="hero-subtitle">@Localizer["Home_HeroSubtitle"]</p>
+                @* Броенето стои в реда с надписа, не в своя кутия — датата
+                   вече е в пропуска, това е само причината да се действа
+                   сега. Датата се задава ТУК, в data-countdown (ISO формат),
+                   не в JS файла; ако е минала или липсва, нищо не се показва. *@
+                <div class="hero-eyebrow-row">
+                    <p class="hero-subtitle">@Localizer["Home_HeroSubtitle"]</p>
+                    @* data-countdown-end покрива трите дни на конференцията:
+                       без него талонът щеше да каже „днес" само на 29-ти, а на
+                       30-ти и 31-ви да изчезне, докато събитието още тече.
+                       Текстовете идват през data-* атрибути, за да остане .resx
+                       единственото място за език, а JS файлът — един за двата. *@
+                    <span class="hero-countdown"
+                          data-countdown="2026-10-29"
+                          data-countdown-end="2026-10-31"
+                          data-label-suffix="@Localizer["Home_CountdownSuffix"]"
+                          data-label-suffix-one="@Localizer["Home_CountdownSuffixOne"]"
+                          data-label-today="@Localizer["Home_CountdownToday"]"
+                          hidden>
+                        <b>—</b> <span class="hero-countdown-text">@Localizer["Home_CountdownSuffix"]</span>
+                    </span>
+                </div>
+
                 <h1 class="hero-title">@Localizer["Home_HeroTitle"]</h1>
                 <p class="hero-conference-name">@Localizer["Home_HeroConferenceName"]</p>
 
@@ -72,10 +95,13 @@
                 @* @Url.Content, не "~/" — Razor разрешава "~/" само в src/href
                    на tag helper-и, не в srcset на <source>. *@
                 <picture>
-                    <source media="(max-width: 1024px)" srcset="@Url.Content("~/images/home/bannerHomeMobile.png")">
+                    <source media="(max-width: 1024px) and (orientation: portrait)" srcset="@Url.Content("~/images/home/bannerHomeMobile.png")">
                     <img src="@Url.Content("~/images/home/bannerHome.png")" alt="">
                 </picture>
                 <span class="hero-visual-blur" aria-hidden="true"></span>
+                @* Работи само под 1024px, където снимката става фон на
+                   текста (overlay режим) — на десктоп е display: none. *@
+                <span class="hero-visual-scrim" aria-hidden="true"></span>
                 <span class="hero-visual-fade" aria-hidden="true"></span>
                 <span class="hero-venue" aria-hidden="true">@Localizer["Home_HeroLocValue"]</span>
             </div>
@@ -108,7 +134,7 @@
 
             <a class="hero-pass-stub" href="/Register">
                 <span class="hero-pass-stub-label">@Localizer["Nav_Register"]</span>
-                <span class="hero-pass-stub-value">2026</span>
+                <span class="hero-pass-stub-value"><span class="hero-pass-arrow" aria-hidden="true"><span></span><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="13 6 19 12 13 18"></polyline></svg></span></span>
             </a>
         </div>
     </section>
@@ -247,7 +273,7 @@
                 <p class="section-label">@Localizer["Speakers_Subtitle"]</p>
                 <h2>@Localizer["Speakers_Title"]</h2>
 
-                <div class="grid-4-col" id="lecturers-grid">
+                <div class="grid-4-col" id="lecturers-grid" data-locale="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" data-close-label="@(isBg ? "Затвори" : "Close")">
                     @{ int slot = 0; }
                     @foreach (var lecturer in Model.TopLecturers)
                     {
@@ -263,86 +289,29 @@
                              data-slot="@slot"
                              data-url="@(lecturer.ProfileUrl ?? "")"
                              style="cursor:@(hasUrl ? "pointer" : "default")">
-                            <div class="avatar-lg"><img src="@avatarPath" alt="@name"></div>
+                            <span class="lc-index">@((slot + 1).ToString("00"))</span>
+                            <div class="avatar-lg" role="button" tabindex="0" aria-label="@(isBg ? "Виж снимката в едър план" : "View larger photo")"><img src="@avatarPath" alt="@name"></div>
                             <h4>@name</h4>
-                            <p class="role">@role</p>
-                            <p class="org">@org</p>
+                            <div class="lc-ident">
+                                <p class="role">@role</p>
+                                <p class="org">@org</p>
+                            </div>
                             <p class="bio">@bio</p>
+                            <p class="lc-more">@(isBg ? "Профил" : "Profile") <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></p>
                         </div>
 
                         slot++;
                     }
                 </div>
 
-                <a href="/Lecturers" class="view-all-link mt-4">@Localizer["Home_ViewAllLecturers"]</a>
+                <a href="/Lecturers" class="view-all-link mt-4"><span>@Localizer["Home_ViewAllLecturers"]</span><i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></i></a>
             </div>
         </section>
 
-        <script>
-        (function () {
-            const LOCALE = '@(System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName)';
-            const isBg   = LOCALE === 'bg';
-            const ALL    = @Html.Raw(lecturersJson);
-
-            if (!ALL || ALL.length <= 4) return;
-
-            const grid = document.getElementById('lecturers-grid');
-            if (!grid) return;
-
-            grid.addEventListener('click', function (e) {
-                const card = e.target.closest('.faculty-card');
-                if (card && card.dataset.url) window.open(card.dataset.url, '_blank', 'noopener');
-            });
-
-            let pool      = ALL.slice(4).sort(function () { return Math.random() - 0.5; });
-            let poolIndex = 0;
-            let slotIndex = 0;
-
-            function getName(l) { return isBg ? (l.nameBg || l.nameEn) : l.nameEn; }
-            function getRole(l) { return isBg ? (l.roleBg || l.roleEn) : l.roleEn; }
-            function getOrg (l) { return isBg ? (l.orgBg  || l.orgEn)  : l.orgEn;  }
-            function getBio (l) { return isBg ? (l.bioBg  || l.bioEn)  : l.bioEn;  }
-
-            function rotateCard() {
-                const cards = grid.querySelectorAll('.faculty-card');
-                if (!cards.length) return;
-
-                const card = cards[slotIndex % cards.length];
-                const next = pool[poolIndex % pool.length];
-
-                // Flip out — 360ms да завърши rotateY(90deg)
-                card.classList.add('rotating-out');
-
-                setTimeout(function () {
-                    // Картата е "на кантар" — сменяме съдържанието
-                    card.querySelector('.avatar-lg img').src = next.avatar;
-                    card.querySelector('.avatar-lg img').alt = getName(next);
-                    card.querySelector('h4').textContent     = getName(next);
-                    card.querySelector('.role').textContent  = getRole(next);
-                    card.querySelector('.org').textContent   = getOrg(next);
-                    card.querySelector('.bio').textContent   = getBio(next);
-                    card.dataset.url  = next.url;
-                    card.style.cursor = next.url ? 'pointer' : 'default';
-
-                    // Flip in — влиза от -90deg
-                    card.classList.remove('rotating-out');
-                    card.classList.add('rotating-in');
-
-                    setTimeout(function () { card.classList.remove('rotating-in'); }, 460);
-
-                    poolIndex = (poolIndex + 1) % pool.length;
-                    slotIndex = (slotIndex + 1) % cards.length;
-
-                    if (poolIndex === 0) {
-                        pool = pool.slice().sort(function () { return Math.random() - 0.5; });
-                    }
-                }, 360);
-            }
-
-            // По една карта на всеки 5 секунди
-            setInterval(rotateCard, 5000);
-        })();
-        </script>
+        @* Данните за ротацията са ОБИКНОВЕНИ данни в application/json,
+           не вграден JS. Логиката живее в ~/js/homeLecturers.js —
+           кешируема, еднаква за двата езика, тества се отделно. *@
+        <script type="application/json" id="lecturers-data">@Html.Raw(lecturersJson)</script>
     }
 
     <section class="timeline-section">

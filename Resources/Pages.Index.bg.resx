@@ -100,4 +100,8 @@
   <data name="Home_StudyDesc" xml:space="preserve"><value>Изберете своя образователен път в сферата на дигиталните финанси.</value></data>
   <data name="Home_BtnBachelor" xml:space="preserve"><value>БАКАЛАВЪРСКА ПРОГРАМА</value></data>
   <data name="Home_BtnMaster" xml:space="preserve"><value>МАГИСТЪРСКА ПРОГРАМА</value></data>
+  <data name="Home_CountdownSuffix" xml:space="preserve"><value>дни до конференцията</value></data>
+  <data name="Home_CountdownSuffixOne" xml:space="preserve"><value>ден до конференцията</value></data>
+  <data name="Home_CountdownToday" xml:space="preserve"><value>Днес е конференцията</value></data>
+  <data name="Nav_Register" xml:space="preserve"><value>Регистрирай се</value></data>
 </root>

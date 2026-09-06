@@ -25,11 +25,60 @@ namespace ConferenceApp.Areas.Admin.Pages
 
         private readonly ConferenceApp.Services.Email.IMailComposer _mail;
         private readonly ConferenceApp.Services.Email.IEmailNotificationSettings _emailSettings;
+        private readonly ConferenceApp.Services.Changelog.ChangelogReader _changelog;
         private readonly ConferenceApp.Services.IPaymentGateSettings _paymentGates;
         private readonly ConferenceApp.Services.Health.IHealthCheckService _health;
 
         /// <summary>Състоянието на превключвателите за имейл известията.</summary>
         public Dictionary<string, bool> EmailToggles { get; private set; } = new();
+
+        public IReadOnlyList<ConferenceApp.Services.Changelog.ChangelogEntry> Changelog
+            { get; private set; } = new List<ConferenceApp.Services.Changelog.ChangelogEntry>();
+
+        // ── Таб „Визуални стилове" ────────────────────────────────────────
+        public List<PageStyleRowVm>     PageStyleRows     { get; private set; } = new();
+        public List<CustomBackgroundVm> CustomBackgrounds { get; private set; } = new();
+        public int ManualStyleCount => PageStyleRows.Count(r => r.HasRecord);
+        public int CustomCssCount   => PageStyleRows.Count(r => r.CustomCssEnabled
+                                                            && !string.IsNullOrWhiteSpace(r.CustomCss));
+
+        /// <summary>Глобалната забрана за телефон. true = фоновете са позволени.</summary>
+        public bool MobileAllowedGlobally { get; private set; } = true;
+
+        /// <summary>Петте файла за изтегляне, винаги в един и същи ред.</summary>
+        public List<DownloadableFile> Downloads { get; private set; } = new();
+
+        public sealed class PageStyleRowVm
+        {
+            public string  Key  { get; set; } = "";
+            public string  Name { get; set; } = "";
+            public string  Group { get; set; } = "";
+            public string  EffectiveBackground { get; set; } = "grid";
+            public bool    HasRecord { get; set; }
+            public double? Intensity { get; set; }
+            public double? Ink { get; set; }
+            public double? Glow { get; set; }
+            public double? CursorAlpha { get; set; }
+            public int?    GridStep { get; set; }
+            public int?    PaperStep { get; set; }
+            public int?    BarHeight { get; set; }
+            public string? CustomCss { get; set; }
+            public bool    CustomCssEnabled { get; set; }
+            public string? Motion { get; set; }
+            public string? MotionSpeed { get; set; }
+            public bool    ShowOnMobile { get; set; }
+        }
+
+        public sealed class CustomBackgroundVm
+        {
+            public string Slug { get; set; } = "";
+            public string Name { get; set; } = "";
+            public string ParamsJson { get; set; } = "{}";
+            public string Mode { get; set; } = "params";
+            public string? RawCss { get; set; }
+            public bool   IsActive { get; set; }
+            public int    UsedOnPages { get; set; }
+        }
 
         /// <summary>Състоянието на осемте ключа в Payment Control.</summary>
         public Dictionary<string, bool> PaymentGates { get; private set; } = new();
@@ -43,8 +92,10 @@ namespace ConferenceApp.Areas.Admin.Pages
             ConferenceApp.Services.Email.IEmailNotificationSettings emailSettings,
             ConferenceApp.Services.IPaymentGateSettings paymentGates,
             ConferenceApp.Services.Health.IHealthCheckService health,
-            IConfiguration config)
+            IConfiguration config,
+            ConferenceApp.Services.Changelog.ChangelogReader changelog)
         {
+            _changelog = changelog;
             _context = context;
             _env = env;
             _userManager = userManager;
@@ -132,6 +183,9 @@ namespace ConferenceApp.Areas.Admin.Pages
             // Състоянието на превключвателите за имейлите. Липсващите записи се
             // създават автоматично при първото зареждане, включени по подразбиране.
             EmailToggles = await _emailSettings.GetAllAsync();
+            await LoadPageStylesAsync();
+            Changelog = _changelog.Read();
+            await LoadDownloadsAsync();
 
             // Payment Control — липсващите ключове се създават автоматично
             // при първото зареждане, включени по подразбиране.
@@ -1440,6 +1494,553 @@ namespace ConferenceApp.Areas.Admin.Pages
             {
                 return Err("Error clearing crypto orders: " + e.Message);
             }
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ФАЙЛОВЕ ЗА ИЗТЕГЛЯНЕ
+        // ══════════════════════════════════════════════════════════════════════
+
+        private async Task LoadDownloadsAsync()
+        {
+            var saved = await _context.DownloadableFiles.AsNoTracking()
+                            .ToDictionaryAsync(x => x.FileKey, StringComparer.OrdinalIgnoreCase);
+
+            // Редът идва от Keys, не от базата: така подредбата в панела е
+            // винаги еднаква, а липсващ запис се показва като „не е качен",
+            // вместо просто да отсъства от списъка.
+            Downloads = DownloadableFile.Keys
+                .Select(k => saved.TryGetValue(k, out var f)
+                                 ? f
+                                 : new DownloadableFile { FileKey = k })
+                .ToList();
+        }
+
+        public async Task<IActionResult> OnPostUploadDownloadAsync(
+            [FromForm] string fileKey, IFormFile? file)
+        {
+            try
+            {
+                if (!DownloadableFile.Keys.Contains(fileKey))
+                    return Err("Непознат файл.");
+
+                if (file is null || file.Length == 0)
+                    return Err("Не е избран файл.");
+
+                // Само документи. Изображение тук би било грешка, не избор.
+                var path = SaveUploadedFile(file, "documents",
+                    maxSizeBytes: 20 * 1024 * 1024,
+                    allowedExtensions: new[] { ".pdf", ".docx", ".doc" });
+
+                var row = await _context.DownloadableFiles
+                              .FirstOrDefaultAsync(x => x.FileKey == fileKey);
+
+                if (row is null)
+                {
+                    row = new DownloadableFile { FileKey = fileKey };
+                    _context.DownloadableFiles.Add(row);
+                }
+                else
+                {
+                    // Старият файл се трие СЛЕД като новият е записан успешно.
+                    // Обратният ред значи, че провалено качване оставя
+                    // страницата без нищо.
+                    DeleteFile(row.FilePath);
+                }
+
+                row.FilePath = path;
+                row.DownloadName = Path.GetFileName(file.FileName);
+                row.SizeBytes = file.Length;
+                row.UpdatedAt = DateTime.UtcNow;
+                row.UpdatedBy = User.Identity?.Name;
+
+                LogAudit(string.Empty, User.Identity?.Name ?? "admin",
+                    "Download File Uploaded",
+                    $"{fileKey} | {row.DownloadName} | {row.SizeBytes / 1024} KB");
+
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new
+                {
+                    success = true,
+                    message = "Файлът е качен.",
+                    file = new
+                    {
+                        key = row.FileKey,
+                        name = row.DownloadName,
+                        size = row.SizeLabel,
+                        type = row.TypeLabel,
+                        path = row.FilePath,
+                        updated = row.UpdatedAt?.ToString("dd.MM.yyyy")
+                    }
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Съобщенията от SaveUploadedFile са предназначени за човек.
+                return Err(ex.Message);
+            }
+            catch (Exception e) { return Err("Грешка при качване: " + e.Message); }
+        }
+
+        /// <summary>
+        /// Маха файла, но НЕ реда: ключът остава, за да може да се качи нов.
+        /// Страницата спира да показва бутона, докато няма файл.
+        /// </summary>
+        public async Task<IActionResult> OnPostRemoveDownloadAsync([FromForm] string fileKey)
+        {
+            try
+            {
+                var row = await _context.DownloadableFiles
+                              .FirstOrDefaultAsync(x => x.FileKey == fileKey);
+                if (row is null) return Err("Няма такъв файл.");
+
+                DeleteFile(row.FilePath);
+
+                row.FilePath = null;
+                row.DownloadName = null;
+                row.SizeBytes = 0;
+                row.UpdatedAt = DateTime.UtcNow;
+                row.UpdatedBy = User.Identity?.Name;
+
+                LogAudit(string.Empty, User.Identity?.Name ?? "admin",
+                    "Download File Removed", fileKey);
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { success = true, message = "Файлът е премахнат." });
+            }
+            catch (Exception e) { return Err("Грешка: " + e.Message); }
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ВИЗУАЛНИ СТИЛОВЕ ПО СТРАНИЦИ
+        // ══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Списъкът на страниците живее ТУК, на сървъра, не в панела — иначе
+        /// двата се разминават при добавяне на нова страница и таб-ът мълчаливо
+        /// спира да я показва. Резервните фонове съвпадат с gfxDefaults в
+        /// _GlobalEffects.cshtml; при промяна там трябва и тук.
+        /// </summary>
+        private static readonly (string Key, string Name, string Group, string Fallback)[] StyleablePages =
+        {
+            ("/Index",            "Начало",              "Публични", "prism"),
+            ("/Conference",       "Конференция",         "Публични", "sonar"),
+            ("/ICBI",             "За ICBI",             "Публични", "caustic"),
+            ("/Lecturers",        "Лектори",             "Публични", "sonar"),
+            ("/Schedule",         "Програма",            "Публични", "lantern"),
+            ("/Attend",           "Участие",             "Публични", "lantern"),
+            ("/FAQ",              "Въпроси",             "Публични", "ascent"),
+            ("/Travel",           "Пътуване",            "Публични", "caustic"),
+
+            ("/Login",            "Вход",                "Служебни", "spine"),
+            ("/Register",         "Регистрация",         "Служебни", "spine"),
+            ("/Verification",     "Потвърждение",        "Служебни", "spine"),
+            ("/Profile",          "Профил",              "Служебни", "grid"),
+            ("/Payment",          "Плащане",             "Служебни", "spine"),
+            ("/SubmitDocuments",  "Документи",           "Служебни", "spine"),
+            ("/Done",             "Готово",              "Служебни", "spine"),
+            ("/AccessDenied",     "Отказан достъп",      "Служебни", "grid"),
+            ("/Error",            "Грешка",              "Служебни", "grid"),
+            ("/BugReports",       "Сигнали",             "Служебни", "grid"),
+
+            ("/Terms",            "Условия за ползване", "Правни",   "ascent"),
+            ("/Privacy",          "Поверителност",       "Правни",   "ascent"),
+            ("/Cookies",          "Бисквитки",           "Правни",   "ascent"),
+        };
+
+        private async Task LoadPageStylesAsync()
+        {
+            var all = await _context.PageStyleSettings.AsNoTracking().ToListAsync();
+
+            // Редът „*" не е страница — вади се преди речника, за да не се
+            // появи като ред в списъка.
+            var globalRow = all.FirstOrDefault(x => x.PageKey == PageStyleSetting.GlobalKey);
+            MobileAllowedGlobally = globalRow is null || globalRow.ShowOnMobile;
+
+            var saved = all.Where(x => x.PageKey != PageStyleSetting.GlobalKey)
+                           .ToDictionary(x => x.PageKey, StringComparer.OrdinalIgnoreCase);
+
+            PageStyleRows = StyleablePages.Select(p =>
+            {
+                saved.TryGetValue(p.Key, out var s);
+                return new PageStyleRowVm
+                {
+                    Key = p.Key,
+                    Name = p.Name,
+                    Group = p.Group,
+                    // Показва се това, което РЕАЛНО ще се рендира.
+                    EffectiveBackground = s?.Background ?? p.Fallback,
+                    HasRecord = s is not null,
+                    Intensity = s?.Intensity,
+                    Ink = s?.Ink,
+                    Glow = s?.Glow,
+                    CursorAlpha = s?.CursorAlpha,
+                    GridStep = s?.GridStep,
+                    PaperStep = s?.PaperStep,
+                    BarHeight = s?.BarHeight,
+                    CustomCss = s?.CustomCss,
+                    CustomCssEnabled = s?.CustomCssEnabled ?? false,
+                    Motion = s?.Motion,
+                    MotionSpeed = s?.MotionSpeed,
+                    ShowOnMobile = s?.ShowOnMobile ?? false
+                };
+            }).ToList();
+
+            var bgs = await _context.CustomBackgrounds.AsNoTracking().ToListAsync();
+            CustomBackgrounds = bgs.Select(b => new CustomBackgroundVm
+            {
+                Slug = b.Slug,
+                Name = b.Name,
+                ParamsJson = b.LayersJson,
+                Mode = b.Mode,
+                RawCss = b.RawCss,
+                IsActive = b.IsActive,
+                UsedOnPages = saved.Values.Count(v =>
+                    string.Equals(v.Background, $"custom:{b.Slug}", StringComparison.OrdinalIgnoreCase))
+            }).ToList();
+        }
+
+        /// <summary>Стойност извън диапазона става null, не изключение — една
+        /// лоша стойност не бива да проваля целия запис.</summary>
+        private static double? ClampD(string? raw, double min, double max)
+            => double.TryParse(raw, System.Globalization.NumberStyles.Float,
+                   System.Globalization.CultureInfo.InvariantCulture, out var v)
+               && v >= min && v <= max ? v : null;
+
+        private static int? ClampI(string? raw, int min, int max)
+            => int.TryParse(raw, out var v) && v >= min && v <= max ? v : null;
+
+        public async Task<IActionResult> OnPostSavePageStyleAsync(
+            [FromForm] string pageKey, [FromForm] string background,
+            [FromForm] string? intensity, [FromForm] string? ink, [FromForm] string? glow,
+            [FromForm] string? cursorAlpha, [FromForm] string? gridStep,
+            [FromForm] string? paperStep, [FromForm] string? barHeight,
+            [FromForm] string? customCss, [FromForm] bool customCssEnabled,
+            [FromForm] string? motion, [FromForm] string? motionSpeed,
+            [FromForm] bool showOnMobile)
+        {
+            try
+            {
+                if (!StyleablePages.Any(p => string.Equals(p.Key, pageKey, StringComparison.OrdinalIgnoreCase)))
+                    return Err("Непозната страница.");
+
+                // Фонът е избор от списък, не свободен текст: непознат низ дава
+                // празен фон без никаква грешка, което е трудно за диагностика.
+                var allowed = new[] { "grid", "paper", "hatch", "glow", "contour", "fiber", "lantern", "prism", "sonar", "caustic", "spine", "ascent", "off" };
+                var isCustom = background?.StartsWith("custom:", StringComparison.OrdinalIgnoreCase) == true;
+                if (isCustom)
+                {
+                    var slug = background![7..];
+                    if (!await _context.CustomBackgrounds.AnyAsync(b => b.Slug == slug && b.IsActive))
+                        return Err("Няма такъв активен собствен фон.");
+                }
+                else if (!allowed.Contains(background))
+                {
+                    return Err("Непознат фон.");
+                }
+
+                var css = ConferenceApp.Services.Styles.CssSanitizer.Sanitize(customCss);
+                if (css.Level == "bad")
+                    return new JsonResult(new
+                    {
+                        success = false,
+                        message = "Собственият CSS е отхвърлен.",
+                        report = new { level = css.Level, errors = css.Errors, warnings = css.Warnings }
+                    });
+
+                var row = await _context.PageStyleSettings.FirstOrDefaultAsync(x => x.PageKey == pageKey);
+
+                // Снимка ПРЕДИ промяната — единственият път назад, ако админът
+                // си счупи страницата със собствен CSS.
+                if (row is not null)
+                {
+                    _context.PageStyleRevisions.Add(new PageStyleRevision
+                    {
+                        PageKey = pageKey,
+                        SnapshotJson = System.Text.Json.JsonSerializer.Serialize(row),
+                        CreatedBy = User.Identity?.Name
+                    });
+
+                    // Пазим последните 10 — иначе таблицата расте без таван.
+                    var old = await _context.PageStyleRevisions
+                                  .Where(r => r.PageKey == pageKey)
+                                  .OrderByDescending(r => r.CreatedAt)
+                                  .Skip(10).ToListAsync();
+                    if (old.Count > 0) _context.PageStyleRevisions.RemoveRange(old);
+                }
+                else
+                {
+                    row = new PageStyleSetting { PageKey = pageKey };
+                    _context.PageStyleSettings.Add(row);
+                }
+
+                row.Background       = background!;
+                row.Intensity        = ClampD(intensity,   0, 1);
+                row.Ink              = ClampD(ink,         0, 0.2);
+                row.Glow             = ClampD(glow,        0, 0.4);
+                row.CursorAlpha      = ClampD(cursorAlpha, 0, 0.2);
+                row.GridStep         = ClampI(gridStep,   16, 160);
+                row.PaperStep        = ClampI(paperStep,   4, 40);
+                row.BarHeight        = ClampI(barHeight,   0, 6);
+                row.CustomCss        = string.IsNullOrWhiteSpace(css.Sanitized) ? null : css.Sanitized;
+                // Само трите познати стойности; всичко друго значи „както е
+                // замислено“, а не изключение.
+                row.Motion = motion is "off" or "drift" or "slide" or "swell"
+                                    or "breathe" or "turn" ? motion : null;
+                row.MotionSpeed = motionSpeed is "slower" or "slow" or "fast" or "faster"
+                                    ? motionSpeed : null;
+                row.ShowOnMobile = showOnMobile;
+                row.CustomCssEnabled = customCssEnabled && row.CustomCss is not null;
+                row.UpdatedAt        = DateTime.UtcNow;
+                row.UpdatedBy        = User.Identity?.Name;
+
+                LogAudit(string.Empty, User.Identity?.Name ?? "admin", "Page Style Saved",
+                    $"{pageKey} | bg={row.Background} | css={(row.CustomCss is null ? "—" : row.CustomCss.Length + " зн.")}");
+
+                await _context.SaveChangesAsync();
+
+                // Връщаме ЗАПИСАНОТО, не подаденото: сървърът може да е орязал
+                // CSS-а или да е отхвърлил стойност извън диапазона.
+                return new JsonResult(new
+                {
+                    success = true,
+                    message = "Записано.",
+                    setting = new
+                    {
+                        background = row.Background,
+                        intensity = row.Intensity, ink = row.Ink, glow = row.Glow,
+                        cursorAlpha = row.CursorAlpha, gridStep = row.GridStep,
+                        paperStep = row.PaperStep, barHeight = row.BarHeight,
+                        customCss = row.CustomCss, customCssEnabled = row.CustomCssEnabled,
+                        motion = row.Motion, motionSpeed = row.MotionSpeed,
+                        showOnMobile = row.ShowOnMobile
+                    },
+                    report = new { level = css.Level, errors = css.Errors, warnings = css.Warnings }
+                });
+            }
+            catch (Exception e) { return Err("Грешка при запис: " + e.Message); }
+        }
+
+        /// <summary>Глобалната забрана за телефон — един ред с ключ „*".</summary>
+        public async Task<IActionResult> OnPostSetGlobalMobileAsync([FromForm] bool allowed)
+        {
+            try
+            {
+                var row = await _context.PageStyleSettings
+                              .FirstOrDefaultAsync(x => x.PageKey == PageStyleSetting.GlobalKey);
+
+                if (row is null)
+                {
+                    row = new PageStyleSetting
+                    {
+                        PageKey = PageStyleSetting.GlobalKey,
+                        Background = "off"   // не се ползва за този ред
+                    };
+                    _context.PageStyleSettings.Add(row);
+                }
+
+                row.ShowOnMobile = allowed;
+                row.UpdatedAt = DateTime.UtcNow;
+                row.UpdatedBy = User.Identity?.Name;
+
+                LogAudit(string.Empty, User.Identity?.Name ?? "admin",
+                    "Global Mobile Backgrounds", allowed ? "Разрешени" : "Забранени");
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new
+                {
+                    success = true,
+                    message = allowed
+                        ? "Фоновете са разрешени на телефон."
+                        : "Фоновете са спрени на телефон за целия сайт.",
+                    allowed
+                });
+            }
+            catch (Exception e) { return Err("Грешка: " + e.Message); }
+        }
+
+        /// <summary>Превключване на телефона за ЕДНА страница — от списъка,
+        /// без отваряне на редактора.</summary>
+        public async Task<IActionResult> OnPostTogglePageMobileAsync(
+            [FromForm] string pageKey, [FromForm] bool enabled)
+        {
+            try
+            {
+                if (!StyleablePages.Any(p => string.Equals(p.Key, pageKey, StringComparison.OrdinalIgnoreCase)))
+                    return Err("Непозната страница.");
+
+                var row = await _context.PageStyleSettings.FirstOrDefaultAsync(x => x.PageKey == pageKey);
+
+                if (row is null)
+                {
+                    // Страницата няма запис. Създаваме минимален, с резервния
+                    // ѝ фон — иначе превключването би заковало „grid" върху
+                    // страница, чиято резервна стойност е друга.
+                    var fb = StyleablePages.First(p =>
+                        string.Equals(p.Key, pageKey, StringComparison.OrdinalIgnoreCase)).Fallback;
+
+                    row = new PageStyleSetting { PageKey = pageKey, Background = fb };
+                    _context.PageStyleSettings.Add(row);
+                }
+
+                row.ShowOnMobile = enabled;
+                row.UpdatedAt = DateTime.UtcNow;
+                row.UpdatedBy = User.Identity?.Name;
+
+                LogAudit(string.Empty, User.Identity?.Name ?? "admin",
+                    "Page Mobile Toggle", $"{pageKey} = {(enabled ? "вкл." : "изкл.")}");
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { success = true, message = "Записано.", enabled });
+            }
+            catch (Exception e) { return Err("Грешка: " + e.Message); }
+        }
+
+        public async Task<IActionResult> OnPostResetPageStyleAsync([FromForm] string pageKey)
+        {
+            try
+            {
+                var row = await _context.PageStyleSettings.FirstOrDefaultAsync(x => x.PageKey == pageKey);
+                if (row is not null)
+                {
+                    _context.PageStyleSettings.Remove(row);
+                    LogAudit(string.Empty, User.Identity?.Name ?? "admin", "Page Style Reset", pageKey);
+                    await _context.SaveChangesAsync();
+                }
+
+                var fb = StyleablePages.FirstOrDefault(p =>
+                    string.Equals(p.Key, pageKey, StringComparison.OrdinalIgnoreCase)).Fallback ?? "grid";
+
+                return new JsonResult(new { success = true, message = "Върнато към резервната стойност.", fallbackBackground = fb });
+            }
+            catch (Exception e) { return Err("Грешка: " + e.Message); }
+        }
+
+        /// <summary>Аварийният изход: гаси целия собствен CSS, без да го трие.</summary>
+        public async Task<IActionResult> OnPostDisableAllCustomCssAsync()
+        {
+            try
+            {
+                var rows = await _context.PageStyleSettings.Where(x => x.CustomCssEnabled).ToListAsync();
+                foreach (var r in rows) { r.CustomCssEnabled = false; r.UpdatedAt = DateTime.UtcNow; }
+
+                LogAudit(string.Empty, User.Identity?.Name ?? "admin",
+                    "All Custom CSS Disabled", $"Affected: {rows.Count}");
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { success = true, message = $"Изключен на {rows.Count} страници.", affected = rows.Count });
+            }
+            catch (Exception e) { return Err("Грешка: " + e.Message); }
+        }
+
+        public async Task<IActionResult> OnPostSaveCustomBackgroundAsync(
+            [FromForm] string? originalSlug, [FromForm] string slug,
+            [FromForm] string name, [FromForm] string layersJson,
+            [FromForm] string? mode, [FromForm] string? rawCss)
+        {
+            try
+            {
+                slug = (slug ?? "").Trim().ToLowerInvariant();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(slug, @"^[a-z0-9-]{2,40}$"))
+                    return Err("Кодът може да съдържа само малки латински букви, цифри и тире.");
+
+                if (string.IsNullOrWhiteSpace(name)) return Err("Липсва име.");
+
+                // Валидира се, че е JSON — не се доверяваме, че панелът е подал
+                // валидна структура.
+                try { System.Text.Json.JsonDocument.Parse(layersJson); }
+                catch { return Err("Параметрите не са валиден JSON."); }
+
+                if (layersJson.Length > 1200) return Err("Параметрите са твърде дълги.");
+
+                var row = string.IsNullOrWhiteSpace(originalSlug)
+                    ? null
+                    : await _context.CustomBackgrounds.FirstOrDefaultAsync(b => b.Slug == originalSlug);
+
+                if (row is null)
+                {
+                    if (await _context.CustomBackgrounds.AnyAsync(b => b.Slug == slug))
+                        return Err("Вече има фон с този код.");
+                    row = new CustomBackground { Slug = slug, CreatedAt = DateTime.UtcNow };
+                    _context.CustomBackgrounds.Add(row);
+                }
+                else if (!string.Equals(row.Slug, slug, StringComparison.OrdinalIgnoreCase)
+                         && await _context.CustomBackgrounds.AnyAsync(b => b.Slug == slug))
+                {
+                    return Err("Вече има фон с този код.");
+                }
+
+                row.Slug = slug;
+                row.Name = name.Trim();
+                row.Mode = string.Equals(mode, "css", StringComparison.OrdinalIgnoreCase) ? "css" : "params";
+                row.LayersJson = layersJson;
+
+                if (row.Mode == "css")
+                {
+                    // Санитизира се ПРИ ЗАПИС, не при четене: иначе всяко
+                    // зареждане на страницата би плащало цената.
+                    var sel = $"#ambient-fx[data-gfx-bg=\"custom:{slug}\"]";
+                    var check = ConferenceApp.Services.Styles.CssSanitizer
+                                    .SanitizeWithKeyframes(rawCss, slug, sel);
+
+                    if (check.Level == "bad")
+                        return new JsonResult(new
+                        {
+                            success = false,
+                            message = "CSS-ът е отхвърлен.",
+                            report = new { level = check.Level, errors = check.Errors, warnings = check.Warnings }
+                        });
+
+                    row.RawCss = string.IsNullOrWhiteSpace(check.Sanitized) ? null : check.Sanitized;
+                }
+                row.UpdatedAt = DateTime.UtcNow;
+                row.UpdatedBy = User.Identity?.Name;
+
+                LogAudit(string.Empty, User.Identity?.Name ?? "admin", "Custom Background Saved", slug);
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { success = true, message = "Записано.", slug = row.Slug });
+            }
+            catch (Exception e) { return Err("Грешка: " + e.Message); }
+        }
+
+        /// <summary>
+        /// Дава на панела ТОЧНО правилата, които сайтът ще нарисува.
+        /// GET, защото е чисто четене и няма странични ефекти.
+        /// </summary>
+        public IActionResult OnGetCustomBackgroundCss(
+            string? slug, string? layersJson, string? mode, string? rawCss)
+        {
+            var key = string.IsNullOrWhiteSpace(slug) ? "preview" : slug;
+
+            var css = string.Equals(mode, "css", StringComparison.OrdinalIgnoreCase)
+                ? ConferenceApp.Services.Styles.CustomBackgroundCss.BuildFromCss(key, rawCss)
+                : ConferenceApp.Services.Styles.CustomBackgroundCss.Build(key, layersJson);
+
+            return new JsonResult(new { success = true, css });
+        }
+
+        public async Task<IActionResult> OnPostDeleteCustomBackgroundAsync([FromForm] string slug)
+        {
+            try
+            {
+                var row = await _context.CustomBackgrounds.FirstOrDefaultAsync(b => b.Slug == slug);
+                if (row is null) return Err("Няма такъв фон.");
+
+                // Страниците, които го ползват, се връщат към „grid" — иначе биха
+                // сочили към несъществуващ фон и биха останали без нищо.
+                var users = await _context.PageStyleSettings
+                                .Where(p => p.Background == "custom:" + slug).ToListAsync();
+                foreach (var u in users) { u.Background = "grid"; u.UpdatedAt = DateTime.UtcNow; }
+
+                _context.CustomBackgrounds.Remove(row);
+                LogAudit(string.Empty, User.Identity?.Name ?? "admin",
+                    "Custom Background Deleted", $"{slug} | Pages reset: {users.Count}");
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { success = true, message = "Изтрито.", affected = users.Count });
+            }
+            catch (Exception e) { return Err("Грешка: " + e.Message); }
         }
 
         // ══════════════════════════════════════════════════════════════════════

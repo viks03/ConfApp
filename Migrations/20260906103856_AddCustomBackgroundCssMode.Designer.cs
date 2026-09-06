@@ -3,6 +3,7 @@ using System;
 using ConferenceApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ConferenceApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260906103856_AddCustomBackgroundCssMode")]
+    partial class AddCustomBackgroundCssMode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.12");
@@ -608,43 +611,6 @@ namespace ConferenceApp.Migrations
                         .IsUnique();
 
                     b.ToTable("CustomBackgrounds");
-                });
-
-            modelBuilder.Entity("ConferenceApp.Models.DownloadableFile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("DownloadName")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FileKey")
-                        .IsRequired()
-                        .HasMaxLength(48)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FilePath")
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("SizeBytes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FileKey")
-                        .IsUnique();
-
-                    b.ToTable("DownloadableFiles");
                 });
 
             modelBuilder.Entity("ConferenceApp.Models.EmailNotificationSetting", b =>
@@ -1318,23 +1284,12 @@ namespace ConferenceApp.Migrations
                     b.Property<double?>("Intensity")
                         .HasColumnType("REAL");
 
-                    b.Property<string>("Motion")
-                        .HasMaxLength(8)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MotionSpeed")
-                        .HasMaxLength(8)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("PageKey")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("PaperStep")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("ShowOnMobile")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("UpdatedAt")

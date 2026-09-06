@@ -1,0 +1,44 @@
+@*
+    _GlobalEffectsVars.cshtml — излъчва СТОЙНОСТИТЕ от админ панела:
+    шестте CSS променливи (освен --gfx-intensity, която partial-ът
+    _GlobalEffects вече поема) и собствения CSS за страницата.
+
+    ЗАЩО СЪЩЕСТВУВА ТОЗИ ФАЙЛ: брифът забранява промени по
+    globalEffects.css / .js / _GlobalEffects.cshtml. Стойностите обаче
+    трябва да влязат в документа отнякъде. Затова — нов partial до
+    съществуващия, вместо ред в него. Слоят остава непокътнат.
+
+    Рендира се от _Layout.cshtml НЕПОСРЕДСТВЕНО СЛЕД
+    <partial name="_GlobalEffects" />, за да е след стилния лист и да
+    печели по ред на каскадата.
+
+    Аварийният изход: ?gfxsafe=1 в адреса игнорира собствения CSS за
+    това зареждане. Променливите остават — те не могат да скрият текст.
+*@
+
+@{
+    var gvIsAdminArea = string.Equals(
+        ViewContext.RouteData.Values["area"]?.ToString(), "Admin", StringComparison.OrdinalIgnoreCase);
+
+    // Сървърът слага тези две в ViewData (виж §3 на STYLES_TAB_ANSWERS.md).
+    // Стойността на GfxVars е готов текст с CSS променливи, санитизиран
+    // при ЗАПИС; тук само се вмъква.
+    var gvVars = ViewData["GfxVars"]?.ToString();
+    var gvCss  = ViewData["GfxCustomCss"]?.ToString();
+
+    var gvSafeMode = Context.Request.Query["gfxsafe"] == "1";
+}
+
+@if (!gvIsAdminArea && (!string.IsNullOrWhiteSpace(gvVars) || (!string.IsNullOrWhiteSpace(gvCss) && !gvSafeMode)))
+{
+    <style id="gfx-page-vars">
+        @if (!string.IsNullOrWhiteSpace(gvVars))
+        {
+            @Html.Raw(":root{" + gvVars + "}")
+        }
+        @if (!string.IsNullOrWhiteSpace(gvCss) && !gvSafeMode)
+        {
+            @Html.Raw(gvCss)
+        }
+    </style>
+}

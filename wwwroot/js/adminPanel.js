@@ -108,7 +108,7 @@ const VALID_TABS = new Set([
     'tab-crypto', 'tab-audit', 'tab-conference', 'tab-icbi',
     'tab-lecturers', 'tab-schedule', 'tab-attend', 'tab-travel',
     'tab-faq', 'tab-privacy', 'tab-terms', 'tab-cookies', 'tab-settings',
-    'tab-emails', 'tab-health', 'tab-paycontrol',
+    'tab-emails', 'tab-health', 'tab-paycontrol', 'tab-styles', 'tab-changelog', 'tab-downloads',
 ]);
 
 function initTabs() {

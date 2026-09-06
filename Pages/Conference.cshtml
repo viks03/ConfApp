@@ -40,11 +40,14 @@
         new { Label = Localizer["Conf_Day3"].Value, Title = Localizer["Conf_Day3_Title"].Value, List = Localizer["Conf_Day3_List"].Value }
     };
 
+    @* Иконката и текстовете си остават тук — те са част от дизайна.
+       Самият ФАЙЛ идва от базата, качен от панела: преди беше твърдо
+       изписано име, което трябваше да съвпадне точно при качване по FTP. *@
     var documents = new[]
     {
-        new { Icon = "docs.png", Title = Localizer["Conf_Doc1_Title"].Value, Desc = Localizer["Conf_Doc1_Desc"].Value, File = "official-paper-template.docx", Name = "Official Paper Template.docx" },
-        new { Icon = "sign.png", Title = Localizer["Conf_Doc2_Title"].Value, Desc = Localizer["Conf_Doc2_Desc"].Value, File = "authorship-declaration.docx", Name = "Authorship Declaration.docx" },
-        new { Icon = "database.png", Title = Localizer["Conf_Doc3_Title"].Value, Desc = Localizer["Conf_Doc3_Desc"].Value, File = "ceeol-copyright-agreement.docx", Name = "CEEOL Copyright Agreement.docx" }
+        new { Icon = "docs.png",     Key = ConferenceApp.Models.DownloadableFile.DocTemplate,    Title = Localizer["Conf_Doc1_Title"].Value, Desc = Localizer["Conf_Doc1_Desc"].Value },
+        new { Icon = "sign.png",     Key = ConferenceApp.Models.DownloadableFile.DocDeclaration, Title = Localizer["Conf_Doc2_Title"].Value, Desc = Localizer["Conf_Doc2_Desc"].Value },
+        new { Icon = "database.png", Key = ConferenceApp.Models.DownloadableFile.DocCopyright,   Title = Localizer["Conf_Doc3_Title"].Value, Desc = Localizer["Conf_Doc3_Desc"].Value }
     };
 
     // Партньорите и комитетите също — три пъти един и същи блок в
@@ -257,11 +260,19 @@
             <div class="cf-docs">
                 @foreach (var doc in documents)
                 {
-                    <a class="cf-doc" href="~/uploads/documents/@doc.File" download="@doc.Name">
+                    Model.Documents.TryGetValue(doc.Key, out var file);
+
+                    @* Не е качен → картата не се показва. Карта, която води
+                       наникъде, е по-лоша от липсваща карта: посетителят
+                       кликва и получава 404 без обяснение. *@
+                    if (file is null || !file.IsUploaded) { continue; }
+
+                    <a class="cf-doc" href="@file.FilePath" download="@file.DownloadName">
                         <div class="icon-box"><img src="~/images/conference/@doc.Icon" alt=""></div>
                         <div class="cf-doc-body">
                             <h4>@doc.Title</h4>
                             <h5>@Html.Raw(doc.Desc)</h5>
+                            <span class="cf-doc-meta">@file.TypeLabel · @file.SizeLabel</span>
                         </div>
                         <span class="cf-doc-get">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">

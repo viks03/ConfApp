@@ -13,6 +13,10 @@ namespace ConferenceApp.Pages
         public List<ConferenceApp.Models.ScheduleModel> Day2Events { get; set; } = new();
         public List<ConferenceApp.Models.ScheduleModel> Day3Events { get; set; } = new();
 
+        /// <summary>Програмата за сваляне — качва се от админ панела.</summary>
+        public ConferenceApp.Models.DownloadableFile? ProgrammeBg { get; set; }
+        public ConferenceApp.Models.DownloadableFile? ProgrammeEn { get; set; }
+
         public ScheduleModel(ApplicationDbContext context)
         {
             _context = context;
@@ -20,6 +24,18 @@ namespace ConferenceApp.Pages
 
         public async Task OnGetAsync()
         {
+            // Пътищата бяха твърдо изписани в разметката. При смяна на файла
+            // трябваше да се качи по FTP с ТОЧНО същото име — сбъркано име
+            // значеше бутон, който води наникъде, без грешка никъде.
+            var files = await _context.Set<ConferenceApp.Models.DownloadableFile>()
+                            .AsNoTracking()
+                            .Where(f => f.FileKey == ConferenceApp.Models.DownloadableFile.ProgrammeBg
+                                     || f.FileKey == ConferenceApp.Models.DownloadableFile.ProgrammeEn)
+                            .ToListAsync();
+
+            ProgrammeBg = files.FirstOrDefault(f => f.FileKey == ConferenceApp.Models.DownloadableFile.ProgrammeBg);
+            ProgrammeEn = files.FirstOrDefault(f => f.FileKey == ConferenceApp.Models.DownloadableFile.ProgrammeEn);
+
             var allEvents = await _context.Set<ConferenceApp.Models.ScheduleModel>().ToListAsync();
 
             // Строго филтриране, за да не се застъпват дните

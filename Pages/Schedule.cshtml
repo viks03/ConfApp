@@ -134,24 +134,26 @@
                     <span>@Localizer["Sched_DownloadNote"]</span>
                 </p>
                 <div class="sc-tools-actions">
-                    <a class="sc-dl" href="/uploads/program/unwe-crypto-2026-bg.pdf" download="unwe-crypto-2026-bg.pdf">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 3v12"></path>
-                            <polyline points="7 11 12 16 17 11"></polyline>
-                            <path d="M4 20h16"></path>
-                        </svg>
-                        @Localizer["Sched_BtnBg"]
-                        <b>BG</b>
-                    </a>
-                    <a class="sc-dl" href="/uploads/program/unwe-crypto-2026-en.pdf" download="unwe-crypto-2026-en.pdf">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 3v12"></path>
-                            <polyline points="7 11 12 16 17 11"></polyline>
-                            <path d="M4 20h16"></path>
-                        </svg>
-                        @Localizer["Sched_BtnEn"]
-                        <b>EN</b>
-                    </a>
+                    @* Бутонът се показва САМО ако файлът е качен. Бутон, който
+                       води наникъде, е по-лош от липсващ бутон. *@
+                    @foreach (var prog in new[] { Model.ProgrammeBg, Model.ProgrammeEn })
+                    {
+                        if (prog is null || !prog.IsUploaded) { continue; }
+
+                        var isBgFile = prog.FileKey == ConferenceApp.Models.DownloadableFile.ProgrammeBg;
+
+                        <a class="sc-dl" href="@prog.FilePath" download="@prog.DownloadName">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3v12"></path>
+                                <polyline points="7 11 12 16 17 11"></polyline>
+                                <path d="M4 20h16"></path>
+                            </svg>
+                            @(isBgFile ? Localizer["Sched_BtnBg"] : Localizer["Sched_BtnEn"])
+                            <b>@(isBgFile ? "BG" : "EN")</b>
+                            @* Тип и размер: посетителят вижда какво сваля. *@
+                            <i class="sc-dl-meta">@prog.TypeLabel · @prog.SizeLabel</i>
+                        </a>
+                    }
                 </div>
             </div>
 

@@ -10,6 +10,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/adminPanel.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/adminPanelStyles.css" asp-append-version="true">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css">
     @* Инлайн <style> блокът, който стоеше тук, е премахнат — всяко правило
        от него (status-*, method-*, iban-alert, field-error-msg, verif-type-*,
@@ -66,6 +67,15 @@
           <button type="button" class="admin-tab" data-target="tab-settings">Site Settings</button>
           <button type="button" class="admin-tab" data-target="tab-emails">Email Notifications</button>
           <button type="button" class="admin-tab" data-target="tab-paycontrol">Payment Control</button>
+          <button type="button" class="admin-tab" data-target="tab-styles">Visual Styles</button>
+          <button type="button" class="admin-tab" data-target="tab-changelog">
+            Changelog
+            @* Точката се появява, докато администраторът не отвори таба.
+               Съхранява се в localStorage, не в базата: това е предпочитание
+               на браузъра, не на акаунта, и не заслужава колона. *@
+            <span class="cl-dot" id="cl-dot" hidden></span>
+          </button>
+          <button type="button" class="admin-tab" data-target="tab-downloads">Downloads</button>
           <button type="button" class="admin-tab" onclick="window.location.href='/Admin/SendInvitations'">Send Invitations</button>
           <button type="button" class="admin-tab" onclick="window.location.href='/Admin/BugReports'">
             Bug Reports
@@ -1743,6 +1753,458 @@
           </div>
         </div>
 
+        <div id="tab-styles" class="admin-section">
+
+          @* Ръководството е СГЪНАТО по подразбиране: човек, който вече знае как
+             работи, не бива да прескача екран текст всеки път. <details> е
+             естественият елемент за това — работи без JS. *@
+          <details class="gfx-guide">
+            <summary>
+              <b>Как работи това</b>
+              <span>Отвори за инструкции</span>
+            </summary>
+            <div class="gfx-guide-body">
+
+              <h4>Накратко</h4>
+              <p>
+                Всяка публична страница носи <b>един фон</b>. Избираш го от списъка,
+                записваш, готово — посетител, който презареди страницата, го вижда.
+                Админ панелът няма фон и не се влияе от нищо тук.
+              </p>
+
+              <h4>Осемте вградени фона</h4>
+              <ul class="gfx-guide-list">
+                <li><code>grid</code> — техническа решетка. Статична.</li>
+                <li><code>paper</code> — милиметрова хартия. Статична.</li>
+                <li><code>hatch</code> — диагонално щриховане. Бавен дрейф.</li>
+                <li><code>glow</code> — голямо акцентно сияние. Дрейф и „дишане“.</li>
+                <li><code>dust</code> — прах на два слоя. Мести се само при скрол.</li>
+                <li><code>beam</code> — наклонени лъчи. Бавен дрейф.</li>
+                <li><code>contour</code> — топографски пръстени. Бавен пулс.</li>
+                <li><code>off</code> — без фон. Прогрес лентата също изчезва.</li>
+              </ul>
+              <p class="gfx-guide-note">
+                Решетките са статични нарочно: тънка линия, която се движи, трепти
+                на телефони с висока плътност на екрана.
+              </p>
+
+              <h4>Седемте настройки</h4>
+              <p>
+                <b>Празно поле значи „по CSS“</b> — страницата взима стойността от
+                стиловия файл. Ако зададеш стойност, я <em>заковаваш</em>: по-късна
+                промяна в CSS-а няма да стигне до тази страница. Затова оставяй
+                празно всичко, което не искаш да управляваш ръчно.
+              </p>
+              <ul class="gfx-guide-list">
+                <li><b>Сила</b> (0–1) — обща видимост. 0 значи невидим слой.</li>
+                <li><b>Мастило</b> (0–0.2) — яркост на чертожните линии.</li>
+                <li><b>Сияние</b> (0–0.4) — сила на червеното петно.</li>
+                <li><b>Курсор</b> (0–0.2) — петното, което следва мишката.</li>
+                <li><b>Решетка</b> (16–160px) — стъпка на едрата решетка.</li>
+                <li><b>Хартия</b> (4–40px) — стъпка на милиметровата.</li>
+                <li><b>Лента</b> (0–6px) — височина на прогрес лентата при скрол.</li>
+              </ul>
+
+              <h4>Собствени фонове</h4>
+              <p>
+                Ако осемте не стигат, направи свой от <b>Нов фон</b>. Два начина:
+              </p>
+              <ul class="gfx-guide-list">
+                <li>
+                  <b>С параметри</b> — избираш вид, цвят, стъпка, дебелина, ъгъл и
+                  движение. Не се пише синтаксис и нищо не може да се счупи.
+                </li>
+                <li>
+                  <b>Свободен CSS</b> — пишеш правила за <code>.afx-a</code> (основен
+                  слой) и <code>.afx-b</code> (втори план). За случаите, които
+                  параметрите не покриват.
+                </li>
+              </ul>
+              <p>Пример за свободен CSS:</p>
+<pre class="gfx-guide-code">.afx-a {
+  background: repeating-linear-gradient(30deg,
+              rgba(255,255,255,.05) 0 1px,
+              transparent 1px 22px);
+  animation: gfx-c-drift 140s ease-in-out infinite;
+}
+
+.afx-b {
+  background: radial-gradient(60% 50% at 20% 10%,
+              rgba(255,54,54,.10), transparent 70%);
+}</pre>
+              <p class="gfx-guide-note">
+                Готовите движения са <code>gfx-c-slide</code>, <code>gfx-c-swell</code>
+                и <code>gfx-c-drift</code>. Можеш да дефинираш и свои с
+                <code>@@keyframes</code> — имената им се преименуват автоматично, за да
+                не засегнат другите фонове.
+              </p>
+
+              <h4>Собствен CSS за една страница</h4>
+              <p>
+                Различно от собствен фон: важи само за тази страница и не се
+                преизползва. Полето е в редактора, под настройките.
+              </p>
+
+              <h4>Какво не може да се счупи</h4>
+              <p>
+                Всяко правило се затваря автоматично вътре във фона. Ако напишеш
+                <code>div { … }</code>, става <code>#ambient-fx div { … }</code>.
+                Селектори като <code>body</code>, <code>.topbar</code> или
+                <code>*</code> се отказват изцяло. Външни адреси, <code>@@import</code>
+                и всичко, което би излязло от стиловия блок, също.
+                <b>Най-лошото, което можеш да направиш, е да развалиш фона — не страницата.</b>
+              </p>
+
+              <h4>Ако все пак стане нещо</h4>
+              <ul class="gfx-guide-list">
+                <li>
+                  Добави <code>?gfxsafe=1</code> в адреса на страницата — собственият
+                  CSS се игнорира само за това зареждане.
+                </li>
+                <li>
+                  Бутонът <b>Изключи целия собствен CSS</b> го гаси навсякъде,
+                  <em>без да трие написаното</em>. Връщаш го с един превключвател.
+                </li>
+                <li>
+                  Всеки запис пази снимка на предишното състояние (последните 10).
+                </li>
+              </ul>
+
+              <h4>Дребни неща, които изненадват</h4>
+              <ul class="gfx-guide-list">
+                <li>
+                  Прогрес лентата не се появява на къси страници (под 40px за
+                  скролване). Нарочно — празна лента е шум.
+                </li>
+                <li>
+                  Изтриеш ли фон, който се ползва, засегнатите страници се връщат
+                  на <code>grid</code>, а не остават без нищо.
+                </li>
+                <li>
+                  Нов фон се появява в списъка за избор след презареждане на панела.
+                </li>
+                <li>
+                  При включена системна настройка за намалено движение всички
+                  анимации спират. Чертежът остава.
+                </li>
+              </ul>
+
+            </div>
+          </details>
+
+          <div class="admin-panel-card">
+            <h3><span>Visual Styles</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">
+                Всяка публична страница носи един фон от осемте. Промяната важи веднага —
+                посетител, който презареди страницата, вижда новия фон. Админ панелът няма
+                фон и не се влияе.
+              </p>
+
+              @Html.AntiForgeryToken()
+
+              <div class="gfx-safety">
+                <p class="gfx-safety-text">
+                  <b>Авариен изход.</b> Ако собствен CSS счупи страница, добавете
+                  <code>?gfxsafe=1</code> към адреса ѝ — за това зареждане целият собствен CSS
+                  се игнорира. Бутонът отдясно го изключва за всички страници наведнъж;
+                  написаното се пази.
+                </p>
+                <button type="button" class="gfx-mini-btn" id="gfx-disable-all-css">
+                  Изключи целия собствен CSS
+                </button>
+              </div>
+
+              @* Глобалната забрана стои НАД списъка, защото важи за всичко
+                 под него. Изключена, тя бие настройките на отделните
+                 страници — глобално изключване, което пропуска включените
+                 поотделно, не е глобално. *@
+              <div class="gfx-global-row">
+                <div class="gfx-global-text">
+                  <b>Фонове на телефон</b>
+                  <i>Изключено тук спира фоновете на всички телефони, независимо
+                     какво е зададено на отделните страници.</i>
+                </div>
+                @* Същият превключвател като в Email Notifications и Payment
+                   Control — един визуален език за едно и също действие. *@
+                <label class="email-switch" title="Фонове на телефон">
+                  <input type="checkbox" id="gfx-global-mobile"
+                         @(Model.MobileAllowedGlobally ? "checked" : "")>
+                  <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                </label>
+              </div>
+
+              <div class="gfx-filters">
+                <button type="button" class="gfx-filter-btn active" data-gfx-filter="all">
+                  Всички <i>@Model.PageStyleRows.Count</i>
+                </button>
+                <button type="button" class="gfx-filter-btn" data-gfx-filter="manual">
+                  С ръчна настройка <i>@Model.ManualStyleCount</i>
+                </button>
+                <button type="button" class="gfx-filter-btn" data-gfx-filter="css">
+                  Със собствен CSS <i>@Model.CustomCssCount</i>
+                </button>
+              </div>
+
+              @foreach (var group in Model.PageStyleRows.GroupBy(r => r.Group))
+              {
+                  <div class="gfx-group">
+                    <div class="gfx-group-head">
+                      <span class="gfx-group-title">@group.Key</span>
+                      <span class="gfx-group-note">@group.Count() страници</span>
+                    </div>
+
+                    @foreach (var row in group)
+                    {
+                        <div class="gfx-row"
+                             data-gfx-key="@row.Key"
+                             data-gfx-name="@row.Name"
+                             data-gfx-bg="@row.EffectiveBackground"
+                             data-gfx-manual="@(row.HasRecord ? "true" : "false")"
+                             data-gfx-has-css="@(string.IsNullOrWhiteSpace(row.CustomCss) ? "false" : "true")"
+                             data-gfx-css-enabled="@(row.CustomCssEnabled ? "true" : "false")"
+                             data-gfx-motion="@(row.Motion ?? string.Empty)"
+                             data-gfx-motion-speed="@(row.MotionSpeed ?? string.Empty)"
+                             data-gfx-mobile="@(row.ShowOnMobile ? "true" : "false")"
+                             data-gfx-css="@row.CustomCss"
+                             data-gfx-intensity="@row.Intensity"
+                             data-gfx-ink="@row.Ink"
+                             data-gfx-glow="@row.Glow"
+                             data-gfx-cursor="@row.CursorAlpha"
+                             data-gfx-grid="@row.GridStep"
+                             data-gfx-step="@row.PaperStep"
+                             data-gfx-bar="@row.BarHeight">
+
+                          <span class="gfx-art" data-bg="@row.EffectiveBackground" aria-hidden="true">
+                            <span class="gfx-art-a"></span>
+                            <span class="gfx-art-b"></span>
+                          </span>
+
+                          <div class="gfx-row-text">
+                            <span class="gfx-row-name">@row.Name</span>
+                            <span class="gfx-row-key">@row.Key</span>
+                          </div>
+
+                          @* Съдържанието на .gfx-row-meta се пренарисува от
+                             adminPanelStyles.js от data-* атрибутите — един
+                             източник на истина вместо два пътя. *@
+                          <div class="gfx-row-meta"></div>
+
+                          <div class="gfx-row-actions">
+                            @* Директно в списъка, не в модала: телефонът е
+                               най-честата промяна и не заслужава отваряне на
+                               редактор за една отметка. *@
+                            <span class="gfx-row-mobile">
+                              <i>тел.</i>
+                              <label class="email-switch email-switch--sm"
+                                     title="Показвай фона на телефон">
+                                <input type="checkbox" class="gfx-row-mobile-input"
+                                       @(row.ShowOnMobile ? "checked" : "")>
+                                <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                              </label>
+                            </span>
+                            <button type="button" class="gfx-mini-btn gfx-edit-btn">Настрой</button>
+                            <button type="button" class="gfx-mini-btn gfx-reset-btn">Върни резервния</button>
+                          </div>
+                        </div>
+                    }
+                  </div>
+              }
+            </div>
+          </div>
+
+          <div class="admin-panel-card">
+            <h3><span>Собствени фонове</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">
+                Нов фон се описва с параметри (вид линия, стъпка, дебелина, ъгъл, цвят,
+                движение), а сървърът сглобява CSS правилото. Затова тук не се пише CSS —
+                и затова един нов фон не може да счупи страница.
+              </p>
+
+              <div class="gfx-filters">
+                <button type="button" class="gfx-mini-btn" id="gfx-custom-new">Нов фон</button>
+              </div>
+
+              <div class="gfx-group" id="gfx-custom-list">
+                @if (!Model.CustomBackgrounds.Any())
+                {
+                    <p class="gfx-editor-foot-note">Още няма собствени фонове.</p>
+                }
+                else
+                {
+                    @foreach (var cb in Model.CustomBackgrounds)
+                    {
+                        // Пълният запис, не само параметрите: openEditor чака
+                        // slug, name, mode и rawCss, за да възстанови точно
+                        // това, което е било записано.
+                        var cbPayload = System.Text.Json.JsonSerializer.Serialize(new {
+                                slug = cb.Slug, name = cb.Name, mode = cb.Mode,
+                                rawCss = cb.RawCss,
+                                layers = System.Text.Json.JsonSerializer
+                                    .Deserialize<System.Text.Json.JsonElement>(
+                                        string.IsNullOrWhiteSpace(cb.ParamsJson) ? "{}" : cb.ParamsJson)
+                            });
+
+                        <div class="gfx-row" data-gfx-custom-slug="@cb.Slug" data-gfx-custom="@cbPayload"
+                             data-gfx-layers="@cb.ParamsJson">
+                          <span class="gfx-art" data-bg="@cb.Slug" aria-hidden="true">
+                            <span class="gfx-art-a"></span>
+                            <span class="gfx-art-b"></span>
+                          </span>
+                          <div class="gfx-row-text">
+                            <span class="gfx-row-name">@cb.Name</span>
+                            <span class="gfx-row-key">custom:@cb.Slug</span>
+                          </div>
+                          <div class="gfx-row-meta">
+                            <span class="gfx-tag @(cb.IsActive ? "is-manual" : "is-css-off")">
+                              @(cb.IsActive ? "активен" : "изключен")
+                            </span>
+                            <span class="gfx-tag">ползван на <span class="gfx-tag-value">@cb.UsedOnPages</span></span>
+                          </div>
+                          <div class="gfx-row-actions">
+                            <button type="button" class="gfx-mini-btn gfx-custom-edit-btn">Настрой</button>
+                            <button type="button" class="gfx-mini-btn gfx-custom-delete-btn">Изтрий</button>
+                          </div>
+                        </div>
+                    }
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-downloads" class="admin-section">
+          <div class="admin-panel-card">
+            <h3><span>Downloads</span></h3>
+            <div class="card-body">
+              <p class="settings-hint">
+                Програмата и документите за автори. Файл, който не е качен, не
+                се показва на сайта — бутон, който води наникъде, е по-лош от
+                липсващ бутон.
+                <br>Приемат се PDF и Word, до 20 MB.
+              </p>
+
+              @foreach (var grp in Model.Downloads.GroupBy(f => ConferenceApp.Models.DownloadableFile.PageOf(f.FileKey)))
+              {
+                  <h4 class="dl-group">@grp.Key</h4>
+
+                  <div class="dl-list">
+                    @foreach (var f in grp)
+                    {
+                        <div class="dl-row" data-dl-key="@f.FileKey">
+                          <div class="dl-info">
+                            <b>@ConferenceApp.Models.DownloadableFile.Describe(f.FileKey)</b>
+                            <span class="dl-state">
+                              @if (f.IsUploaded)
+                              {
+                                  <text>@f.DownloadName · @f.TypeLabel · @f.SizeLabel</text>
+                                  @if (f.UpdatedAt.HasValue)
+                                  {
+                                      <text> · обновен @f.UpdatedAt.Value.ToString("dd.MM.yyyy")</text>
+                                  }
+                              }
+                              else
+                              {
+                                  <text>не е качен</text>
+                              }
+                            </span>
+                          </div>
+
+                          <div class="dl-actions">
+                            @if (f.IsUploaded)
+                            {
+                                <a class="gfx-mini-btn" href="@f.FilePath" target="_blank" rel="noopener" title="Отвори в нов таб">
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                  </svg>
+                                  Виж
+                                </a>
+                                <button type="button" class="gfx-mini-btn dl-remove" title="Премахни файла от сайта">
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 6h18"></path>
+                                    <path d="M8 6V4h8v2"></path>
+                                    <path d="M19 6l-1 14H6L5 6"></path>
+                                  </svg>
+                                  Премахни
+                                </button>
+                            }
+                            @* Етикетът е бутонът — полето за файл е скрито вътре
+                               в него. Затова изисква изрично подравняване в
+                               CSS-а: етикетът не наследява височина от бутон. *@
+                            <label class="gfx-mini-btn dl-upload-btn" title="@(f.IsUploaded ? "Качи нов файл на мястото на този" : "Качи файл")">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 19V7"></path>
+                                <polyline points="7 11 12 6 17 11"></polyline>
+                                <path d="M4 21h16"></path>
+                              </svg>
+                              @(f.IsUploaded ? "Замени" : "Качи")
+                              <input type="file" class="dl-file" accept=".pdf,.docx,.doc" hidden>
+                            </label>
+                          </div>
+                        </div>
+                    }
+                  </div>
+              }
+
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-changelog" class="admin-section" data-cl-latest="@(Model.Changelog.FirstOrDefault(e => !e.IsUnreleased)?.Version ?? "")">
+          <div class="admin-panel-card">
+            <h3><span>Changelog</span></h3>
+            <div class="card-body">
+
+              @if (!Model.Changelog.Any())
+              {
+                  <p class="settings-hint">Няма записани промени.</p>
+              }
+              else
+              {
+                  @foreach (var entry in Model.Changelog)
+                  {
+                      <section class="cl-entry @(entry.IsUnreleased ? "is-unreleased" : "")">
+                        <header class="cl-head">
+                          <b class="cl-ver">@entry.Version</b>
+                          @if (entry.IsUnreleased)
+                          {
+                              <span class="cl-tag">в подготовка</span>
+                          }
+                          else if (entry.Date is not null)
+                          {
+                              <span class="cl-date">@entry.Date</span>
+                          }
+                        </header>
+
+                        @if (entry.HasAdmin)
+                        {
+                            @Html.Raw(entry.AdminHtml)
+                        }
+                        else
+                        {
+                            <p class="cl-empty">Само технически промени.</p>
+                        }
+
+                        @* Техническата част е СГЪНАТА: организаторът вижда три
+                           реда, които го засягат, а подробностите чакат момента,
+                           в който нещо не работи. *@
+                        @if (entry.HasTech)
+                        {
+                            <details class="cl-tech">
+                              <summary>Технически бележки</summary>
+                              <div class="cl-tech-body">@Html.Raw(entry.TechHtml)</div>
+                            </details>
+                        }
+                      </section>
+                  }
+              }
+
+            </div>
+          </div>
+        </div>
+
         <div id="tab-settings" class="admin-section">
           <div class="admin-panel-card">
             <h3><span>Social Media Links</span></h3>
@@ -1944,6 +2406,355 @@
       </div>
     </div>
   </main>
+
+<div class="modal-overlay" id="gfx-editor-modal">
+    <div class="modal-box" style="max-width:720px;">
+      <div class="modal-header"><h3>Фон на страницата</h3></div>
+      <div class="modal-body">
+        @Html.AntiForgeryToken()
+        <form id="gfx-editor-form" onsubmit="return false;">
+          <input type="hidden" id="gfx-page-key">
+
+          @* Прегледът е ТЪМЕН блок в светъл панел — нарочно. Ефектът
+             съществува само на тъмно; „преведен“ в светло би лъгал.
+             Затова е рамкиран като екран, с етикет и с примерен текст,
+             за да се вижда и четимостта, не само рисунъкът. *@
+          <div class="gfx-preview">
+            <span class="gfx-preview-label">grid</span>
+            <span class="gfx-art" data-bg="grid" aria-hidden="true">
+              <span class="gfx-art-a"></span>
+              <span class="gfx-art-b"></span>
+            </span>
+            <span class="gfx-preview-cursor" aria-hidden="true"></span>
+            <div class="gfx-preview-copy">
+              <b>Кой ще говори</b>
+              <span>Така изглежда текст върху фона. Движете мишката в плочката.</span>
+            </div>
+          </div>
+
+          <div class="gfx-choices" role="radiogroup" aria-label="Фон">
+            @foreach (var bg in new[] { "grid", "paper", "hatch", "glow", "contour", "fiber", "lantern", "prism", "sonar", "caustic", "spine", "ascent", "off" })
+            {
+                <label class="gfx-choice">
+                  <input type="radio" name="gfxBackground" value="@bg">
+                  <span class="gfx-art" data-bg="@bg" aria-hidden="true">
+                    <span class="gfx-art-a"></span>
+                    <span class="gfx-art-b"></span>
+                  </span>
+                  <span class="gfx-choice-name">@bg</span>
+                </label>
+            }
+
+            @* Собствените фонове стоят в СЪЩИЯ избор, не в отделен списък:
+               за администратора това е един въпрос („кой фон“), а не два.
+               Изключените не се показват — избор, който после не се рендира,
+               е по-лош от липсващ избор. *@
+            @foreach (var cb in Model.CustomBackgrounds.Where(b => b.IsActive))
+            {
+                <label class="gfx-choice is-custom">
+                  <input type="radio" name="gfxBackground" value="custom:@cb.Slug">
+                  <span class="gfx-art" data-bg="custom-preview"
+                        data-gfx-layers="@cb.ParamsJson" aria-hidden="true">
+                    <span class="gfx-art-a"></span>
+                    <span class="gfx-art-b"></span>
+                  </span>
+                  <span class="gfx-choice-name">@cb.Name</span>
+                </label>
+            }
+          </div>
+
+          @* Движение и скорост са ДВЕ независими настройки — един контрол
+             със смесени стойности („бавно" срещу „завъртане") кара човек да
+             избира между несравними неща. *@
+          <div class="gfx-motion-row">
+            <span class="gfx-motion-label">Движение</span>
+            <div class="gfx-motion-opts gfx-motion-opts--wide" role="radiogroup" aria-label="Вид движение">
+              <label><input type="radio" name="gfxMotion" value="" checked><span>по присет</span></label>
+              <label><input type="radio" name="gfxMotion" value="drift"><span>плаване</span></label>
+              <label><input type="radio" name="gfxMotion" value="slide"><span>плъзгане</span></label>
+              <label><input type="radio" name="gfxMotion" value="swell"><span>раздуване</span></label>
+              <label><input type="radio" name="gfxMotion" value="breathe"><span>дишане</span></label>
+              <label><input type="radio" name="gfxMotion" value="turn"><span>въртене</span></label>
+              <label><input type="radio" name="gfxMotion" value="off"><span>спряно</span></label>
+            </div>
+          </div>
+
+          @* Телефонът е изключен по подразбиране. Превключвателят го връща
+             за конкретна страница — например начална, където фонът се вижда
+             и на малък екран. *@
+          <div class="gfx-motion-row">
+            <span class="gfx-motion-label">На телефон</span>
+            <label class="gfx-mobile-toggle">
+              <input type="checkbox" id="gfx-show-mobile">
+              <span>Показвай фона и на телефон</span>
+            </label>
+          </div>
+
+          <div class="gfx-motion-row">
+            <span class="gfx-motion-label">Скорост</span>
+            <div class="gfx-motion-opts" role="radiogroup" aria-label="Скорост">
+              <label><input type="radio" name="gfxMotionSpeed" value="" checked><span>по присет</span></label>
+              <label><input type="radio" name="gfxMotionSpeed" value="slower"><span>най-бавно</span></label>
+              <label><input type="radio" name="gfxMotionSpeed" value="slow"><span>по-бавно</span></label>
+              <label><input type="radio" name="gfxMotionSpeed" value="fast"><span>по-бързо</span></label>
+              <label><input type="radio" name="gfxMotionSpeed" value="faster"><span>най-бързо</span></label>
+            </div>
+          </div>
+
+          @* Появява се само при рискова комбинация — постоянно предупреждение
+             се научава да се пренебрегва. *@
+          <p class="gfx-motion-warn" id="gfx-motion-warn" hidden>
+            Този фон е от тънки линии. Движение върху такъв мотив трепти на
+            екрани с висока плътност — това е физика на растеризацията, не
+            настройка. За линейни фонове „дишане“ е безопасният избор: мени се
+            плътността, геометрията стои неподвижна.
+          </p>
+
+          <div class="gfx-slider-row">
+            <label for="gfx-intensity">Сила</label>
+            <input type="range" id="gfx-intensity" min="0" max="1" step="0.05"
+                   data-gfx-base="1" data-gfx-inherited="true">
+            <output>по CSS</output>
+            <button type="button" class="gfx-inherit" data-gfx-for="gfx-intensity">по CSS</button>
+          </div>
+
+          <details class="gfx-fold">
+            <summary>Тънки настройки</summary>
+            <div class="gfx-fold-body">
+              <p class="settings-hint">
+                Стойностите отговарят на променливите в <code>globalEffects.css</code>.
+                Празно („по CSS“) значи, че страницата взима стойността от файла — това е
+                правилното състояние, докато няма причина за друго.
+              </p>
+
+              <div class="gfx-slider-row">
+                <label for="gfx-ink">Мастило на линията</label>
+                <input type="range" id="gfx-ink" min="0" max="0.2" step="0.005"
+                       data-gfx-base="0.05" data-gfx-inherited="true">
+                <output>по CSS</output>
+                <button type="button" class="gfx-inherit" data-gfx-for="gfx-ink">по CSS</button>
+              </div>
+
+              <div class="gfx-slider-row">
+                <label for="gfx-glow">Сила на сиянието</label>
+                <input type="range" id="gfx-glow" min="0" max="0.4" step="0.01"
+                       data-gfx-base="0.13" data-gfx-inherited="true">
+                <output>по CSS</output>
+                <button type="button" class="gfx-inherit" data-gfx-for="gfx-glow">по CSS</button>
+              </div>
+
+              <div class="gfx-slider-row">
+                <label for="gfx-cursor">Петно под курсора</label>
+                <input type="range" id="gfx-cursor" min="0" max="0.2" step="0.005"
+                       data-gfx-base="0.05" data-gfx-inherited="true">
+                <output>по CSS</output>
+                <button type="button" class="gfx-inherit" data-gfx-for="gfx-cursor">по CSS</button>
+              </div>
+
+              <div class="gfx-slider-row">
+                <label for="gfx-grid">Стъпка на решетката</label>
+                <input type="range" id="gfx-grid" min="16" max="160" step="4"
+                       data-gfx-base="48" data-gfx-unit="px" data-gfx-inherited="true">
+                <output>по CSS</output>
+                <button type="button" class="gfx-inherit" data-gfx-for="gfx-grid">по CSS</button>
+              </div>
+
+              <div class="gfx-slider-row">
+                <label for="gfx-step">Стъпка на хартията</label>
+                <input type="range" id="gfx-step" min="4" max="40" step="2"
+                       data-gfx-base="8" data-gfx-unit="px" data-gfx-inherited="true">
+                <output>по CSS</output>
+                <button type="button" class="gfx-inherit" data-gfx-for="gfx-step">по CSS</button>
+              </div>
+
+              <div class="gfx-slider-row">
+                <label for="gfx-bar">Прогрес лента</label>
+                <input type="range" id="gfx-bar" min="0" max="6" step="1"
+                       data-gfx-base="2" data-gfx-unit="px" data-gfx-inherited="true">
+                <output>по CSS</output>
+                <button type="button" class="gfx-inherit" data-gfx-for="gfx-bar">по CSS</button>
+              </div>
+            </div>
+          </details>
+
+          <details class="gfx-fold">
+            <summary>Собствен CSS за тази страница</summary>
+            <div class="gfx-fold-body">
+              <div class="gfx-css-head">
+                <span class="gfx-css-switch-text">Излъчвай този CSS на страницата</span>
+                <label class="email-switch" title="Собствен CSS">
+                  <input type="checkbox" id="gfx-css-enabled">
+                  <span class="email-switch-track"><span class="email-switch-thumb"></span></span>
+                </label>
+              </div>
+
+              <p class="settings-hint">
+                Правилата важат само ВЪТРЕ във фона: позволени са селектори, които започват с
+                <code>#ambient-fx</code> или <code>.afx-</code>. Всичко останало сървърът
+                ограничава до фона или отказва. Не се приемат <code>&lt;</code>,
+                <code>&gt;</code>, <code>@@import</code> и външен <code>url()</code>.
+              </p>
+
+              <textarea class="gfx-css-area" id="gfx-css-input" spellcheck="false"
+                        placeholder="#ambient-fx .afx-b { opacity: 0.4; }"></textarea>
+
+              <div class="gfx-filters" style="margin-top:9px;">
+                <button type="button" class="gfx-mini-btn" id="gfx-css-check">Провери</button>
+              </div>
+
+              <div class="gfx-css-report" id="gfx-css-report" hidden></div>
+            </div>
+          </details>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Откажи</button>
+        <button type="button" class="btn-save" id="gfx-editor-save">Запиши</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="gfx-custom-modal">
+    <div class="modal-box" style="max-width:720px;">
+      <div class="modal-header"><h3>Собствен фон</h3></div>
+      <div class="modal-body">
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="gfx-custom-slug">
+
+        <div class="gfx-preview">
+          <span class="gfx-preview-label">преглед</span>
+          <span class="gfx-art" id="gfx-custom-art" data-bg="custom-preview" aria-hidden="true">
+            <span class="gfx-art-a"></span>
+            <span class="gfx-art-b"></span>
+          </span>
+          <span class="gfx-preview-cursor" aria-hidden="true"></span>
+          <div class="gfx-preview-copy">
+            <b>Нов фон</b>
+            <span>Правилото се сглобява от параметрите — CSS не се пише на ръка.</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Име <span class="required-star">*</span></label>
+            <input type="text" id="gfx-custom-name" maxlength="60" placeholder="Секторни линии">
+          </div>
+          <div class="form-group">
+            <label>Ключ (латиница, тирета)</label>
+            <input type="text" id="gfx-custom-key" maxlength="40" placeholder="sector-lines">
+          </div>
+        </div>
+
+        @* Два режима. Параметрите покриват обичайното без да се пише синтаксис;
+           свободният CSS е за случаите, които параметрите не могат. *@
+        <div class="gfx-mode-switch" role="radiogroup" aria-label="Начин на задаване">
+          <label class="gfx-mode-opt">
+            <input type="radio" name="gfxCustomMode" value="params" checked>
+            <span>С параметри</span>
+          </label>
+          <label class="gfx-mode-opt">
+            <input type="radio" name="gfxCustomMode" value="css">
+            <span>Свободен CSS</span>
+          </label>
+        </div>
+
+        <div id="gfx-custom-css-pane" hidden>
+          <div class="form-group">
+            <label for="gfx-custom-css">CSS за слоевете</label>
+            <textarea id="gfx-custom-css" rows="12" spellcheck="false"
+                      placeholder=".afx-a { background: … }"></textarea>
+            <p class="settings-hint">
+              Пиши правила за <code>.afx-a</code> (основен слой) и <code>.afx-b</code>
+              (втори план). Обхватът се налага автоматично — правилата не могат да
+              излязат извън фона. <code>@@keyframes</code> се приемат; имената им се
+              преименуват, за да не засегнат другите фонове.
+            </p>
+            <div id="gfx-custom-css-report" class="gfx-report" hidden></div>
+          </div>
+        </div>
+
+        <div id="gfx-custom-params-pane">
+        @foreach (var layer in new[] { new { Id = "a", Title = "Слой A (основен чертеж)" }, new { Id = "b", Title = "Слой B (втори план)" } })
+        {
+            <details class="gfx-fold" @(layer.Id == "a" ? "open" : "")>
+              <summary>@layer.Title</summary>
+              <div class="gfx-fold-body" data-gfx-layer="@layer.Id">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Вид</label>
+                    <select id="gfx-c-@(layer.Id)-kind" class="gfx-c-field">
+                      <option value="none">няма</option>
+                      <option value="lines">линии</option>
+                      <option value="grid">решетка</option>
+                      <option value="dots">точки</option>
+                      <option value="rings">пръстени</option>
+                      <option value="glow">сияние</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Цвят</label>
+                    <select id="gfx-c-@(layer.Id)-color" class="gfx-c-field">
+                      <option value="ink">бяло (мастило)</option>
+                      <option value="accent">акцент (червено)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="gfx-slider-row">
+                  <label for="gfx-c-@(layer.Id)-spacing">Стъпка</label>
+                  <input type="range" class="gfx-c-field" id="gfx-c-@(layer.Id)-spacing" min="4" max="240" step="2" value="48" data-gfx-unit="px" data-gfx-inherited="false" data-gfx-base="48">
+                  <output>48px</output>
+                </div>
+
+                <div class="gfx-slider-row">
+                  <label for="gfx-c-@(layer.Id)-thickness">Дебелина</label>
+                  <input type="range" class="gfx-c-field" id="gfx-c-@(layer.Id)-thickness" min="1" max="6" step="1" value="1" data-gfx-unit="px" data-gfx-inherited="false" data-gfx-base="1">
+                  <output>1px</output>
+                </div>
+
+                <div class="gfx-slider-row">
+                  <label for="gfx-c-@(layer.Id)-angle">Ъгъл</label>
+                  <input type="range" class="gfx-c-field" id="gfx-c-@(layer.Id)-angle" min="0" max="180" step="1" value="45" data-gfx-unit="°" data-gfx-inherited="false" data-gfx-base="45">
+                  <output>45°</output>
+                </div>
+
+                <div class="gfx-slider-row">
+                  <label for="gfx-c-@(layer.Id)-alpha">Плътност</label>
+                  <input type="range" class="gfx-c-field" id="gfx-c-@(layer.Id)-alpha" min="0" max="0.3" step="0.005" value="0.05" data-gfx-inherited="false" data-gfx-base="0.05">
+                  <output>0.05</output>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Движение</label>
+                    <select id="gfx-c-@(layer.Id)-motion" class="gfx-c-field">
+                      <option value="none">без</option>
+                      <option value="slide">плъзгане</option>
+                      <option value="swell">дишане на мащаба</option>
+                      <option value="drift">дрейф</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Един цикъл (сек)</label>
+                    <input type="number" id="gfx-c-@(layer.Id)-duration" class="gfx-c-field" min="20" max="600" step="10" value="150">
+                  </div>
+                </div>
+              </div>
+            </details>
+        }
+        </div>
+
+        <p class="gfx-editor-foot-note">
+          Диапазоните са нарочно тесни: под 20 секунди на цикъл фонът започва да се
+          забелязва сам за себе си, а над 0.3 плътност спори с текста.
+        </p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel modal-close-btn">Откажи</button>
+        <button type="button" class="btn-save" id="gfx-custom-save">Запиши фона</button>
+      </div>
+    </div>
+  </div>
 
   <div class="modal-overlay" id="view-registration-modal">
     <div class="modal-box" style="max-width:750px;">
@@ -2665,6 +3476,9 @@
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
   <script src="~/js/adminPanel.js" asp-append-version="true"></script>
   <script src="~/js/adminPanelHealth.js" asp-append-version="true"></script>
+  <script src="~/js/adminPanelStyles.js" asp-append-version="true"></script>
+  <script src="~/js/adminPanelChangelog.js" asp-append-version="true"></script>
+  <script src="~/js/adminPanelDownloads.js" asp-append-version="true"></script>
 
   @if (TempData["SuccessMessage"] != null)
   {

@@ -14,6 +14,9 @@ namespace ConferenceApp.Pages
         public List<CommitteeMemberModel> ProgramCommittee { get; set; } = new();
         public List<CommitteeMemberModel> StudentCommittee { get; set; } = new(); // НОВО: Списък за Студентски комитет
 
+        /// <summary>Документите за автори — качват се от админ панела.</summary>
+        public Dictionary<string, DownloadableFile> Documents { get; set; } = new();
+
         // Списъци за Партньори
         public List<PartnerModel> InstitutionalPartners { get; set; } = new();
         public List<PartnerModel> BusinessPartners { get; set; } = new();
@@ -26,6 +29,13 @@ namespace ConferenceApp.Pages
 
         public async Task OnGetAsync()
         {
+            // Документите се качват от панела. Имената им бяха твърдо изписани
+            // в разметката — смяна значеше качване по FTP с точно същото име.
+            Documents = _context.Set<ConferenceApp.Models.DownloadableFile>()
+                            .AsNoTracking()
+                            .Where(f => f.FileKey.StartsWith("doc."))
+                            .ToDictionary(f => f.FileKey);
+
             // 1. Взимаме всички членове и ги разделяме по тип
             var allMembers = await _context.CommitteeMembers.ToListAsync();
             OrganizingCommittee = allMembers.Where(m => m.CommitteeType == "Organizing Committee").ToList();

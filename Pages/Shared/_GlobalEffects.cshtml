@@ -1,0 +1,59 @@
+@*
+    _GlobalEffects.cshtml — глобалният визуален слой (фон + прогрес лента).
+
+    Рендира се ЕДИН път от _Layout.cshtml, непосредствено ПРЕДИ <main>.
+    Не се рендира в /Admin (виж проверката по-долу) и може да се изключи
+    напълно за една страница с ViewData["GfxBg"] = "off".
+
+    Видът на фона се решава по следния ред (първото намерено печели):
+      1. ViewData["GfxBg"]  — страницата казва изрично (в @{ } блока си)
+      2. таблицата с настройки от админ панела (виж README, §5)
+      3. PageDefaults по-долу — резервното разпределение
+      4. "grid"
+
+    Силата е ViewData["GfxIntensity"] (0..1) или --gfx-intensity в CSS-а.
+*@
+
+@{
+    var gfxPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+
+    var gfxIsAdminArea = string.Equals(
+        ViewContext.RouteData.Values["area"]?.ToString(), "Admin", StringComparison.OrdinalIgnoreCase);
+
+    // Резервно разпределение: коя страница какъв фон носи, ако в базата
+    // няма запис. Стойностите са същите низове като в CSS-а.
+    var gfxDefaults = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["/Index"]              = "prism",
+        ["/Conference"]         = "sonar",
+        ["/ICBI"]               = "caustic",
+        ["/Lecturers"]          = "sonar",
+        ["/Schedule"]           = "lantern",
+        ["/Attend"]             = "lantern",
+        ["/FAQ"]                = "ascent",
+        ["/Travel"]             = "caustic"
+    };
+
+    var gfxVariant = ViewData["GfxBg"]?.ToString();
+    if (string.IsNullOrWhiteSpace(gfxVariant))
+    {
+        gfxVariant = gfxDefaults.TryGetValue(gfxPage, out var gfxMapped) ? gfxMapped : "grid";
+    }
+
+    var gfxIntensity = ViewData["GfxIntensity"]?.ToString();
+}
+
+@if (!gfxIsAdminArea && !string.Equals(gfxVariant, "off", StringComparison.OrdinalIgnoreCase))
+{
+    <div id="ambient-fx" data-gfx-bg="@gfxVariant" aria-hidden="true"
+         data-gfx-motion="@(ViewData["GfxMotion"]?.ToString())"
+         data-gfx-speed="@(ViewData["GfxSpeed"]?.ToString())"
+         data-gfx-mobile="@(ViewData["GfxMobile"]?.ToString())"
+         style="@(string.IsNullOrWhiteSpace(gfxIntensity) ? null : $"--gfx-intensity: {gfxIntensity}")">
+        <span class="afx-a"></span>
+        <span class="afx-b"></span>
+        <span class="afx-cursor"></span>
+    </div>
+
+    <div id="scroll-progress" aria-hidden="true"><span></span></div>
+}
