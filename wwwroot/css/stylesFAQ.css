@@ -1,0 +1,594 @@
+/* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── */
+/* ============================================================
+   stylesFAQ.css — the FAQ page.
+   The same visual language as authStyle.css and travelStyle.css: Oswald, zero
+   corner radius, thin rules, the red accent, black-and-white imagery.
+   ============================================================ */
+
+.faq-page {
+    background: var(--bg, #050505);
+    color: var(--text, #f4f2ec);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 300;
+}
+
+.faq-page ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.faq-page :focus-visible { outline: 2px solid var(--accent, #ff3636); outline-offset: 2px; }
+.faq-page input::placeholder { color: var(--text-faint); }
+
+html { scroll-behavior: smooth; }
+
+.fq-pad { max-width: 1320px; margin: 0 auto; padding: 0 6vw; }
+.fq-sec { padding: 84px 0 96px; border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08)); }
+.fq-sec--last { border-bottom: 0; }
+
+/* ── The banner ────────────────────────────────────────────
+   The band is exactly as tall as the photograph itself. */
+.fq-banner { position: relative; width: 100%; overflow: hidden; }
+
+.fq-banner img {
+    display: block;
+    width: 100%;
+    max-height: 430px;
+    object-fit: cover;
+    object-position: 50% 46%;
+    filter: grayscale(1) contrast(1.15) brightness(0.78);
+}
+
+.fq-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(var(--ink), 0.035) 0px, rgba(var(--ink), 0.035) 1px, transparent 1px, transparent 4px);
+}
+
+.fq-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(115% 95% at 50% 32%, rgba(0, 0, 0, 0) 38%, color-mix(in srgb, var(--bg) 60%, transparent) 100%),
+        linear-gradient(180deg, color-mix(in srgb, var(--bg) 30%, transparent) 0%, rgba(5, 5, 5, 0) 26%, rgba(5, 5, 5, 0) 62%, color-mix(in srgb, var(--bg) 95%, transparent) 100%);
+}
+
+.fq-banner-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: var(--blend-soft, soft-light);
+    background:
+        linear-gradient(rgba(var(--ink), 0.05) 1px, transparent 1px) 0 0 / 100% 48px,
+        linear-gradient(90deg, rgba(var(--ink), 0.05) 1px, transparent 1px) 0 0 / 48px 100%;
+}
+
+.fq-banner-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: var(--blend-tint, overlay);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 18%, transparent) 0%, rgba(255, 54, 54, 0) 50%);
+}
+
+.fq-frame {
+    position: absolute;
+    inset: 16px;
+    border: 1px solid rgba(var(--ink), 0.16);
+    pointer-events: none;
+}
+
+.fq-frame span { position: absolute; background: var(--accent, #ff3636); }
+.fq-frame .c-tl-h { top: -1px; left: -1px; width: 26px; height: 2px; }
+.fq-frame .c-tl-v { top: -1px; left: -1px; width: 2px; height: 26px; }
+.fq-frame .c-br-h { bottom: -1px; right: -1px; width: 26px; height: 2px; }
+.fq-frame .c-br-v { bottom: -1px; right: -1px; width: 2px; height: 26px; }
+
+/* ── The heading block under the banner ───────────────────── */
+.fq-hero { position: relative; border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08)); }
+
+.fq-hero-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 30px 6vw 26px;
+}
+
+.fq-topline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(var(--ink), 0.14);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.fq-wordmark {
+    background: linear-gradient(100deg, var(--muted) 0%, var(--text) 42%, rgb(var(--ink)) 50%, var(--text) 58%, var(--muted) 100%) 0 0 / 300% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: fqShimmer 14s ease-in-out infinite;
+}
+
+.fq-topline b {
+    flex: none;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--accent, #ff3636);
+    text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.fq-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.fq-eyebrow::before { content: ""; width: 6px; height: 6px; background: var(--accent, #ff3636); }
+
+.fq-title {
+    margin: 0 0 10px;
+    max-width: 16ch;
+    font-weight: 600;
+    font-size: clamp(34px, 5vw, 62px);
+    line-height: 1.06;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+.fq-rule { display: block; width: 56px; height: 2px; background: var(--accent, #ff3636); }
+.fq-title + .fq-rule { margin-bottom: 28px; }
+
+.fq-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 760px;
+    border-top: 1px solid rgba(var(--ink), 0.14);
+}
+
+.fq-meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.fq-meta b {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.fq-meta span { font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+@keyframes fqShimmer {
+    0%, 100% { background-position: 0% 0; }
+    50%      { background-position: 100% 0; }
+}
+
+/* ── A section heading, with its outlined mark ────────────── */
+.fq-sec-head { position: relative; margin-bottom: 34px; }
+
+.fq-sec-head h2 {
+    margin: 0 0 10px;
+    max-width: 20ch;
+    font-weight: 600;
+    font-size: clamp(30px, 4vw, 50px);
+    line-height: 1.1;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+}
+
+.fq-ghost {
+    position: absolute;
+    top: -18px;
+    right: 0;
+    font-size: 128px;
+    font-weight: 600;
+    line-height: 0.8;
+    letter-spacing: -0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(var(--ink), 0.08);
+    pointer-events: none;
+}
+
+/* ── The search bar and the count ─────────────────────────── */
+.fq-toolbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 8px;
+}
+
+.fq-search {
+    position: relative;
+    flex: 1;
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 54px;
+    padding: 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(var(--ink), 0.12);
+}
+
+/* The red rule draws itself on focus, as the fields in auth do. */
+.fq-search::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.fq-search:focus-within::after { transform: scaleX(1); }
+.fq-search:focus-within svg { stroke: var(--accent, #ff3636); }
+.fq-search svg { width: 17px; height: 17px; flex: none; transition: stroke 0.2s ease; }
+
+.fq-search input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: none;
+    color: var(--text, #f4f2ec);
+    font-family: inherit;
+    font-weight: 300;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    caret-color: var(--accent, #ff3636);
+}
+
+.fq-search input::-webkit-search-cancel-button { display: none; }
+
+.fq-clear {
+    flex: none;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.fq-clear:hover { color: var(--text, #f4f2ec); }
+.fq-clear[hidden] { display: none; }
+
+.fq-toolbar-right { display: flex; align-items: center; gap: 12px; flex: none; }
+
+.fq-count {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.fq-tool {
+    min-height: 42px;
+    padding: 0 16px;
+    background: transparent;
+    border: 1px solid rgba(var(--ink), 0.2);
+    color: var(--text, #f4f2ec);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.fq-tool:hover { border-color: rgba(var(--ink), 0.4); color: rgb(var(--ink)); }
+
+/* ── The list of questions ────────────────────────────────── */
+.fq-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid rgba(var(--ink), 0.12);
+}
+
+.fq-item {
+    position: relative;
+    border-bottom: 1px solid rgba(var(--ink), 0.1);
+}
+
+.fq-item[hidden] { display: none; }
+
+.fq-item::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.fq-item:hover::after,
+.fq-item.is-open::after { transform: scaleX(1); }
+
+.fq-q {
+    display: grid;
+    grid-template-columns: 74px 1fr 14px;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    padding: 26px 0;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+}
+
+.fq-idx {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    transition: color 0.25s ease;
+}
+
+.fq-item:hover .fq-idx,
+.fq-item.is-open .fq-idx { color: var(--accent, #ff3636); }
+
+.fq-q-text {
+    min-width: 0;
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    color: var(--text, #f4f2ec);
+    transition: color 0.25s ease;
+}
+
+.fq-item.is-open .fq-q-text { color: rgb(var(--ink)); }
+
+/* The plus/minus sign is two rectangles: no icon font needed. */
+.fq-sign { position: relative; width: 14px; height: 14px; flex: none; }
+
+.fq-sign::before,
+.fq-sign::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background: var(--muted, #a7a39b);
+    transform: translate(-50%, -50%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.2s ease;
+}
+
+.fq-sign::before { width: 14px; height: 2px; }
+.fq-sign::after { width: 2px; height: 14px; }
+
+.fq-item.is-open .fq-sign::after { transform: translate(-50%, -50%) rotate(90deg); }
+.fq-item.is-open .fq-sign::before,
+.fq-item.is-open .fq-sign::after { background: var(--accent, #ff3636); }
+
+/* Opening is pure CSS: 0fr → 1fr. No heights are measured in JavaScript, so
+   a long answer or a reflow of the text cannot break the animation. */
+.fq-a {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 0.42s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+}
+
+.fq-item.is-open .fq-a { grid-template-rows: 1fr; opacity: 1; }
+.fq-a > div { overflow: hidden; min-height: 0; }
+.fq-a-inner { padding: 0 0 30px 98px; }
+
+.fq-a-inner p {
+    margin: 0;
+    max-width: 68ch;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--muted, #a7a39b);
+}
+
+.fq-a-inner a { color: var(--accent, #ff3636); text-decoration: none; }
+.fq-a-inner a:hover { color: var(--accent-light); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── The empty search result ──────────────────────────────── */
+.fq-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 54px 0 10px;
+}
+
+.fq-empty[hidden] { display: none; }
+
+.fq-empty-label {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.fq-empty-text {
+    margin: 0;
+    max-width: 46ch;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--text, #f4f2ec);
+}
+
+/* ── The "did not find an answer" block ───────────────────── */
+.fq-ask {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    background: var(--accent, #ff3636);
+    color: var(--on-accent);
+}
+
+.fq-ask-left {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 52px 44px 48px;
+}
+
+.fq-ask-left .fq-eyebrow { margin: 0; color: rgba(var(--ink), 0.75); }
+.fq-ask-left .fq-eyebrow::before { background: rgb(var(--ink)); }
+
+.fq-ask-left h2 {
+    margin: 0;
+    max-width: 18ch;
+    font-weight: 600;
+    font-size: clamp(28px, 3.4vw, 44px);
+    line-height: 1.08;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+}
+
+.fq-ask-left p {
+    margin: 0;
+    max-width: 44ch;
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(var(--ink), 0.9);
+}
+
+.fq-ask-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 52px 44px 48px;
+    border-left: 1px solid rgba(var(--ink), 0.28);
+}
+
+.fq-ask-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(var(--ink), 0.28);
+}
+
+.fq-ask-fact b {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(var(--ink), 0.75);
+}
+
+.fq-ask-fact span { font-size: 17px; letter-spacing: 0.02em; word-break: break-word; }
+
+.fq-ask-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 58px;
+    margin-top: 22px;
+    padding: 0 20px;
+    background: rgb(var(--ink));
+    color: var(--bg);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.fq-ask-btn:hover { background: var(--text); color: var(--bg); text-decoration: none; }
+.fq-ask-btn:active { background: #e6e3dc; }
+.fq-ask-btn svg { width: 16px; height: 16px; flex: none; }
+
+/* ── Reveal on scroll ─────────────────────────────────────────
+   IMPORTANT: the content is visible by default. faq.js hides (is-armed) only
+   what is below the fold and releases it immediately (is-in), so a script that
+   fails to load cannot leave the page blank. */
+.fq-reveal {
+    transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.fq-reveal.is-armed { opacity: 0; transform: translateY(18px); }
+.fq-reveal.is-armed.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .fq-reveal, .fq-reveal.is-armed { opacity: 1; transform: none; transition: none; }
+    .fq-wordmark { animation: none; }
+    .fq-a { transition: none; }
+}
+
+/* ── Tablet ───────────────────────────────────────────────── */
+@media (max-width: 980px) {
+    .fq-banner img { max-height: 300px; }
+    .fq-ask { grid-template-columns: 1fr; }
+    .fq-ask-left { padding-bottom: 34px; }
+    .fq-ask-right {
+        padding: 0 0 48px;
+        margin: 0 44px;
+        border-left: 0;
+        border-top: 1px solid rgba(var(--ink), 0.28);
+        padding-top: 0;
+    }
+    .fq-ask-fact { padding-top: 26px; }
+}
+
+/* ── Phone ────────────────────────────────────────────────── */
+@media (max-width: 820px) {
+    .fq-pad, .fq-hero-inner { padding-left: 22px; padding-right: 22px; }
+    .fq-banner img { max-height: 210px; }
+    .fq-frame { inset: 10px; }
+    .fq-meta { grid-template-columns: 1fr; }
+    .fq-meta > div { padding: 11px 0; }
+    .fq-ghost { display: none; }
+    .fq-toolbar { flex-direction: column; align-items: stretch; gap: 14px; }
+    .fq-search { max-width: none; }
+    .fq-q { grid-template-columns: 42px 1fr 14px; gap: 14px; }
+    .fq-a-inner { padding-left: 56px; }
+    .fq-sec { padding: 52px 0 56px; }
+    .fq-ask-left { padding: 40px 24px 34px; }
+    .fq-ask-right { margin: 0 24px; }
+}
+
+@media (max-width: 480px) {
+    .fq-a-inner { padding-left: 0; }
+}

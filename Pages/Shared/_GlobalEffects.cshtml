@@ -1,0 +1,67 @@
+@* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── *@
+
+@*
+    The global ambient layer: the background and the scroll progress bar.
+
+    Rendered ONCE by _Layout.cshtml, immediately before <main>. It is not
+    rendered under /Admin (see the check below) and a single page can switch it
+    off entirely with ViewData["GfxBg"] = "off".
+
+    Which background is drawn is decided in this order, first match wins:
+      1. ViewData["GfxBg"] — the page says so explicitly;
+      2. the settings table filled from the admin panel, which
+         GlobalStylesFilter writes into the same ViewData key;
+      3. gfxDefaults below;
+      4. "grid".
+
+    The strength comes from ViewData["GfxIntensity"] (0..1), or from
+    --gfx-intensity in the CSS.
+*@
+
+@{
+    var gfxPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+
+    var gfxIsAdminArea = string.Equals(
+        ViewContext.RouteData.Values["area"]?.ToString(), "Admin", StringComparison.OrdinalIgnoreCase);
+
+    // The fallback assignment: which page carries which background when there
+    // is no row in the database. The values are the same slugs as in the CSS
+    // and in Services.Styles.AmbientBackgrounds.
+    var gfxDefaults = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["/Index"]              = "prism",
+        ["/Conference"]         = "sonar",
+        ["/ICBI"]               = "caustic",
+        ["/Lecturers"]          = "sonar",
+        ["/Schedule"]           = "lantern",
+        ["/Attend"]             = "lantern",
+        ["/FAQ"]                = "ascent",
+        ["/Travel"]             = "caustic"
+    };
+
+    var gfxVariant = ViewData["GfxBg"]?.ToString();
+    if (string.IsNullOrWhiteSpace(gfxVariant))
+    {
+        gfxVariant = gfxDefaults.TryGetValue(gfxPage, out var gfxMapped) ? gfxMapped : "grid";
+    }
+
+    var gfxIntensity = ViewData["GfxIntensity"]?.ToString();
+}
+
+@if (!gfxIsAdminArea && !string.Equals(gfxVariant, "off", StringComparison.OrdinalIgnoreCase))
+{
+    <div id="ambient-fx" data-gfx-bg="@gfxVariant" aria-hidden="true"
+         data-gfx-motion="@(ViewData["GfxMotion"]?.ToString())"
+         data-gfx-speed="@(ViewData["GfxSpeed"]?.ToString())"
+         data-gfx-mobile="@(ViewData["GfxMobile"]?.ToString())"
+         style="@(string.IsNullOrWhiteSpace(gfxIntensity) ? null : $"--gfx-intensity: {gfxIntensity}")">
+        <span class="afx-a"></span>
+        <span class="afx-b"></span>
+        <span class="afx-cursor"></span>
+    </div>
+
+    <div id="scroll-progress" aria-hidden="true"><span></span></div>
+}

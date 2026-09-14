@@ -1,0 +1,89 @@
+/* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── */
+/* doneStyle.css — the /Done page, shown after a completed registration.
+   It reuses the structural classes from verificationStyle.css (.verify-shell,
+   .verify-steps, .verify-card, .verify-form/.verify-stub, .verify-timer
+   and so on) and is linked alongside it in Done.cshtml, so that the page
+   reads as a real continuation of /Verification rather than a separate design.
+   What is here is only what is new: the checkmark badge, the completed steps,
+   the entrance animation, and the animated dots of "Redirecting…". */
+
+/* ── The entrance animation of the card ──────────────────────────────
+   It works together with the View Transitions API (see the view-transition
+   rule in mainStyle.css) for a smooth transition FROM Verification TO this
+   page — but it also runs on its own, in a browser without View Transitions,
+   which is why the card always lifts slightly on load. */
+@keyframes doneRise {
+    from { transform: translateY(10px); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+}
+@keyframes doneRing {
+    from { transform: scale(.7); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+@keyframes doneDraw {
+    from { stroke-dashoffset: 64; }
+    to   { stroke-dashoffset: 0; }
+}
+
+.done-card-enter {
+    animation: doneRise .5s ease both;
+}
+
+/* ── The completed steps (01 registration, 02 confirmation) ───────────── */
+.done-step-complete {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.done-step-check {
+    flex: none;
+    color: #8d8981;
+}
+
+/* ── The checkmark badge next to "your profile is active" ─────────────── */
+.done-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.done-badge-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 52px;
+    height: 52px;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    animation: doneRing .45s cubic-bezier(.2, .9, .3, 1.3) both;
+}
+.done-badge-icon svg path {
+    animation: doneDraw .5s .35s ease both;
+}
+.done-badge-text {
+    margin: 0;
+    font-size: .78rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+}
+
+/* ── The animated dots of "Redirecting to your profile…" ──────────────
+   The text and the dots are driven entirely by the script in Done.cshtml: CSS
+   cannot animate `content`, so the dots are a real text span updated on an
+   interval. */
+.done-dots {
+    display: inline-block;
+    min-width: 1.2em;
+}
+
+.done-count-value {
+    color: var(--text);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}

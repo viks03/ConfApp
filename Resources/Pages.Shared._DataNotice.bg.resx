@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="DataNotice_AriaBanner" xml:space="preserve"><value>Известие за бисквитки</value></data>
+  <data name="DataNotice_FallbackTitle" xml:space="preserve"><value>Ценим вашата поверителност</value></data>
+  <data name="DataNotice_FallbackBody" xml:space="preserve"><value>Използваме бисквитки, за да осигурим правилното функциониране на сайта и да подобрим вашето изживяване. За повече информация разгледайте нашата &lt;a href="/Cookies"&gt;Политика за бисквитки&lt;/a&gt;.</value></data>
+  <data name="DataNotice_RejectAll" xml:space="preserve"><value>Отхвърли всички</value></data>
+  <data name="DataNotice_AcceptAll" xml:space="preserve"><value>Приеми всички</value></data>
+  <data name="DataNotice_Preferences" xml:space="preserve"><value>Предпочитания</value></data>
+  <data name="DataNotice_RelaunchAriaLabel" xml:space="preserve"><value>Предпочитания за бисквитки</value></data>
+  <data name="DataNotice_ModalAriaLabel" xml:space="preserve"><value>Предпочитания за бисквитки</value></data>
+  <data name="DataNotice_ModalTitle" xml:space="preserve"><value>Настройки за бисквитки</value></data>
+  <data name="DataNotice_ModalSubtitle" xml:space="preserve"><value>Изберете кои категории бисквитки да разрешите. Строго необходимите бисквитки са задължителни за работата на сайта и не могат да бъдат изключени.</value></data>
+  <data name="DataNotice_ModalCloseAriaLabel" xml:space="preserve"><value>Затвори</value></data>
+  <data name="DataNotice_NoCategories" xml:space="preserve"><value>Няма конфигурирани категории.</value></data>
+  <data name="DataNotice_AlwaysActive" xml:space="preserve"><value>Винаги активни</value></data>
+  <data name="DataNotice_SavePreferences" xml:space="preserve"><value>Запази предпочитанията</value></data>
+</root>

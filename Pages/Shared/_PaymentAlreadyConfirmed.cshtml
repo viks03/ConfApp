@@ -1,0 +1,155 @@
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+@* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── *@
+
+@* ═══════════════════════════════════════════════════════════════════════
+   Състоянието „плащането вече е потвърдено“ на /Payment.
+
+   [T-02] Дотук страницата имаше състояние само за „току-що платено“
+   (PaymentSuccess), а то се вдига единствено при връщане от Stripe в
+   същата заявка. Потвърден участник, който отвори адреса наново, виждаше
+   пълната форма и бутон „Плати €60.00“ — бутон, който и трите handler-а
+   отказват, тоест тихо не прави нищо.
+
+   Включва се вместо цялото съдържание на страницата:
+
+       @if (Model.PaymentStatus == "Confirmed" && !Model.PaymentSuccess)
+       {
+           <partial name="_PaymentAlreadyConfirmed" />
+           return;
+       }
+
+   Устройството е дословно на _PaymentsDisabled — същите класове от
+   paymentStyle.css (pay-page, pay-brand, pay-title, pay-rule, pay-sub,
+   pay-link-btn) и същият самостоятелен <style> блок, само че в зелено
+   (--pay-ok), огледално на .pay-success-mark. Localizer е собствен —
+   партиалите не наследяват @inject от Payment.cshtml.
+   ═══════════════════════════════════════════════════════════════════════ *@
+
+<style>
+    .pay-done {
+        min-height: 62vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 20px 72px;
+    }
+
+    .pay-done-inner {
+        width: 100%;
+        max-width: 560px;
+    }
+
+    .pay-done-mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        margin-bottom: 28px;
+        background: rgba(58, 156, 96, 0.08);
+        border: 1px solid rgba(58, 156, 96, 0.45);
+    }
+
+    .pay-done-mark svg {
+        width: 34px;
+        height: 34px;
+        stroke: var(--pay-ok, #3a9c60);
+    }
+
+    .pay-done-list {
+        margin: 26px 0 30px;
+        padding: 0;
+        list-style: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .pay-done-list li {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.88rem;
+        line-height: 1.6;
+        color: #d8d5cf;
+        text-wrap: pretty;
+    }
+
+    .pay-done-ref {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 14px 16px;
+        margin-bottom: 26px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .pay-done-ref-label {
+        font-size: 0.68rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #8a8680;
+    }
+
+    .pay-done-ref-val {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+        letter-spacing: 0.06em;
+        color: var(--text, #f4f2ec);
+    }
+
+    @@media (max-width: 640px) {
+        .pay-done { min-height: 0; padding: 30px 16px 54px; }
+        .pay-done-ref { flex-direction: column; align-items: flex-start; gap: 6px; }
+    }
+</style>
+
+<main class="pay-page">
+    <div class="pay-done">
+        <div class="pay-done-inner">
+
+            <div class="pay-brand">
+                <img src="~/images/logos/mainLogo.png" alt="">
+                <span class="pay-brand-rule"></span>
+                <span class="pay-eyebrow">@Localizer["Pay_HeaderLabel"]</span>
+            </div>
+
+            <span class="pay-done-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="m8 12 2.5 2.5L16 9.5"></path>
+                </svg>
+            </span>
+
+            <h1 class="pay-title">@Localizer["Pay_Done_Title"]</h1>
+            <span class="pay-rule"></span>
+            <p class="pay-sub">@Localizer["Pay_Done_Sub"]</p>
+
+            <ul class="pay-done-list">
+                <li>@Localizer["Pay_Done_Point_Nothing"]</li>
+                <li>@Localizer["Pay_Done_Point_Receipt"]</li>
+                <li>@Localizer["Pay_Done_Point_Support"]</li>
+            </ul>
+
+            @if (!string.IsNullOrEmpty(Model.ReferenceNumber))
+            {
+                <div class="pay-done-ref">
+                    <span class="pay-done-ref-label">@Localizer["Pay_Summary_RefLabel"]</span>
+                    <span class="pay-done-ref-val">@Model.ReferenceNumber</span>
+                </div>
+            }
+
+            <a href="/Profile" class="pay-link-btn" id="pay-done-profile">
+                <span>@Localizer["Pay_Done_BackToProfile"]</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14"></path>
+                    <path d="m12 5 7 7-7 7"></path>
+                </svg>
+            </a>
+
+        </div>
+    </div>
+</main>

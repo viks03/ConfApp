@@ -1,0 +1,1114 @@
+/* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── */
+/* ============================================================
+   scheduleStyle.css — the "Schedule" page.
+   The same visual language as stylesFAQ.css and attendStyle.css: Oswald, zero
+   corner radius, hairline rules, the red accent, black-and-white imagery,
+   registration marks.
+
+   IMPORTANT — scriptSchedule.js is unchanged. Every class and attribute it
+   depends on is kept exactly:
+     .day-toggles, .day-btn, .day-btn.active, [data-target],
+     .day-toggle-indicator (its left and width are set inline by the script),
+     .tab-pane, .tab-pane.active,
+     .session-desc, .session-desc.is-animating, .is-expanded,
+     .read-more-btn, .read-more-btn.is-visible, [data-expanded],
+     .read-more-label, .read-more-icon,
+     .scroll-down-arrow, .scroll-down-arrow.is-hidden.
+   The line-clamp mechanism is kept verbatim: without it the hybrid animation
+   in the script loses the collapsed height it measures.
+
+   TWO DELIBERATE DIFFERENCES:
+   1) .schedule-page paints no opaque background, as .attend-page does not:
+      the background comes from <body>, so that the global ambient layer can
+      sit BEHIND the page without blend tricks.
+   2) #particles-bg and particlesBg.js are no longer used here — a field of
+      glowing dots is foreign to the drawing language and would duplicate the
+      global layer.
+   ============================================================ */
+
+.schedule-page {
+    background: transparent;
+    color: var(--text, #f4f2ec);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 300;
+
+    /* The real height of the sticky top bar; the rail of days is pinned
+       exactly below it. The only place to adjust this. */
+    --sc-rail-top: 66px;
+}
+
+.schedule-page ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.schedule-page :focus-visible { outline: 2px solid var(--accent, #ff3636); outline-offset: 2px; }
+
+html { scroll-behavior: smooth; }
+
+.sc-pad { max-width: 1320px; margin: 0 auto; padding: 0 6vw; }
+.sc-sec { padding: 72px 0 96px; }
+
+/* ── The banner ──────────────────────────────────────────── */
+.sc-banner { position: relative; width: 100%; overflow: hidden; }
+
+.sc-banner img {
+    display: block;
+    width: 100%;
+    max-height: 460px;
+    object-fit: cover;
+    object-position: 50% 44%;
+    /* In COLOUR and bright, as in travelStyle.css: no grayscale and no
+       reduced brightness, only a slight contrast lift so that it does not
+       wash out under the overlays. */
+    filter: contrast(1.06) saturate(1.02);
+}
+
+.sc-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(var(--ink), 0.035) 0px, rgba(var(--ink), 0.035) 1px, transparent 1px, transparent 4px);
+}
+
+.sc-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 40%, transparent) 0%, rgba(5, 5, 5, 0) 20%, rgba(5, 5, 5, 0) 58%, color-mix(in srgb, var(--bg) 96%, transparent) 100%);
+}
+
+/* --- The pattern of this page ---
+   Every page carries its OWN barely visible mark on the banner, rather than
+   all of them repeating the same 48px squares. For the schedule it is a time
+   scale: vertical hairlines at a wide pitch (hours), short ticks below them
+   (minutes), and one baseline they stand on.
+   The same density and the same soft-light blend as the grid; only the drawing
+   differs. */
+.sc-banner-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: var(--blend-soft, soft-light);
+    background:
+        linear-gradient(90deg, rgba(var(--ink), 0.075) 1px, transparent 1px) 0 100% / 14px 20px repeat-x,
+        linear-gradient(90deg, rgba(var(--ink), 0.05) 1px, transparent 1px) 0 0 / 112px 100% repeat-x,
+        linear-gradient(0deg, rgba(var(--ink), 0.06) 1px, transparent 1px) 0 100% / 100% 20px no-repeat;
+}
+
+.sc-banner-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: var(--blend-tint, overlay);
+    /* Over a COLOUR photograph an 18% red tint repaints the whole banner
+       pink. The travel page has no such layer at all; here it is kept as a
+       hint across the top 30% only. */
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, transparent) 0%, rgba(255, 54, 54, 0) 30%);
+}
+
+.sc-frame {
+    position: absolute;
+    inset: 16px;
+    border: 1px solid rgba(var(--ink), 0.16);
+    pointer-events: none;
+}
+
+.sc-frame span { position: absolute; background: var(--accent, #ff3636); }
+.sc-frame .c-tl-h { top: -1px; left: -1px; width: 26px; height: 2px; }
+.sc-frame .c-tl-v { top: -1px; left: -1px; width: 2px; height: 26px; }
+.sc-frame .c-br-h { bottom: -1px; right: -1px; width: 26px; height: 2px; }
+.sc-frame .c-br-v { bottom: -1px; right: -1px; width: 2px; height: 26px; }
+
+/* The scroll arrow keeps its class name — the script hides it on scroll and
+   handles the smooth scrolling — but it is a small technical caption at the
+   bottom left of the banner rather than a fixed bouncing chevron over the
+   content. Absolute to the banner, not fixed, so it never hangs over the
+   table. */
+.scroll-down-arrow {
+    position: absolute;
+    left: 6vw;
+    bottom: 34px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    width: auto;
+    height: auto;
+    padding: 12px 0;
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.scroll-down-arrow span {
+    position: relative;
+    padding-bottom: 4px;
+}
+
+.scroll-down-arrow span::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.scroll-down-arrow:hover { color: rgb(var(--ink)); }
+.scroll-down-arrow:hover span::after { transform: scaleX(1); }
+.scroll-down-arrow.is-hidden { opacity: 0; pointer-events: none; }
+
+.scroll-down-arrow svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    stroke: var(--accent, #ff3636);
+    animation: scNudge 2.6s ease-in-out infinite;
+}
+
+@keyframes scNudge {
+    0%, 62%, 100% { transform: translateY(0); }
+    76%           { transform: translateY(6px); }
+    88%           { transform: translateY(2px); }
+}
+
+/* ── The heading block ───────────────────────────────────── */
+.sc-hero { position: relative; border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08)); }
+
+.sc-hero-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 30px 6vw 26px;
+}
+
+.sc-topline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(var(--ink), 0.14);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.sc-wordmark {
+    background: linear-gradient(100deg, var(--muted) 0%, var(--text) 42%, rgb(var(--ink)) 50%, var(--text) 58%, var(--muted) 100%) 0 0 / 300% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: scShimmer 14s ease-in-out infinite;
+}
+
+.sc-topline b {
+    flex: none;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--accent, #ff3636);
+    text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+@keyframes scShimmer {
+    0%, 100% { background-position: 0% 0; }
+    50%      { background-position: 100% 0; }
+}
+
+.sc-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.sc-eyebrow::before { content: ""; width: 6px; height: 6px; background: var(--accent, #ff3636); }
+
+.sc-title {
+    margin: 0 0 10px;
+    max-width: 16ch;
+    font-weight: 600;
+    font-size: clamp(34px, 5vw, 62px);
+    line-height: 1.06;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+.sc-rule { display: block; width: 56px; height: 2px; background: var(--accent, #ff3636); }
+.sc-title + .sc-rule { margin-bottom: 28px; }
+
+.sc-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 760px;
+    border-top: 1px solid rgba(var(--ink), 0.14);
+}
+
+.sc-meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.sc-meta b {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.sc-meta span { font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+/* ── The rail of days ─────────────────────────────────────
+   Sticky just below the main navigation: the top bar stays fixed above (it is
+   position: sticky in mainStyle.css), and once the rail reaches it, it pins
+   itself underneath and stays there as the page scrolls.
+
+   z-index 5 against the top bar's 20, so the rail passes UNDER the navigation
+   rather than over it on the way up. The ::before paints the same opaque
+   background 20px above the rail, so that no gap shows if the real height of
+   the top bar differs from --sc-rail-top; sitting below the bar, the excess
+   simply hides behind it. */
+.sc-rail {
+    position: sticky;
+    top: var(--sc-rail-top);
+    z-index: 5;
+    background: var(--bg, #050505);
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.sc-rail::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -20px;
+    height: 20px;
+    background: var(--bg, #050505);
+    pointer-events: none;
+}
+
+/* An anchor lands below the top bar AND below the rail, so that it does not
+   hide the first row of the table. */
+#tickets-section { scroll-margin-top: calc(var(--sc-rail-top) + 78px); }
+
+.sc-rail-inner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 24px;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 6vw;
+}
+
+/* .day-toggles, .day-btn and .day-toggle-indicator keep their names and
+   their contract — the script computes the indicator's left and width — but
+   they are technical underline tabs now rather than a glowing pill. */
+.day-toggles {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    border-bottom: 0;
+    max-width: none;
+}
+
+.day-btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 18px 26px 16px;
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--line, rgba(var(--ink), 0.08));
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+    transition: color 0.25s ease, background 0.25s ease;
+}
+
+.day-btn:first-child { padding-left: 0; }
+.day-btn:last-child { border-right: 0; }
+
+.day-btn i {
+    font-style: normal;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--text-faint);
+    transition: color 0.25s ease;
+}
+
+.day-btn:hover { color: var(--text, #f4f2ec); }
+.day-btn.active { color: rgb(var(--ink)); }
+.day-btn.active i { color: var(--accent, #ff3636); }
+
+.day-toggle-indicator {
+    position: absolute;
+    bottom: -1px;
+    height: 2px;
+    border-radius: 0;
+    background: var(--accent, #ff3636);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 50%, transparent);
+    transition: left 0.4s cubic-bezier(0.65, 0, 0.35, 1), width 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+    pointer-events: none;
+}
+
+/* ── Downloading the programme (PDF) ─────────────────────
+   It sits AFTER the rail of days, inside the section, rather than in the rail
+   itself. The rail is sticky and on a phone already takes about 107px below
+   the top bar; another row of buttons in it would eat half the screen.
+   Here the block is the first thing at the top of the table — exactly where
+   somebody decides they would rather have it offline.
+
+   The two languages carry EQUAL weight: both buttons are an accent outline,
+   not one solid and one outlined. On hover they invert to a white field — the
+   same inversion as the livestream badge, so that one action does not have a
+   third appearance. */
+.sc-tools {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 44px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.sc-tools-label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+}
+
+.sc-tools-label span {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: none;
+    color: var(--text-faint);
+}
+
+.sc-tools-actions { display: flex; align-items: stretch; gap: 12px; flex-wrap: wrap; }
+
+.sc-dl {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 0 18px;
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+}
+
+.sc-dl svg { width: 16px; height: 16px; flex: none; stroke: var(--accent, #ff3636); transition: stroke 0.22s ease, transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+/* The language code is separated from the name by a hairline — the same
+   device as the dividers in the table, rather than a second typeface or a
+   second colour. */
+.sc-dl b {
+    padding-left: 12px;
+    border-left: 1px solid rgba(var(--ink), 0.18);
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    transition: color 0.22s ease, border-color 0.22s ease;
+}
+
+.sc-dl:hover,
+.sc-dl:focus-visible {
+    background: rgb(var(--ink));
+    border-color: rgb(var(--ink));
+    color: var(--bg);
+    text-decoration: none;
+}
+
+.sc-dl:hover svg,
+.sc-dl:focus-visible svg { stroke: var(--accent, #ff3636); transform: translateY(3px); }
+.sc-dl:hover b,
+.sc-dl:focus-visible b { color: var(--bg); border-left-color: color-mix(in srgb, var(--bg) 22%, transparent); }
+.sc-dl:active { background: var(--text); border-color: var(--text); }
+
+/* ── The tabs ────────────────────────────────────────────── */
+.tab-pane { display: none; }
+.tab-pane.active { display: block; animation: scFadeIn 0.42s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+@keyframes scFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── The table ───────────────────────────────────────────
+   Every time slot is a row on one sheet: the time in a fixed left column, the
+   content on the right. The vertical line of the timeline is no longer a
+   pseudo-element of its own but the right edge of the time column itself —
+   consecutive rows make it continuous, so it always ends exactly where the
+   table ends. */
+.timeline {
+    position: relative;
+    padding-left: 0;
+    border-top: 1px solid rgba(var(--ink), 0.14);
+}
+
+.timeline::before { content: none; }
+
+.timeline-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: 0 36px;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid rgba(var(--ink), 0.1);
+}
+
+/* The red rule along the top on hover — the same gesture as .fq-item,
+   .at-row and .at-tier. That is the thread tying the three pages together. */
+.timeline-item::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.timeline-item:hover::after { transform: scaleX(1); }
+
+/* The left column: start, end, type. It carries the vertical line. */
+.timeline-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 30px 36px 34px 0;
+    border-right: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.time {
+    display: block;
+    font-size: 25px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: var(--accent, #ff3636);
+    font-variant-numeric: tabular-nums;
+}
+
+.sc-time-end {
+    display: block;
+    margin-top: -4px;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+}
+
+/* The marker is a registration cross on the vertical line rather than a
+   glowing dot. It is centred exactly on the line: right: -5px against the
+   column whose right border is that line. */
+.timeline-marker {
+    position: absolute;
+    left: 128px;
+    top: 36px;
+    width: 9px;
+    height: 9px;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    pointer-events: none;
+}
+
+.timeline-marker::before,
+.timeline-marker::after {
+    content: "";
+    position: absolute;
+    background: var(--accent, #ff3636);
+}
+
+.timeline-marker::before { left: 0; top: 4px; width: 9px; height: 1px; }
+.timeline-marker::after { left: 4px; top: 0; width: 1px; height: 9px; }
+
+/* The right column */
+.sc-slot-body { padding: 30px 0 34px; min-width: 0; }
+
+/* ── A session ───────────────────────────────────────────
+   .timeline-card is no longer a card with a background, a border, a radius and
+   a shadow: it is a two-column block on the sheet. The hover effect belongs to
+   the row rather than lifting a box. */
+.timeline-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 216px;
+    align-items: start;
+    gap: 36px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    transition: none;
+}
+
+.timeline-card:hover {
+    transform: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+.timeline-card h4 {
+    margin: 0 0 12px;
+    font-weight: 500;
+    font-size: 21px;
+    line-height: 1.28;
+    letter-spacing: 0.015em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+    text-wrap: pretty;
+}
+
+.timeline-card p {
+    margin: 0;
+    max-width: 68ch;
+    font-size: 15px;
+    line-height: 1.68;
+    color: var(--muted, #a7a39b);
+}
+
+.card-main { min-width: 0; }
+
+/* The line-clamp mechanism is kept verbatim: scriptSchedule.js depends on
+   the collapsed clientHeight it produces. */
+.session-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.session-desc.is-animating {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+.session-desc.is-expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+}
+
+.read-more-btn {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--accent, #ff3636);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.read-more-btn.is-visible { display: inline-flex; }
+.read-more-btn:hover { color: var(--accent-light); }
+
+.read-more-icon {
+    width: 13px;
+    height: 13px;
+    flex: none;
+    stroke-width: 2;
+    transition: transform 0.25s ease;
+}
+
+.read-more-btn[data-expanded="true"] .read-more-icon { transform: rotate(180deg); }
+
+.speaker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+}
+
+.speaker svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    color: var(--accent, #ff3636);
+}
+
+/* The right sub-column: the room and the modes, separated by a hairline. */
+.card-side {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
+    min-width: 0;
+    padding-left: 28px;
+    border-left: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.card-side-info {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+}
+
+.location {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+}
+
+.location svg { width: 14px; height: 14px; flex: none; color: var(--accent, #ff3636); }
+
+.session-modes {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+/* The badges share a typographic family with .at-tag on the Attend page: an
+   outline, small capitals, wide letter spacing. */
+.badge {
+    align-self: flex-start;
+    padding: 5px 10px;
+    background: transparent;
+    border: 1px solid rgba(var(--ink), 0.2);
+    border-radius: 0;
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.badge-parallel {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    color: var(--accent, #ff3636);
+}
+
+.mode-badge {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    background: transparent;
+    border: 1px solid rgba(var(--ink), 0.14);
+    border-radius: 0;
+    color: var(--text-faint);
+    opacity: 1;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: border-color 0.25s ease, color 0.25s ease, background 0.25s ease;
+}
+
+.mode-badge svg { width: 14px; height: 14px; flex: none; }
+
+/* "In person" is the active state: an accent outline. */
+.mode-badge.active {
+    border-width: 1px;
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    color: var(--text, #f4f2ec);
+    opacity: 1;
+    box-shadow: none;
+}
+
+.mode-badge.active svg { color: var(--accent, #ff3636); }
+
+/* The livestream is the only ACTION in the row and therefore the only solid
+   object: the accent as a background, the typography in white. The green is
+   gone — the palette is the accent plus neutrals, and green next to red reads
+   as a traffic light anyway. */
+.mode-badge.mode-livestream {
+    text-decoration: none;
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.mode-badge.mode-livestream.is-live {
+    justify-content: space-between;
+    background: var(--accent, #ff3636);
+    border-color: var(--accent, #ff3636);
+    color: var(--on-accent);
+    opacity: 1;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+.mode-badge.mode-livestream.is-live svg:not(.mode-arrow) { color: rgb(var(--ink)); }
+
+/* On hover the solid accent inverts to a white field with accent typography —
+   the same inversion as the primary button on the Attend page. It reads as
+   clickable without introducing a new colour. */
+.mode-badge.mode-livestream.is-live:hover,
+.mode-badge.mode-livestream.is-live:focus-visible {
+    background: rgb(var(--ink));
+    border-color: rgb(var(--ink));
+    color: var(--bg);
+    box-shadow: none;
+}
+
+.mode-badge.mode-livestream.is-live:hover svg:not(.mode-arrow),
+.mode-badge.mode-livestream.is-live:focus-visible svg:not(.mode-arrow) { color: var(--accent, #ff3636); }
+.mode-badge.mode-livestream.is-live:hover .mode-arrow,
+.mode-badge.mode-livestream.is-live:focus-visible .mode-arrow { color: var(--accent, #ff3636); }
+.mode-badge.mode-livestream.is-live:active { background: var(--text); border-color: var(--text); }
+
+.mode-badge.mode-livestream .mode-arrow {
+    width: 13px;
+    height: 13px;
+    margin-left: auto;
+    color: rgb(var(--ink));
+    transition: transform 0.25s ease;
+}
+
+.mode-badge.mode-livestream.is-live:hover .mode-arrow { transform: translateX(4px); }
+
+/* ── Parallel sessions ───────────────────────────────────
+   WHY NOT columns: there may be two parallel tracks, but there may equally be
+   three or four. A grid of N columns breaks the headings at three or more, and
+   a grid that wraps makes the fourth track look like the next session. So the
+   tracks are ROWS with an explicit label (TRACK 01/02/03…), gathered by an
+   accent bracket on the left. The bracket and the single time in the left
+   column are the two signals that everything inside runs at once — and they
+   work for any N.
+
+   .parallel-group-grid keeps its name: nothing in the script reads it, but
+   Razor and the CSS should not drift apart. */
+.parallel-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+}
+
+.parallel-group-grid {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    gap: 0;
+    padding-left: 26px;
+}
+
+/* The bracket: a vertical accent line with serifs at both ends — the same
+   drawing language as the corner marks on the banner. */
+.parallel-group-grid::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 1px;
+    background: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.parallel-group-grid::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 9px;
+    border-top: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    pointer-events: none;
+}
+
+/* Each track is a row: label, content, modes. */
+.timeline-card.parallel-session {
+    grid-template-columns: 96px minmax(0, 1fr) 216px;
+    gap: 28px;
+    padding: 0;
+}
+
+.parallel-group-grid > .parallel-session + .parallel-session {
+    margin-top: 26px;
+    padding-top: 26px;
+    border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.sc-track {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+
+.sc-track b {
+    font-size: 19px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--accent, #ff3636);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Inside a track row the right sub-column keeps its vertical separator and
+   its width, exactly as in a single session. */
+.parallel-session .card-side {
+    padding-left: 28px;
+    padding-top: 0;
+    border-left: 1px solid var(--line, rgba(var(--ink), 0.08));
+    border-top: 0;
+}
+
+.parallel-session .session-modes { flex-direction: column; flex-wrap: nowrap; }
+.parallel-session .card-side-info { gap: 16px; }
+
+.parallel-session-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 12px;
+}
+
+.parallel-session-header h4 { margin: 0; }
+
+/* The note is a hairline row with an accent edge on the left rather than an
+   amber box with a glow. The amber was the page's third colour. */
+.parallel-disclaimer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 26px;
+    padding: 14px 0 0 16px;
+    border: 0;
+    border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+    border-left: 2px solid var(--accent, #ff3636);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1.6;
+    letter-spacing: 0.06em;
+}
+
+.parallel-disclaimer svg { width: 15px; height: 15px; flex: none; color: var(--accent, #ff3636); }
+
+/* ── An empty day ────────────────────────────────────────── */
+.sc-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 56px 0 10px;
+    text-align: left;
+}
+
+.sc-empty b {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.sc-empty span { max-width: 46ch; font-size: 18px; line-height: 1.5; color: var(--text, #f4f2ec); }
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .sc-wordmark, .scroll-down-arrow svg { animation: none; }
+    .tab-pane.active { animation: none; }
+    .day-toggle-indicator { transition: none; }
+}
+
+/* ── Tablet ──────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+    /* The track label becomes a row above: a 96px column plus the right
+       sub-column do not fit below about 1080px. */
+    .timeline-card.parallel-session { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .sc-track { flex-direction: row; align-items: baseline; gap: 10px; }
+    .parallel-session .card-side {
+        padding-left: 0;
+        padding-top: 18px;
+        border-left: 0;
+        border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+    }
+    .parallel-session .session-modes { flex-direction: row; flex-wrap: wrap; }
+}
+
+@media (max-width: 980px) {
+    .sc-banner img { max-height: 320px; }
+
+    /* The right sub-column becomes a bottom row in single sessions too. */
+    .timeline-card { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    .card-side {
+        padding-left: 0;
+        padding-top: 18px;
+        border-left: 0;
+        border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+    }
+    .session-modes { flex-direction: row; flex-wrap: wrap; }
+}
+
+/* ── Phone ───────────────────────────────────────────────── */
+@media (max-width: 820px) {
+    /* The top bar is shorter below 640px (see mainStyle.css), so the rail
+       pins itself correspondingly higher. */
+    .schedule-page { --sc-rail-top: 58px; }
+
+    .sc-pad, .sc-hero-inner, .sc-rail-inner { padding-left: 22px; padding-right: 22px; }
+    .scroll-down-arrow { left: 22px; bottom: 22px; }
+    .sc-banner img { max-height: 230px; }
+    .sc-frame { inset: 10px; }
+    .sc-meta { grid-template-columns: 1fr; }
+    .sc-meta > div { padding: 11px 0; }
+    .sc-sec { padding: 44px 0 56px; }
+
+    /* The time leaves the left column and becomes a row above it: a 132px
+       column on a 390px screen leaves 200px for the title. */
+    .timeline-item { grid-template-columns: minmax(0, 1fr); gap: 0; }
+
+    .timeline-meta {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 8px 14px;
+        flex-wrap: wrap;
+        padding: 22px 0 0;
+        border-right: 0;
+    }
+
+    .time { font-size: 22px; }
+    .sc-time-end { margin-top: 0; }
+    .sc-time-end::before { content: "– "; }
+    .badge { margin-left: auto; }
+
+    .timeline-marker { display: none; }
+    .sc-slot-body { padding: 16px 0 26px; }
+
+    .timeline-card h4 { font-size: 19px; }
+
+    /* The PDF buttons move below the label and share the width equally: side
+       by side at 360px they would leave eight characters each. */
+    .sc-tools { align-items: stretch; gap: 18px; margin-bottom: 32px; }
+    .sc-tools-actions { width: 100%; }
+    .sc-dl { flex: 1 1 0; justify-content: center; padding: 0 14px; }
+
+    /* The modes are real links on a phone — the livestream is an <a> — and
+       37px is below the threshold for a finger. */
+    .mode-badge { min-height: 44px; padding: 0 14px; }
+
+    /* The tabs become a horizontally scrolling strip rather than being
+       squeezed: three days with dates do not fit in 390px. */
+    .sc-rail-inner {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .day-toggles {
+        width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .day-toggles::-webkit-scrollbar { display: none; }
+    .day-btn { padding: 15px 14px 13px; font-size: 12px; }
+    .day-btn:first-child { padding-left: 22px; }
+    .day-btn:last-child { padding-right: 22px; }
+
+    /* "Read more" is 16px of text, below the threshold for a finger. The
+       vertical padding brings it to 44px without moving the baseline of the
+       text itself — the margin-top is reduced by the same amount. */
+    .read-more-btn {
+        margin-top: 4px;
+        padding: 14px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .badge { margin-left: 0; }
+    .parallel-disclaimer { align-items: flex-start; }
+}

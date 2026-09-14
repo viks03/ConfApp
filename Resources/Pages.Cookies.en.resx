@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Cookies_PageTitle" xml:space="preserve"><value>Cookie Policy</value></data>
+  <data name="Cookies_Intro" xml:space="preserve"><value>This page explains the categories of cookies we use on our website and their purposes. You can review or update your preferences at any time using the button below.</value></data>
+  <data name="Cookies_CategoriesHeading" xml:space="preserve"><value>Cookie Categories We Use</value></data>
+  <data name="Cookies_RequiredBadge" xml:space="preserve"><value>Required</value></data>
+  <data name="Cookies_OptionalBadge" xml:space="preserve"><value>Optional</value></data>
+  <data name="Cookies_ManageButton" xml:space="preserve"><value>Manage Cookie Preferences</value></data>
+  <data name="Cookies_NoCategories" xml:space="preserve"><value>No cookie categories are currently configured.</value></data>
+</root>

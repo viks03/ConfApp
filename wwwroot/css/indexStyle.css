@@ -1,0 +1,2012 @@
+/* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════
+   The home page.
+
+   This page does NOT follow the drawing language of the others (FAQ, Attend,
+   Schedule, Lecturers, ICBI, Conference). It is the front door and has a
+   language of its own: solid planes, a real pass to the hall, soft shadows,
+   round nodes. That is deliberate — the inner pages are reference material,
+   the home page is a poster.
+
+   Kept from the previous version, because they worked:
+   - the idea of a "pass to the hall": a split screen with a ticket strip;
+   - the shared tokens from mainStyle.css rather than a local palette;
+   - the z-index model of the background layer;
+   - the divided rows for Outcomes and Programme, rather than a fifth grid of
+     cards;
+   - the flip rotation of the lecturer cards.
+
+   What CHANGED in this iteration, and why, in order of importance:
+
+   1. THE MOBILE HERO was two stacked blocks: the photograph (up to 24rem)
+      ABOVE the panel with the text. On a phone that spends the vertical space
+      twice — once on the image, once on the text — and the pass fell far below
+      the fold. Below 1024px the hero is an OVERLAY now: the portrait
+      photograph is a full-height background, the text sits on it behind a
+      scrim, the pass is at the bottom. One space carries both the image and
+      the heading.
+
+   2. THE HEIGHT was calc(100vh - 80px). On a phone 100vh includes the address
+      bar, so the real height is larger than the visible one and the bottom
+      edge — the pass — falls off the screen. It is svh now (the small viewport
+      height, the stable one that never jumps), with vh as a fallback for older
+      browsers.
+
+   3. AN ENTRANCE ANIMATION. There was none. For a front door that is the
+      difference between "a page loaded" and "something is starting": the
+      eyebrow, the heading, the paragraph, the logos and the pass arrive in
+      steps, and the photograph settles from 1.06 to 1. All of it drops under
+      prefers-reduced-motion.
+
+   4. A LIVE COUNTDOWN to the conference on the top line of the panel. The date
+      is already on the page; the countdown only turns it into a reason to act
+      now. It is driven by a single data-countdown attribute.
+
+   5. THE PERFORATION. The two circles were painted in var(--bg) over the edge
+      of the strip — but the photograph sits above that strip, so the upper
+      circle read as a stray dot on it rather than as a punched hole. They are
+      rings with an accent outline now, like the metal eyelets of a real pass,
+      which work whatever is behind them.
+
+   6. THE MARQUEE cut the logos off hard at both ends. The strip now has a mask
+      that fades them out, and it stops on hover.
+
+   7. backdrop-filter: blur(22px) over a 16rem band is expensive on a phone and
+      breaks in iOS Safari inside an overflow: hidden container. It now sits
+      behind @supports and applies on a desktop only, where it earns its
+      keep.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE BACKGROUND LAYER — A PREPARED SLOT
+   ═══════════════════════════════════════════════════════════════════
+
+   The aurora effect is GONE: there is no canvas in the markup and
+   auroraGlow.js is not loaded. The page currently has no moving background of
+   its own.
+
+   The slot stays prepared, because the next shared background will go here.
+   To switch one on:
+
+     1. add <div class="site-bg" data-bg="name"></div> as the first child of
+        <main> — or <canvas class="site-bg" id="…"> if the script looks for a
+        particular id;
+     2. load the script in the Scripts section.
+
+   The CSS needs no change: the rules below do not assume a canvas, so they
+   work for a div, an SVG, or several layers.
+
+   The rules stay in force even with no layer present: z-index: 1 on main and
+   on the sections harms nothing, and without it any future fixed layer at
+   z-index: 0 would paint ABOVE the normal, non-positioned flow under the CSS
+   stacking rules — however counter-intuitive that sounds. So they sit here
+   already, rather than being rediscovered later.
+
+   When the background becomes shared across the site, this whole block moves
+   into mainStyle.css and goes from here. The inner pages are already prepared:
+   not one of them paints an opaque background over its wrapper, so a layer
+   BEHIND the content is visible everywhere. */
+.site-bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    transform: translateZ(0);
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-bg { display: none; }
+}
+
+main { position: relative; }
+main > section { position: relative; z-index: 1; }
+
+.center-section {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+}
+
+.mt-4 { margin-top: 1.9rem; }
+.mb-3 { margin-bottom: 1rem; }
+
+/* ── The rhythm of the sections ─────────────────────────────────────── */
+.intro-section,
+.outcomes-section,
+.domains-section,
+.faculty-section,
+.timeline-section,
+.agenda-preview-section,
+.home-cta-section {
+    padding: 5.5rem 0;
+}
+
+/* ── The language of the headings ───────────────────────────────────── */
+main section h2 {
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: 0.01em;
+    font-size: clamp(1.9rem, 3.2vw, 2.5rem);
+    color: var(--text);
+    margin: 0 0 1.5rem;
+    text-wrap: balance;
+}
+
+/* A centred heading with no width limit stretches across a wide screen — 90
+   characters a line at 44px. The measure is set for a heading, not for a
+   paragraph. */
+.center-section > h2 { max-width: 26ch; }
+.center-section > .section-label + h2 { margin-top: 0; }
+
+.hero-subtitle {
+    margin: 0;
+    color: var(--accent-soft);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.hero-subtitle::before {
+    content: '';
+    display: inline-block;
+    width: 22px;
+    height: 2px;
+    flex: none;
+    background: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE HERO — a pass to the hall
+   ═══════════════════════════════════════════════════════════════════ */
+
+.index-hero {
+    background: var(--bg);
+    /* Two things at once:
+       - vh first as a fallback, svh above it — svh is the small (stable)
+         viewport height, the one that does NOT change when a phone's address
+         bar hides;
+       - --home-topbar is measured by homeCountdown.js. The top bar is 72px on
+         a desktop but about 106px on a phone, where the navigation wraps onto
+         a second line. The fixed 80/64px left the pass some 50px below the
+         fold — just far enough that nobody could see it was there. The 80px
+         here is only a fallback. */
+    min-height: calc(100vh - var(--home-topbar, 80px));
+    min-height: calc(100svh - var(--home-topbar, 80px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.hero-split {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
+/* ── The left panel ─────────────────────────────────────────────────── */
+.hero-panel {
+    background: var(--surface);
+    width: clamp(24rem, 43%, 39rem);
+    flex: none;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 2.5rem clamp(1.5rem, 3vw, 3.5rem) 0 clamp(1.25rem, 4vw, 4rem);
+    display: flex;
+    flex-direction: column;
+}
+
+/* A grid of seats, echoing the hall in the photograph. Pure CSS. */
+.hero-seatmap {
+    position: absolute;
+    right: -2.5rem;
+    bottom: 7.5rem;
+    width: 26rem;
+    height: 19rem;
+    transform: skewY(-8deg);
+    opacity: 0.16;
+    background-image: radial-gradient(var(--accent) 1.6px, transparent 1.7px);
+    background-size: 15px 13px;
+    pointer-events: none;
+}
+
+.hero-panel > *:not(.hero-seatmap) { position: relative; }
+
+/* A quiet accent glow in the top right corner: it gives the plane some depth
+   and ties the panel to the photograph beside it. */
+.hero-panel::after {
+    content: '';
+    position: absolute;
+    right: -6rem;
+    top: -8rem;
+    width: 26rem;
+    height: 26rem;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 13%, transparent), rgba(255, 54, 54, 0));
+    pointer-events: none;
+}
+
+/* The top line: the eyebrow and the live countdown, separated by a hairline.
+   The countdown sits HERE rather than in a box of its own — the date is
+   already in the pass, and this is only the reason to act now. */
+.hero-eyebrow-row {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    margin: 0 0 0.9rem;
+}
+
+.hero-countdown {
+    display: none;
+    align-items: baseline;
+    gap: 0.4rem;
+    padding-left: 0.9rem;
+    border-left: 1px solid var(--line);
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+/* Shown only once the script has computed a value; otherwise the page is left
+   with an empty separator. */
+.hero-countdown.is-live { display: inline-flex; }
+
+/* On the day itself the number is hidden and only the word remains. Without
+   resetting the gap, a hole was left where the number had been. */
+.hero-countdown.is-today { gap: 0; }
+.hero-countdown b[hidden] { display: none; }
+
+/* The accent colour on the day itself: the badge moves from muted to accent,
+   because it is no longer a countdown but a state. */
+.hero-countdown.is-today .hero-countdown-text { color: var(--accent); }
+
+.hero-countdown b {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.hero-title {
+    /* An auto top margin pushes the heading to the optical centre without
+       depending on the height of the screen. */
+    margin: auto 0 0;
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: clamp(1.9rem, 4.3vw, 3.9rem);
+    line-height: 1.02;
+    font-weight: 600;
+    letter-spacing: 0.004em;
+    text-wrap: balance;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+/* The paragraph under the heading.
+
+   The typeface was changed from Barlow to Oswald, the one the heading above it
+   is set in. Barlow 300 read here as body copy in an article; condensed Oswald
+   over two lines reads as the subtitle of a poster and ties the paragraph to
+   the heading instead of separating it from it. The tracking is opened
+   slightly (0.018em), because a condensed face closes up at small sizes.
+
+   The rule on the left is SOLID. A gradient made it too quiet: it was lost
+   against the photograph and the paragraph was left with no beginning. */
+.hero-conference-name {
+    position: relative;
+    margin: 2.15rem 0 0;
+    padding: 0.15rem 0 0.15rem 1.4rem;
+    border-left: 2px solid var(--accent);
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: clamp(1.02rem, 1.32vw, 1.18rem);
+    font-weight: 300;
+    line-height: 1.66;
+    letter-spacing: 0.018em;
+    color: color-mix(in srgb, var(--text) 76%, transparent);
+    max-width: 42ch;
+    text-wrap: pretty;
+}
+
+/* The key topics: one weight heavier and in the main text colour. In a
+   condensed face 500 is enough; 600 leaves dark patches in the paragraph. */
+.hero-conference-name strong {
+    color: var(--text);
+    font-weight: 500;
+}
+
+.hero-organisers {
+    margin: auto 0 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.hero-foot-label {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.hero-organisers .partners-bar {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.hero-organisers .partner-logo img {
+    height: 48px;
+    width: auto;
+    opacity: 0.82;
+    transition: opacity 0.3s ease;
+}
+
+.hero-organisers .partner-logo:hover img { opacity: 1; }
+
+/* ── The right-hand side: the photograph ────────────────────────────── */
+.hero-visual {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.hero-visual img,
+.hero-visual picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.hero-visual img { object-fit: cover; }
+
+/* A gradient that blends the photograph into the left panel. Multi-stop and
+   eased rather than a flat two-colour ramp: the stops follow an approximate
+   ease-out curve, so the eye never meets a wall. */
+.hero-visual-fade {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 24rem;
+    background: linear-gradient(90deg,
+        var(--surface) 0%,
+        color-mix(in srgb, var(--surface) 94%, transparent) 14%,
+        color-mix(in srgb, var(--surface) 78%, transparent) 30%,
+        color-mix(in srgb, var(--surface) 52%, transparent) 48%,
+        color-mix(in srgb, var(--surface) 26%, transparent) 68%,
+        color-mix(in srgb, var(--surface) 8%, transparent) 86%,
+        rgba(10, 10, 10, 0) 100%);
+    pointer-events: none;
+}
+
+/* The real blur next to the panel. Behind @supports and above 1024px only:
+   backdrop-filter over a wide band is expensive on a phone and breaks in iOS
+   Safari inside an overflow: hidden container. The gradient above does the job
+   on its own if this rule never applies. */
+.hero-visual-blur { display: none; }
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    @media (min-width: 1025px) {
+        .hero-visual-blur {
+            display: block;
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 16rem;
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 45%, rgba(0, 0, 0, 0) 100%);
+            -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 45%, rgba(0, 0, 0, 0) 100%);
+            pointer-events: none;
+        }
+    }
+}
+
+.hero-venue {
+    position: absolute;
+    right: 1.6rem;
+    top: 2.5rem;
+    transform: rotate(90deg);
+    transform-origin: right top;
+    white-space: nowrap;
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--text) 66%, transparent);
+    pointer-events: none;
+}
+
+/* The scrim of the mobile overlay mode; unused on a desktop. */
+.hero-visual-scrim { display: none; }
+
+/* ── The pass (the strip of facts) ──────────────────────────────────── */
+.hero-pass {
+    flex: none;
+    background: var(--surface);
+    position: relative;
+    display: flex;
+}
+
+/* A border-top cannot carry a box-shadow of its own — the shadow would wrap
+   the whole box — so the line is a separate ::before, which allows a soft glow
+   above the line itself rather than a hard edge. */
+.hero-pass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 16px 1px var(--accent-soft), 0 -6px 20px -4px var(--accent-soft);
+}
+
+.hero-pass-fields {
+    flex: 1;
+    display: flex;
+    box-sizing: border-box;
+    padding-left: clamp(1.25rem, 4vw, 4rem);
+    min-width: 0;
+}
+
+.hero-pass-cell {
+    flex: 1;
+    box-sizing: border-box;
+    padding: 1.7rem 1.6rem;
+    border-left: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.hero-pass-cell:first-child { padding-left: 0; border-left: none; }
+
+.meta-label {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.meta-value {
+    font-weight: 500;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: var(--text);
+}
+
+.hero-pass-cell .meta-value {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: clamp(1.2rem, 1.8vw, 1.7rem);
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+/* The perforation: a dotted line of zero width, so that it opens no gap in
+   the strip. */
+.hero-pass-perf {
+    position: relative;
+    flex: none;
+    align-self: stretch;
+    box-sizing: border-box;
+    width: 2px;
+    margin: 0 -1px;
+    padding: 0.9rem 0;
+    background-image: linear-gradient(180deg, rgba(var(--ink), 0.42) 55%, transparent 0);
+    background-size: 2px 9px;
+    background-repeat: repeat-y;
+    background-clip: content-box;
+    background-origin: content-box;
+}
+
+/* The eyelets at both ends of the perforation. They were solid circles in the
+   background colour — but the PHOTOGRAPH sits above the strip, so the upper
+   one read as a stray dot on it rather than as a punched hole. A ring with an
+   accent outline works whatever is behind it: it is an object — the metal
+   eyelet of a pass — not a hole cut out of something. */
+.hero-pass-perf::before,
+.hero-pass-perf::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--accent-soft);
+}
+
+.hero-pass-perf::before { top: -9px; }
+.hero-pass-perf::after { bottom: -9px; }
+
+/* The red stub: the one solid object in the hero and the way in to
+   registration. */
+.hero-pass-stub {
+    /* The same geometry as .hero-pass-cell: the stub IS a cell. */
+    flex: none;
+    position: relative;
+    box-sizing: border-box;
+    width: 13rem;
+    padding: 1.7rem 1.6rem;
+    padding-right: clamp(1.25rem, 3vw, 2.4rem);
+    background: transparent;
+    color: var(--accent);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: color 0.26s ease;
+}
+
+/* The line that unfolds on hover — the only gesture. */
+.hero-pass-stub::after {
+    content: '';
+    position: absolute;
+    left: 1.6rem;
+    right: clamp(1.25rem, 3vw, 2.4rem);
+    bottom: 1.35rem;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.44s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.hero-pass-stub:hover::after,
+.hero-pass-stub:focus-visible::after { transform: scaleX(1); }
+
+
+
+.hero-pass-stub:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: -6px;
+}
+
+/* The stub.
+
+   Earlier versions each introduced a gesture of their OWN — an enormous year,
+   a stamp, a diagonal glint, a scrolling caption. Every one of them added
+   something new to a button standing next to four cells with a strictly
+   defined structure, and that is precisely why each stood out.
+
+   The stub now takes the SAME structure as the cells beside it: a small
+   letter-spaced label above, a large value below. The pass reads as five
+   aligned fields: four say what this is, the fifth says what to do.
+
+   Solid red, however, weighs too much at any size — first as a full-height
+   plane (184×111), then as a field (184×46). The reason is that the top bar
+   ALREADY has a solid red "Register" button. Two solid red objects on one
+   screen fight each other, and this one comes second — so it should not be
+   solid at all.
+
+   The stub is therefore a fifth cell like the other four: no background, the
+   same hairline on the left. It differs only in that its text is in the accent
+   colour rather than white, and that a line under it unfolds on hover. No
+   extra weight in the pass. */
+
+/* The same size and tracking as .meta-label in the neighbouring cells; only
+   the colour differs, because the background is solid. */
+/* The same size and tracking as .meta-label in the neighbouring cells. */
+.hero-pass-stub-label {
+    font-family: "Oswald", Arial, sans-serif;
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--accent);
+}
+
+/* The value is a long arrow: a line filling the width of the cell, with a
+   head at its end. Its height matches the values in the neighbouring cells, so
+   that the baselines line up. */
+/* The value sits on the same line as the figures in the neighbouring
+   cells. */
+.hero-pass-stub-value {
+    display: flex;
+    align-items: center;
+    height: clamp(1.2rem, 1.8vw, 1.7rem);
+}
+
+.hero-pass-arrow {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* The shaft of the arrow. transform-origin: right — on hover it shortens
+   from the back while the head moves forward, so the movement reads as one
+   thing rather than two separate elements. */
+.hero-pass-arrow span {
+    flex: 1;
+    height: 2px;
+    background: var(--accent);
+    transform-origin: right;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hero-pass-arrow svg {
+    width: 0.85rem;
+    height: 0.85rem;
+    flex: none;
+    margin-left: -1px;
+    stroke: var(--accent);
+    stroke-width: 2.4;
+    fill: none;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hero-pass-stub:hover .hero-pass-arrow span,
+.hero-pass-stub:focus-visible .hero-pass-arrow span { transform: scaleX(0.72); }
+
+.hero-pass-stub:hover .hero-pass-arrow svg,
+.hero-pass-stub:focus-visible .hero-pass-arrow svg { transform: translateX(5px); }
+
+/* ── The entrance animation ─────────────────────────────────────────
+   The steps arrive from below with a small displacement. The photograph
+   settles from 1.06 to 1: the movement is in the scale rather than the
+   position, so it cannot open an empty edge. All of it drops under
+   prefers-reduced-motion. */
+@keyframes heroRise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes heroSettle {
+    from { transform: scale(1.06); }
+    to   { transform: scale(1); }
+}
+
+@keyframes heroLine {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+
+/* IMPORTANT: the animation hangs off the .hero-ready class, which
+   homeCountdown.js adds right after the first frame.
+
+   The reason is that the keyframes start at opacity: 0 with fill: backwards.
+   If the animation clock never starts — the page was loaded in a background
+   tab, the document is throttled, or the first frame arrives later than the
+   0.08–0.58s delays — the hero is left with NO heading, no paragraph, no logos
+   and no stub. That is exactly what happened: the content was there and laid
+   out, and invisible.
+
+   With this class the base state is always visible. If the script does not
+   load, the page simply has no entrance animation; it does not disappear. */
+@media (prefers-reduced-motion: no-preference) {
+    .hero-ready .hero-eyebrow-row,
+    .hero-ready .hero-title,
+    .hero-ready .hero-conference-name,
+    .hero-ready .hero-organisers,
+    .hero-ready .hero-pass-fields,
+    .hero-ready .hero-pass-stub {
+        animation: heroRise 0.72s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    }
+
+    .hero-ready .hero-eyebrow-row     { animation-delay: 0.08s; }
+    .hero-ready .hero-title           { animation-delay: 0.18s; }
+    .hero-ready .hero-conference-name { animation-delay: 0.30s; }
+    .hero-ready .hero-organisers      { animation-delay: 0.42s; }
+    .hero-ready .hero-pass-fields     { animation-delay: 0.50s; }
+    .hero-ready .hero-pass-stub       { animation-delay: 0.58s; }
+
+    .hero-ready .hero-visual img {
+        animation: heroSettle 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .hero-ready .hero-pass::before {
+        transform-origin: left;
+        animation: heroLine 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.46s backwards;
+    }
+}
+
+#partners-marquee-section { scroll-margin-top: 90px; }
+
+/* ── Hero responsive ───────────────────────────────────────────────── */
+
+/* A narrow desktop: the stub shrinks and the fields tighten up. */
+@media (max-width: 1240px) {
+    .hero-panel { width: 46%; }
+    .hero-pass-cell { padding: 1.4rem 1.1rem; }
+    .hero-pass-stub { width: 11.5rem; }
+    .hero-venue { display: none; }
+}
+
+/* ── Below 1024px: the OVERLAY hero ─────────────────────────────────
+   The stacked blocks — the photograph above the panel — spent the vertical
+   space twice. The photograph is now the BACKGROUND of the whole upper part
+   and the text sits on it behind a scrim: one space carries both the image and
+   the heading. The pass stays at the bottom.
+
+   The technique: .hero-split becomes a grid with a single cell in which both
+   children sit on top of each other (grid-area: 1/1). No absolute positioning,
+   so the height is still set by the content of the panel and the text cannot
+   escape the photograph. */
+@media (max-width: 1024px) {
+    .hero-split {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+    }
+
+    .hero-visual,
+    .hero-panel {
+        grid-area: 1 / 1;
+        width: auto;
+    }
+
+    .hero-visual {
+        flex: none;
+        min-height: 0;
+        z-index: 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* An absolutely positioned child does NOT contribute to the height of a
+       grid row, so the row is sized by the panel — the content — and the
+       photograph simply fills it. Without this the portrait banner stretches
+       the hero to its own aspect ratio. */
+    .hero-visual picture,
+    .hero-visual img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Cropped towards the top of the portrait banner, where both the hall and
+       the blockchain motif are. */
+    /* Both banners are dark files — measured at 10–45 out of 255 for the
+       portrait one and 16–31 for the landscape. On a desktop that does not
+       matter: the photograph sits beside the text and the darkness reads as
+       mood. In overlay mode it is the background of the whole hero and has to
+       carry it, so it is lifted. The exact value differs between the two files
+       — see the two rules after this block. */
+    .hero-visual img {
+        object-position: center 55%;
+        filter: brightness(1.85) contrast(1.02) saturate(1.08);
+    }
+
+    /* The horizontal fade means nothing here: the panel is no longer beside
+       the image. */
+    .hero-visual-fade { display: none; }
+
+    /* The scrim darkens downwards so that it can carry the text. Three stops
+       rather than two: it has to be dense around the heading while the
+       photograph stays visible in the upper third. */
+    .hero-visual-scrim {
+        display: block;
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+            linear-gradient(180deg,
+                rgba(6, 6, 6, 0.12) 0%,
+                rgba(6, 6, 6, 0.02) 18%,
+                rgba(6, 6, 6, 0.06) 42%,
+                rgba(6, 6, 6, 0.26) 64%,
+                rgba(6, 6, 6, 0.78) 86%,
+                rgba(6, 6, 6, 0.97) 100%);
+    }
+
+    .hero-panel {
+        z-index: 1;
+        background: transparent;
+        /* The top padding is what leaves the photograph visible above the
+           heading. It is held in vh so that it is a share of the screen
+           rather than a fixed value. */
+        padding: clamp(6rem, 22vh, 12rem) clamp(1.25rem, 5vw, 2.5rem) 0;
+        overflow: visible;
+    }
+
+    /* The glow and the seat grid are gestures for the solid panel; over a
+       photograph they only muddy it. */
+    .hero-panel::after,
+    .hero-seatmap { display: none; }
+
+    /* Over a photograph rather than a solid panel: the shadow darkens only
+       behind the letters, unlike the scrim, which dims a whole band of the
+       image. */
+    .hero-title {
+        margin-top: 0.9rem;
+        font-size: clamp(2rem, 7vw, 3rem);
+        text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85), 0 1px 3px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-eyebrow-row,
+    .hero-conference-name,
+    .hero-organisers { text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8); }
+
+    .hero-conference-name {
+        max-width: none;
+        margin-top: 1.35rem;
+        /* Over a photograph, thin letter-spaced 300 is lost: one weight
+           heavier and one step lighter in colour. */
+        font-weight: 400;
+        color: color-mix(in srgb, var(--text) 82%, transparent);
+    }
+
+    .hero-organisers { margin: 1.9rem 0 2rem; }
+}
+
+/* Landscape below 1024px — an iPad in landscape, a 1024×600 tablet, a
+   narrowed desktop window — gets the landscape bannerHome.png, see the
+   <source> element. That file is darker still across its top (32/27/20 out of
+   255 by band), and that is exactly where no text sits and the photograph has
+   to be legible. Hence one step more than in the portrait case. */
+@media (max-width: 1024px) and (orientation: landscape) {
+    .hero-visual img { filter: brightness(2.2) contrast(1.02) saturate(1.08); }
+}
+
+@media (max-width: 768px) {
+    .index-hero {
+        min-height: calc(100vh - var(--home-topbar, 64px));
+        min-height: calc(100svh - var(--home-topbar, 64px));
+    }
+
+    .hero-panel { padding-top: clamp(3.75rem, 15vh, 7.5rem); }
+    .hero-organisers .partner-logo img { height: 40px; }
+
+    /* The pass rearranges itself: a 2×2 of fields with the stub on a full row
+       below them, and the perforation between the two parts. */
+    .hero-pass {
+        flex-direction: column;
+        padding: 0 1.25rem 0.5rem;
+    }
+
+    .hero-pass-fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding-left: 0;
+    }
+
+    .hero-pass-cell { padding: 0.8rem 0.9rem; }
+    .hero-pass-cell:nth-child(odd) { padding-left: 0; border-left: none; }
+    .hero-pass-cell:nth-child(even) { padding-right: 0; }
+    .hero-pass-cell:nth-child(n + 3) { border-top: 1px solid var(--line); }
+
+    /* The perforation lies down: the dotted line runs across the width and the
+       eyelets sit at its two ends. */
+    .hero-pass-perf {
+        width: auto;
+        height: 2px;
+        align-self: auto;
+        margin: 0.55rem 0;
+        padding: 0 1.25rem;
+        background-image: linear-gradient(90deg, rgba(var(--ink), 0.42) 55%, transparent 0);
+        background-size: 9px 2px;
+        background-repeat: repeat-x;
+    }
+
+    .hero-pass-perf::before {
+        top: -8px;
+        left: calc(-1.25rem - 9px);
+    }
+
+    .hero-pass-perf::after {
+        top: -8px;
+        bottom: auto;
+        left: auto;
+        right: calc(-1.25rem - 9px);
+    }
+
+    .hero-pass-stub {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        height: 3.3rem;
+        padding: 0;
+    }
+
+    .hero-pass-stub::after { left: 0; right: 0; bottom: 0; }
+
+
+
+    /* A horizontal row on a phone: the label on the left, the arrow on the
+       right. */
+    .hero-pass-stub-label { font-size: 0.8rem; letter-spacing: 0.16em; }
+    .hero-pass-stub-value { height: auto; }
+    .hero-pass-arrow { width: 4rem; }
+}
+
+@media (max-width: 480px) {
+    .hero-title { font-size: 1.95rem; }
+    .hero-conference-name { font-size: 0.98rem; margin-top: 1.2rem; }
+    .hero-organisers { gap: 0.9rem; margin: 1.5rem 0 1.7rem; }
+    .hero-organisers .partners-bar { gap: 1.35rem; }
+    .hero-organisers .partner-logo img { height: 34px; }
+    .hero-pass-cell .meta-value { font-size: 1.05rem; }
+    .hero-eyebrow-row { gap: 0.7rem; }
+}
+
+/* A phone in landscape is short: 100svh is about 350px, while the hero has a
+   heading, a paragraph, logos and a pass. A fixed minimum height is more
+   honest there than a share of the screen — the page simply scrolls. */
+@media (max-height: 470px) and (max-width: 1024px) {
+    .index-hero { min-height: 0; }
+    .hero-panel { padding-top: 3.5rem; }
+    .hero-conference-name { display: none; }
+}
+
+/* ── Partners marquee ──────────────────────────────────────────────── */
+.partherAnimation-section { padding: 2.6rem 0; }
+
+.partners-marquee {
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+    /* The logos were cut off hard at both ends of the strip. The mask fades
+       them out instead, so the movement reads as continuing off-screen rather
+       than hitting a wall. */
+    mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+}
+
+.marquee-group {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4rem;
+    padding-right: 4rem; /* must match the gap exactly */
+    min-width: 100%;
+    animation: scrollLeftToRight 20s linear infinite;
+}
+
+/* Pauses on hover: partner logos are something a visitor wants to look at,
+   not to chase. */
+.partners-marquee:hover .marquee-group { animation-play-state: paused; }
+
+.marquee-logo img {
+    height: 64px;
+    width: auto;
+    object-fit: contain;
+    filter: grayscale(100%);
+    opacity: 0.55;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.marquee-logo img:hover { filter: grayscale(0%); opacity: 1; }
+
+@keyframes scrollLeftToRight {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(0); }
+}
+
+/* ── Grids ─────────────────────────────────────────────────────────── */
+.grid-4-col {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.grid-3-col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────── */
+.btn {
+    display: inline-block;
+    padding: 0.85rem 1.8rem;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    border-radius: 0;
+    border: 1px solid transparent;
+    font-size: 0.95rem;
+    /* A real touch target: 0.85rem of padding around 0.95rem text gives about
+       44px, but a smaller font in another locale drops below the threshold. */
+    min-height: 44px;
+    box-sizing: border-box;
+    transition: transform 220ms ease, background-color 220ms ease, border-color 220ms ease, color 220ms ease, filter 220ms ease;
+}
+
+.btn-red {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+}
+
+.btn-red:hover { transform: translateY(-3px); filter: brightness(1.08); }
+
+.btn-outline {
+    border-color: var(--line);
+    color: var(--text);
+    background: transparent;
+}
+
+.btn-outline:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-soft);
+    color: var(--accent);
+}
+
+.btn-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.full-width { width: 100%; box-sizing: border-box; text-align: center; }
+
+/* ── Intro ─────────────────────────────────────────────────────────── */
+.intro-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.intro-text p {
+    color: var(--muted);
+    margin-bottom: 20px;
+    line-height: 1.7;
+}
+
+.intro-quote blockquote {
+    font-size: 1.5rem;
+    line-height: 1.55;
+    letter-spacing: 0.01em;
+    color: var(--text);
+    border-left: 3px solid var(--accent);
+    padding-left: 25px;
+    margin: 0;
+    text-wrap: pretty;
+}
+
+/* ── Outcomes: a divided row rather than a fifth grid of cards ─────── */
+.outcomes-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    text-align: left;
+}
+
+.outcome-item { padding: 0 1.7rem; }
+.outcome-item:not(:first-child) { border-left: 1px solid var(--line); }
+
+.outcome-item .number {
+    display: block;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 700;
+    font-size: 2.6rem;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 1.1rem;
+    transition: transform 0.25s ease;
+}
+
+.outcome-item:hover .number { transform: translateX(4px); }
+
+.outcome-item h4 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.outcome-item p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ── Cards: domains and lecturers ──────────────────────────────────── */
+.domain-card {
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 2rem 1.7rem;
+    text-align: left;
+    transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+.domain-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-soft);
+    background: rgba(var(--ink), 0.06);
+    box-shadow: var(--shadow);
+}
+
+.domain-card h4 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.domain-card p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.icon-box {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 20px;
+    color: var(--accent);
+    transition: transform 0.3s ease;
+}
+
+.icon-box svg { width: 100%; height: 100%; }
+
+/* The icon grows but no longer spins: the rotation was the only playful
+   gesture on the page and clashed with the calm tone of every other
+   transition. */
+.domain-card:hover .icon-box { transform: scale(1.1); }
+
+/* ── Lecturer cards ────────────────────────────────────────────────────
+   These used to be soft blocks with a round avatar, the only rounded shape in
+   the whole redesign. They now speak the language of the Lecturers page: one
+   shared grid with hairline rules, a square portrait with registration marks,
+   the row number top right and "Profile →" at the bottom.
+
+   The heights of the text rows stay FIXED (see below), because the content is
+   swapped in place during the rotation and without them the entire row of
+   cards jumps on every wave. */
+#lecturers-grid {
+    gap: 0;
+    text-align: left;
+    border-top: 1px solid rgba(var(--ink), 0.14);
+    border-left: 1px solid var(--line);
+}
+
+.faculty-card {
+    padding: 26px 26px 30px;
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    box-shadow: none;
+    text-align: left;
+}
+
+.faculty-card:hover {
+    transform: none;
+    background: rgba(var(--ink), 0.014);
+    box-shadow: none;
+}
+
+/* The accent line along the top edge on hover: the same gesture as in the
+   Lecturers grid, in the timeline and on the Attend page. */
+.faculty-card::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.faculty-card:hover::after { transform: scaleX(1); }
+
+.lc-index {
+    position: absolute;
+    top: 26px;
+    right: 26px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: #4d4a46;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The portrait is square, framed with a hairline and marked in two corners,
+   and it is a target of its OWN: clicking it opens the photograph full size,
+   while clicking the card leads to the profile. Hence its own hover and focus
+   states. */
+.avatar-lg {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 148px;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    margin: 0 0 20px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 0;
+    overflow: hidden;
+    cursor: zoom-in;
+}
+
+.avatar-lg img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* The portraits come from different sources; greyscale brings them to one
+       look, and hover gives the colour back. */
+    filter: grayscale(1) contrast(1.06);
+    transition: filter 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.faculty-card:hover .avatar-lg img { transform: scale(1.03); filter: grayscale(0) contrast(1.02); }
+.avatar-lg:hover img { filter: grayscale(0) contrast(1.02); }
+
+.avatar-lg::before,
+.avatar-lg::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+    transition: width 0.28s ease, height 0.28s ease;
+}
+
+.avatar-lg::before {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid var(--accent);
+    border-left: 2px solid var(--accent);
+}
+
+.avatar-lg::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 2px solid var(--accent);
+    border-right: 2px solid var(--accent);
+}
+
+.avatar-lg:hover::before,
+.avatar-lg:hover::after,
+.avatar-lg:focus-visible::before,
+.avatar-lg:focus-visible::after { width: 20px; height: 20px; }
+
+/* The zoom badge appears only when the portrait is hovered, so that it does
+   not compete with the number and the marks at rest. homeLecturers.js inserts
+   it, so that it is not sitting dead in the markup. */
+.lc-zoom {
+    position: absolute;
+    z-index: 3;
+    right: 8px;
+    bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    border: 1px solid rgba(var(--ink), 0.22);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.26s ease, transform 0.26s ease;
+    pointer-events: none;
+}
+
+.lc-zoom svg { width: 15px; height: 15px; stroke: var(--accent); }
+
+.avatar-lg:hover .lc-zoom,
+.avatar-lg:focus-visible .lc-zoom { opacity: 1; transform: none; }
+
+/* Swapping the content: the card flips.
+
+   Back to the first version after three attempts — sliding up, a blur, and a
+   scanning wipe. The flip is the strongest of the four gestures and that is
+   exactly why it works here: the change has to be noticed, and a wave of four
+   cards 160ms apart spreads it over time instead of firing it all at once.
+
+   overflow: hidden is NOT set: under rotateY the projection of the card
+   reaches outside its own box and clipping would cut it. */
+.faculty-card {
+    position: relative;
+    transition: transform 0.36s cubic-bezier(0.4, 0, 1, 1),
+                opacity 0.36s ease,
+                border-color 0.3s ease,
+                background-color 0.3s ease;
+    will-change: transform, opacity;
+}
+
+.faculty-card.rotating-out {
+    transform: perspective(800px) rotateY(90deg) scale(0.94);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.faculty-card.rotating-in {
+    animation: cardFlipIn 0.44s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+@keyframes cardFlipIn {
+    from { transform: perspective(800px) rotateY(-90deg) scale(0.94); opacity: 0; }
+    to   { transform: perspective(800px) rotateY(0deg) scale(1); opacity: 1; }
+}
+
+.faculty-card h4 {
+    margin: 0 0 10px;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    font-size: 1.05rem;
+    line-height: 1.24;
+    letter-spacing: 0.015em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+/* Role and organisation form one block: as two separate lines with a gap
+   between them they read as unrelated data. */
+.lc-ident {
+    margin: 0 0 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.faculty-card .role {
+    margin: 0 0 4px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.faculty-card .org {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.faculty-card .bio {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.62;
+    color: var(--muted);
+}
+
+.lc-more {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 18px 0 0;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.lc-more svg {
+    width: 13px;
+    height: 13px;
+    flex: none;
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.faculty-card:hover .lc-more svg { transform: translateX(4px); }
+
+/* The fixed heights: the clamp caps the maximum but sets no minimum, so a
+   name on one line and a name on two give cards of different heights — and the
+   content is swapped in place. */
+.faculty-card h4,
+.faculty-card .role,
+.faculty-card .org,
+.faculty-card .bio {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.faculty-card h4 { -webkit-line-clamp: 2; height: 2.48em; }
+
+.faculty-card .role,
+.faculty-card .org {
+    -webkit-line-clamp: 1;
+    line-height: 1.4;
+    height: 1.4em;
+}
+
+.faculty-card .bio { -webkit-line-clamp: 3; height: 4.86em; }
+
+/* ── The photograph full size (modal) ──────────────────────────────────
+   The same slab as on the Lecturers page: zero radius, a hairline frame,
+   registration marks in all four corners, the photograph large and in colour.
+   homeLecturers.js builds it the first time it is opened. */
+.lc-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5vh 6vw;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+}
+
+.lc-modal-backdrop::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(45deg, rgba(var(--ink), 0.022) 0px, rgba(var(--ink), 0.022) 1px, transparent 1px, transparent 9px);
+}
+
+.lc-modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+.lc-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(92vw, 540px);
+    max-height: 90vh;
+    background: var(--surface);
+    border: 1px solid rgba(var(--ink), 0.16);
+    border-radius: 0;
+    overflow: hidden;
+    transform: translateY(12px) scale(0.985);
+    opacity: 0;
+    transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.28s ease;
+}
+
+.lc-modal-backdrop.is-open .lc-modal { transform: none; opacity: 1; }
+
+.lc-modal i.corner {
+    position: absolute;
+    z-index: 2;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+}
+
+.lc-modal i.tl { top: -1px; left: -1px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+.lc-modal i.tr { top: -1px; right: -1px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+.lc-modal i.bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+.lc-modal i.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+
+.lc-modal-photo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    flex: 0 1 auto;
+    min-height: 0;
+    background: var(--panel);
+    overflow: hidden;
+}
+
+.lc-modal-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: contrast(1.04);
+}
+
+.lc-modal-index {
+    position: absolute;
+    z-index: 2;
+    top: 16px;
+    left: 16px;
+    padding: 5px 9px;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.lc-modal-close {
+    position: absolute;
+    z-index: 3;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    border: 1px solid rgba(var(--ink), 0.22);
+    border-radius: 0;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+}
+
+.lc-modal-close svg { width: 17px; height: 17px; stroke: currentColor; }
+
+.lc-modal-close:hover,
+.lc-modal-close:focus-visible {
+    background: rgb(var(--ink));
+    border-color: rgb(var(--ink));
+    color: var(--bg);
+}
+
+.lc-modal-body {
+    flex: 0 0 auto;
+    padding: 22px 24px 26px;
+    border-top: 1px solid var(--line);
+    overflow-y: auto;
+}
+
+.lc-modal-body h3 {
+    margin: 0 0 10px;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.22;
+    letter-spacing: 0.015em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+.lc-modal-role {
+    margin: 0 0 4px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.lc-modal-org {
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.lc-modal-bio {
+    margin: 16px 0 0;
+    font-size: 14px;
+    line-height: 1.62;
+    color: var(--muted);
+}
+
+.lc-modal-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    margin-top: 18px;
+    padding: 0 16px;
+    border: 1px solid var(--accent-soft);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+}
+
+.lc-modal-link svg { width: 13px; height: 13px; flex: none; transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+.lc-modal-link:hover,
+.lc-modal-link:focus-visible {
+    background: rgb(var(--ink));
+    border-color: rgb(var(--ink));
+    color: var(--bg);
+    text-decoration: none;
+}
+
+.lc-modal-link:hover svg,
+.lc-modal-link:focus-visible svg { transform: translateX(4px); }
+
+/* The link to all lecturers used to be a caption with a rule that extended —
+   a gesture too quiet to notice at the end of a whole section of cards. It is
+   now an object: an outline with an arrow in a square of its own.
+
+   On hover the square floods the full width from left to right (a ::before
+   with scaleX), the caption inverts to dark on the accent, and the arrow moves
+   forward. One gesture that says "press me" instead of two separate
+   micro-movements. */
+.view-all-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    min-height: 52px;
+    padding: 0;
+    border: 1px solid var(--line);
+    color: var(--text);
+    text-decoration: none;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    overflow: hidden;
+    transition: border-color 0.32s ease, color 0.32s ease;
+    isolation: isolate;
+}
+
+.view-all-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.view-all-link > span {
+    padding: 0 1.5rem;
+    white-space: nowrap;
+}
+
+/* The arrow in a square of its own, separated by a line: the box gives the
+   link the weight of a button without making it solid at rest. */
+.view-all-link > i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    width: 52px;
+    flex: none;
+    border-left: 1px solid var(--line);
+    font-style: normal;
+    transition: border-color 0.32s ease;
+}
+
+.view-all-link svg {
+    width: 17px;
+    height: 17px;
+    stroke: var(--accent);
+    stroke-width: 2;
+    fill: none;
+    transition: stroke 0.32s ease, transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.view-all-link:hover,
+.view-all-link:focus-visible { border-color: var(--accent); color: var(--on-accent); }
+.view-all-link:hover::before,
+.view-all-link:focus-visible::before { transform: scaleX(1); }
+.view-all-link:hover > i,
+.view-all-link:focus-visible > i { border-left-color: rgba(var(--ink), 0.35); }
+.view-all-link:hover svg,
+.view-all-link:focus-visible svg { stroke: rgb(var(--ink)); transform: translateX(4px); }
+
+/* ── The programme by day ──────────────────────────────────────────── */
+.agenda-days { grid-template-rows: auto auto; }
+
+.day-col {
+    padding: 0 1.7rem;
+    text-align: left;
+    /* One day's heading may wrap onto two lines while another's does not.
+       Without subgrid the lists below them start at different heights. */
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 2;
+    align-content: start;
+}
+
+.agenda-days .day-col:not(:first-child) { border-left: 1px solid var(--line); }
+
+.day-header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+}
+
+.day-header .number {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.5rem;
+    font-family: "Oswald", Arial, sans-serif;
+}
+
+.day-header h4 {
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0;
+}
+
+.day-col ul { list-style: none; padding: 0; margin: 0; }
+
+.day-col li {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    color: var(--muted);
+    position: relative;
+    padding-left: 15px;
+    line-height: 1.5;
+}
+
+.day-col li::before { content: "•"; color: var(--accent); position: absolute; left: 0; }
+
+/* ── The call-to-action section ────────────────────────────────────── */
+.cta-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.cta-text h2 { margin-bottom: 20px; }
+.cta-text p { color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+
+.cta-card {
+    background: var(--accent);
+    padding: 2.6rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 20px 50px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.cta-card h3 {
+    margin: 0 0 15px;
+    font-size: 1.7rem;
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 600;
+    color: rgb(var(--ink));
+}
+
+.cta-card p { margin-bottom: 25px; color: rgba(var(--ink), 0.88); }
+
+.cta-card .btn-outline { border-color: rgb(var(--ink)); color: rgb(var(--ink)); }
+.cta-card .btn-outline:hover { border-color: rgb(var(--ink)); color: rgb(var(--ink)); background: rgba(var(--ink), 0.12); }
+.cta-card .btn-red { background-color: var(--on-accent); border-color: var(--on-accent); color: var(--accent); }
+.cta-card .btn-red:hover { filter: none; background-color: #f2f2f2; }
+
+/* ── Timeline ──────────────────────────────────────────────────────── */
+.timeline-track {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+    margin-top: 3.4rem;
+}
+
+.timeline-track::before {
+    content: '';
+    position: absolute;
+    top: 27px; /* centred on a 56px node */
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--line);
+    z-index: 0;
+}
+
+.timeline-item {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.timeline-node {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--accent);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    margin-bottom: 1.5rem;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.timeline-item:hover .timeline-node {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+    transform: scale(1.08);
+    box-shadow: 0 0 26px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.timeline-content { max-width: 240px; }
+
+.item-label {
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 10px;
+    font-family: "Oswald", Arial, sans-serif;
+}
+
+.item-date {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 10px;
+    color: var(--text);
+    font-family: "Oswald", Arial, sans-serif;
+}
+
+.item-desc { color: var(--muted); font-size: 0.9rem; margin: 0; line-height: 1.5; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Responsive rules for the rest of the page
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+    .grid-4-col { grid-template-columns: repeat(2, 1fr); }
+    .intro-grid { grid-template-columns: 1fr; gap: 40px; }
+    .cta-grid { grid-template-columns: 1fr; }
+    .marquee-group { animation-duration: 14s; }
+
+    /* Four outcome columns at 1024px leave about 20 characters per line; two
+       by two is the limit below which the text falls apart. */
+    .outcomes-row { grid-template-columns: repeat(2, 1fr); row-gap: 2.2rem; }
+    .outcome-item:nth-child(odd) { padding-left: 0; border-left: none; }
+    .outcome-item:nth-child(-n + 2) { padding-bottom: 0; }
+
+    .intro-section,
+    .outcomes-section,
+    .domains-section,
+    .faculty-section,
+    .timeline-section,
+    .agenda-preview-section,
+    .home-cta-section {
+        padding: 4rem 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid-4-col, .grid-3-col { grid-template-columns: 1fr; }
+
+    /* The timeline becomes a vertical line on the left with the node on it and
+       the content to the right — the standard readable model when there is no
+       room for the nodes to sit side by side. */
+    .timeline-track {
+        grid-template-columns: 1fr;
+        gap: 2.2rem;
+        margin-top: 2.6rem;
+    }
+
+    .timeline-track::before {
+        top: 0;
+        bottom: 0;
+        left: 27px;
+        right: auto;
+        width: 1px;
+        height: auto;
+    }
+
+    .timeline-item {
+        flex-direction: row;
+        align-items: flex-start;
+        text-align: left;
+        gap: 1.2rem;
+    }
+
+    .timeline-node { margin-bottom: 0; }
+    .timeline-content { max-width: none; }
+
+    /* Vertical dividers only make sense in a row. Stacked, they would run down
+       the left edge of every item for no reason; a horizontal line ABOVE each
+       one after the first is the right answer in a single column. */
+    .outcomes-row, .agenda-days {
+        grid-template-columns: 1fr;
+        gap: 1.8rem;
+    }
+
+    .outcome-item, .agenda-days .day-col { padding: 0; }
+    .agenda-days .day-col { display: block; grid-row: auto; }
+
+    .outcome-item:not(:first-child),
+    .agenda-days .day-col:not(:first-child) {
+        border-left: none;
+        border-top: 1px solid var(--line);
+        padding-top: 1.8rem;
+    }
+
+    .marquee-group { animation-duration: 10s; }
+    .marquee-logo img { height: 52px; }
+
+    .intro-section,
+    .outcomes-section,
+    .domains-section,
+    .faculty-section,
+    .timeline-section,
+    .agenda-preview-section,
+    .home-cta-section {
+        padding: 3.2rem 0;
+    }
+
+    main section h2 { margin-bottom: 1.1rem; }
+    .center-section > h2 { max-width: none; }
+    .intro-quote blockquote { font-size: 1.25rem; padding-left: 18px; }
+}
+
+@media (max-width: 480px) {
+    .domain-card, .faculty-card { padding: 1.7rem 1.4rem; }
+    .cta-card { padding: 2rem 1.5rem; }
+    .btn { width: 100%; text-align: center; }
+    .btn-group { gap: 10px; }
+}
+
+/* Stop everything that moves on its own. */
+@media (prefers-reduced-motion: reduce) {
+    .marquee-group { animation: none; }
+    .faculty-card.rotating-in { animation: none; }
+    .faculty-card.rotating-out { transform: none; }
+    .btn:hover, .domain-card:hover, .faculty-card:hover,
+    .outcome-item:hover .number { transform: none; }
+}
+
+/* ── The lecturers section on a phone ──────────────────────────────────
+   A single column: a full-width square portrait eats the whole screen before
+   the first line of text, so it drops to 120px. The cards become rows from
+   edge to edge — vertical lines mean nothing in one column, and the doubled
+   inset (of the section and of the card) narrows the text. */
+@media (max-width: 768px) {
+    #lecturers-grid { border-left: 0; }
+
+    .faculty-card {
+        padding: 24px 0 26px;
+        border-right: 0;
+    }
+
+    .faculty-card h4 { font-size: 1rem; }
+    .avatar-lg { max-width: 120px; margin-bottom: 18px; }
+    .lc-index { top: 24px; right: 0; }
+    .lc-modal { width: min(94vw, 460px); }
+    .lc-modal-body { padding: 20px 20px 24px; }
+}

@@ -1,0 +1,833 @@
+/* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── */
+/* ============================================================
+   icbiStyle.css — the "About ICBI" page.
+   The same visual language as stylesFAQ.css, attendStyle.css,
+   scheduleStyle.css and lecturersStyle.css: Oswald, zero corner radius,
+   hairline rules, the red accent, registration marks.
+
+   THE PATTERN OF THIS PAGE is a dot grid with occasional registration
+   crosses — graph paper. So far: a square grid (FAQ, Attend), a time scale
+   (Schedule), diagonal hatching (Lecturers). A fourth mark, at the same
+   density and with the same soft-light blend.
+
+   --- FOR WHOEVER WRITES THE SHARED STYLE NEXT ---
+   1) .icbi-page does NOT paint an opaque background. The background comes
+      from <body> (mainStyle.css), so that the global ambient layer can sit
+      BEHIND the page without blend tricks.
+   2) The venue section used to be an opaque white band across the full width
+      (`background-color: #ffffff` on the whole section). Such a band is an
+      impenetrable stripe: a layer behind the page simply disappears under it.
+      The light area is a PLATE now — an object with a border and space around
+      it, not a band. The dark sheet stays visible on either side, so the
+      background passes by on both. Any new opaque area on this page should be
+      an object with edges, for the same reason.
+   3) The only opaque surfaces here are the banner, the venue plate and the
+      event images. Everything else is a line on a transparent sheet.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+.icbi-page {
+    background: transparent;
+    color: var(--text, #f4f2ec);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 300;
+}
+
+.icbi-page ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.icbi-page :focus-visible { outline: 2px solid var(--accent, #ff3636); outline-offset: 2px; }
+
+.ic-pad { max-width: 1320px; margin: 0 auto; padding: 0 6vw; }
+
+/* ── The banner ──────────────────────────────────────────── */
+.ic-banner { position: relative; width: 100%; overflow: hidden; }
+
+/* In colour and bright, as on Schedule and Lecturers. */
+.ic-banner img {
+    display: block;
+    width: 100%;
+    max-height: 460px;
+    object-fit: cover;
+    object-position: 50% 42%;
+    filter: contrast(1.06) saturate(1.02);
+}
+
+.ic-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(var(--ink), 0.03) 0px, rgba(var(--ink), 0.03) 1px, transparent 1px, transparent 4px);
+}
+
+.ic-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 40%, transparent) 0%, rgba(5, 5, 5, 0) 20%, rgba(5, 5, 5, 0) 58%, color-mix(in srgb, var(--bg) 96%, transparent) 100%);
+}
+
+/* --- The pattern: graph paper ---
+   A dot every 24px, plus a registration cross every 96px — one cross per
+   sixteen dots. The crosses are what distinguish this from a plain dot grid,
+   and they are the same mark the frames and portraits carry on the other
+   pages. */
+.ic-banner-dots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: var(--blend-soft, soft-light);
+    background:
+        /* the crosses: a horizontal and a vertical stroke every 96px */
+        linear-gradient(90deg, rgba(var(--ink), 0.1) 9px, transparent 9px) 44px 0 / 96px 96px,
+        linear-gradient(0deg, rgba(var(--ink), 0.1) 9px, transparent 9px) 0 44px / 96px 96px,
+        /* the dots */
+        radial-gradient(circle at 1px 1px, rgba(var(--ink), 0.115) 1px, transparent 1.6px) 0 0 / 24px 24px;
+}
+
+.ic-banner-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: var(--blend-tint, overlay);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, transparent) 0%, rgba(255, 54, 54, 0) 30%);
+}
+
+.ic-frame {
+    position: absolute;
+    inset: 16px;
+    border: 1px solid rgba(var(--ink), 0.16);
+    pointer-events: none;
+}
+
+.ic-frame span { position: absolute; background: var(--accent, #ff3636); }
+.ic-frame .c-tl-h { top: -1px; left: -1px; width: 26px; height: 2px; }
+.ic-frame .c-tl-v { top: -1px; left: -1px; width: 2px; height: 26px; }
+.ic-frame .c-br-h { bottom: -1px; right: -1px; width: 26px; height: 2px; }
+.ic-frame .c-br-v { bottom: -1px; right: -1px; width: 2px; height: 26px; }
+
+/* .scroll-down-arrow keeps its class name but is a small technical caption
+   at the bottom left rather than a centred bouncing chevron. */
+.scroll-down-arrow {
+    position: absolute;
+    left: 6vw;
+    bottom: 34px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    width: auto;
+    height: auto;
+    padding: 12px 0;
+    transform: none;
+    animation: none;
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.scroll-down-arrow span { position: relative; padding-bottom: 4px; }
+
+.scroll-down-arrow span::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.scroll-down-arrow:hover { color: rgb(var(--ink)); transform: none; }
+.scroll-down-arrow:hover span::after { transform: scaleX(1); }
+.scroll-down-arrow.is-hidden { opacity: 0; pointer-events: none; }
+
+.scroll-down-arrow svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    stroke: var(--accent, #ff3636);
+    animation: icNudge 2.6s ease-in-out infinite;
+}
+
+@keyframes icNudge {
+    0%, 62%, 100% { transform: translateY(0); }
+    76%           { transform: translateY(6px); }
+    88%           { transform: translateY(2px); }
+}
+
+/* ── The heading block ───────────────────────────────────
+   This page has BOTH a description AND a quotation, which the others do not.
+   So the heading and the text sit in two columns: the name and the founding
+   stamp on the left, the description and the mission on the right. The centred
+   block of the original left an 800px column of text in the middle of an empty
+   screen.
+
+   .hero-section-icbi, .hero-content-narrow, .hero-description, .hero-quote and
+   .section-label keep their class names. */
+.ic-hero { position: relative; border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08)); }
+
+.hero-section-icbi {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 30px 6vw 44px;
+}
+
+.ic-topline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 40px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(var(--ink), 0.14);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.ic-wordmark {
+    background: linear-gradient(100deg, var(--muted) 0%, var(--text) 42%, rgb(var(--ink)) 50%, var(--text) 58%, var(--muted) 100%) 0 0 / 300% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: icShimmer 14s ease-in-out infinite;
+}
+
+.ic-topline b {
+    flex: none;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--accent, #ff3636);
+    text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+@keyframes icShimmer {
+    0%, 100% { background-position: 0% 0; }
+    50%      { background-position: 100% 0; }
+}
+
+.hero-content-narrow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 56px;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+}
+
+.icbi-page .section-label,
+.ic-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.icbi-page .section-label::before,
+.ic-eyebrow::before { content: ""; width: 6px; height: 6px; flex: none; background: var(--accent, #ff3636); }
+
+.icbi-page h2 {
+    margin: 0 0 10px;
+    font-weight: 600;
+    font-size: clamp(30px, 4vw, 50px);
+    line-height: 1.08;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+.hero-content-narrow h2 { max-width: 20ch; }
+
+.ic-rule { display: block; width: 56px; height: 2px; background: var(--accent, #ff3636); }
+.icbi-page h2 + .ic-rule { margin-top: 20px; }
+
+.hero-description {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.72;
+    color: var(--muted, #a7a39b);
+    text-wrap: pretty;
+}
+
+/* The mission is the one sentence on the page in which the institute speaks
+   about itself in the first person, so it is an object with a bracket rather
+   than another paragraph. The quotation marks were removed from the markup:
+   the rule does their job better than punctuation. */
+.hero-quote {
+    margin: 26px 0 0;
+    padding: 20px 0 0 20px;
+    border: 0;
+    border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+    border-left: 2px solid var(--accent, #ff3636);
+    font-size: 16px;
+    line-height: 1.66;
+    letter-spacing: 0.01em;
+    color: var(--text, #f4f2ec);
+    text-align: left;
+    text-wrap: pretty;
+}
+
+/* The founding stamp: the technical caption that in a drawing sits in the
+   corner of the sheet. */
+.ic-stamp {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 28px;
+    padding: 14px 18px;
+    border: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.ic-stamp b {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.ic-stamp span {
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+}
+
+/* ── The four pillars ────────────────────────────────────
+   An enumerated list, so it is numbered: "four pillars" without numbers is
+   just four cards. They are cells of a visible grid — the hairlines are drawn
+   from their edges rather than from gaps — and a subgrid aligns the index, the
+   heading and the description row by row.
+
+   .pillars-section, .grid-4-col, .pillar-card and .icon-box keep their class
+   names. */
+.pillars-section {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 66px 6vw 84px;
+}
+
+.pillars-section > .ic-sec-head { margin-bottom: 34px; }
+
+.grid-4-col {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    width: 100%;
+    border-top: 1px solid rgba(var(--ink), 0.14);
+    border-left: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.pillar-card {
+    position: relative;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 3;
+    align-content: start;
+    padding: 26px 24px 30px;
+    background: transparent;
+    border: 0;
+    border-right: 1px solid var(--line, rgba(var(--ink), 0.08));
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+    border-radius: 0;
+    text-align: left;
+    transition: background 0.32s ease;
+}
+
+.pillar-card:hover {
+    transform: none;
+    background: rgba(var(--ink), 0.014);
+    box-shadow: none;
+}
+
+/* The accent rule along the top edge on hover — the same gesture as
+   .fq-item, .at-row, .timeline-item and .speaker-card. */
+.pillar-card::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.pillar-card:hover::after { transform: scaleX(1); }
+
+/* The index and the icon on one line: the number carries the enumeration,
+   the icon carries the subject. */
+.ic-pillar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.ic-pillar-num {
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: var(--accent, #ff3636);
+    font-variant-numeric: tabular-nums;
+}
+
+.icon-box {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    margin: 0;
+}
+
+/* The icons are PNGs from elsewhere in the project. The filter brings them to
+   the accent colour with values that actually produce #ff3636 rather than a
+   dark maroon — the same filter as in attendStyle.css. */
+.icon-box img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(38%) sepia(72%) saturate(4600%) hue-rotate(343deg) brightness(103%) contrast(103%);
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.pillar-card:hover .icon-box { transform: none; }
+.pillar-card:hover .icon-box img { transform: scale(1.08); }
+
+.pillar-card h4 {
+    margin: 0 0 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+    font-weight: 500;
+    font-size: 19px;
+    line-height: 1.24;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+}
+
+.pillar-card p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.64;
+    color: var(--muted, #a7a39b);
+    text-wrap: pretty;
+}
+
+/* The shared heading block of the sections */
+.ic-sec-head { max-width: 30ch; }
+.ic-sec-head h2 { margin-bottom: 0; }
+
+/* ── The venue ───────────────────────────────────────────
+   The light area is a PLATE now rather than a full-width band: a hairline
+   frame, registration marks in the four corners, space away from the edges.
+   The reason is in the file header — an opaque stripe across the screen blocks
+   the background behind the page, an object with edges does not.
+
+   .venue-section, .venue-grid, .map-container, .map-placeholder, .map,
+   .venue-info and .info-item keep their class names. */
+.venue-section {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 6vw 84px;
+    background: transparent;
+    color: inherit;
+}
+
+.ic-plate {
+    position: relative;
+    padding: 40px;
+    background: var(--text);
+    color: var(--surface-alt);
+    border: 1px solid color-mix(in srgb, var(--surface-alt) 16%, transparent);
+}
+
+.ic-plate i.corner {
+    position: absolute;
+    z-index: 2;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+}
+
+.ic-plate i.tl { top: -1px; left: -1px; border-top: 2px solid var(--accent, #ff3636); border-left: 2px solid var(--accent, #ff3636); }
+.ic-plate i.tr { top: -1px; right: -1px; border-top: 2px solid var(--accent, #ff3636); border-right: 2px solid var(--accent, #ff3636); }
+.ic-plate i.bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--accent, #ff3636); border-left: 2px solid var(--accent, #ff3636); }
+.ic-plate i.br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--accent, #ff3636); border-right: 2px solid var(--accent, #ff3636); }
+
+/* On a light plate the #ff3636 accent falls below 3:1 for small text, so the
+   labels here use a deeper step — the same rule the design system gives for
+   accent-700 on a light background. */
+.venue-section .section-label { color: var(--danger); }
+.venue-section .section-label::before { background: var(--danger); }
+.venue-section .ic-rule { background: var(--danger); }
+
+/* This heading titles an OBJECT, not a page: with the shared clamp it reached
+   37px and broke onto four lines inside the frame. One step down. */
+.venue-section h2 {
+    color: var(--surface-alt);
+    font-size: clamp(26px, 2.6vw, 34px);
+    line-height: 1.1;
+}
+
+.ic-plate .ic-sec-head { max-width: 26ch; }
+
+.venue-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 40px;
+    align-items: stretch;
+    margin-top: 34px;
+}
+
+.map-container { min-width: 0; }
+
+/* The map is a framed figure with corner marks, like the lecturer
+   portraits. */
+.map-placeholder {
+    position: relative;
+    height: 100%;
+    min-height: 340px;
+    border: 1px solid color-mix(in srgb, var(--surface-alt) 22%, transparent);
+    overflow: hidden;
+}
+
+.map-placeholder::before,
+.map-placeholder::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+}
+
+.map-placeholder::before { top: -1px; left: -1px; border-top: 2px solid var(--accent, #ff3636); border-left: 2px solid var(--accent, #ff3636); }
+.map-placeholder::after { bottom: -1px; right: -1px; border-bottom: 2px solid var(--accent, #ff3636); border-right: 2px solid var(--accent, #ff3636); }
+
+/* Desaturated, the map reads as a site plan in a set of drawings. The colour
+   returns on hover and on focus inside the frame: streets are what people look
+   for on a map, so the desaturation must not be permanent. focus-within covers
+   the keyboard as well. */
+.map {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 340px;
+    border: 0;
+    border-radius: 0;
+    filter: grayscale(1) contrast(1.04);
+    transition: filter 0.45s ease;
+}
+
+.map-placeholder:hover .map,
+.map-placeholder:focus-within .map { filter: grayscale(0) contrast(1); }
+
+/* The venue details are a specification table: label, value, row. Three
+   "info-item" blocks with an icon and a paragraph read as three unrelated
+   notes. */
+.venue-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    border-top: 1px solid color-mix(in srgb, var(--surface-alt) 22%, transparent);
+}
+
+.info-item {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    align-items: start;
+    gap: 16px;
+    margin: 0;
+    padding: 18px 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--surface-alt) 14%, transparent);
+    text-align: left;
+}
+
+.info-item .icon-box { width: 22px; height: 22px; margin-top: 2px; }
+
+/* On the light plate the icons use the deeper red step. */
+.info-item .icon-box img {
+    filter: brightness(0) saturate(100%) invert(19%) sepia(89%) saturate(3200%) hue-rotate(354deg) brightness(88%) contrast(97%);
+}
+
+.info-item p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.62;
+    color: #43474c;
+}
+
+.info-item strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--surface-alt);
+}
+
+/* The address is the only link on the plate. inline-flex with a min-height
+   gives it a 44px target for a finger without moving the baseline of the text:
+   the underline stays tight under the letters, because it belongs to the inner
+   span rather than to the box. */
+.info-item a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--danger);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
+    transition: color 0.22s ease, border-color 0.22s ease;
+}
+
+.info-item a:hover { color: #8f1414; border-bottom-color: #8f1414; }
+
+/* ── Past events ─────────────────────────────────────────
+   The images are framed, and the caption is BELOW the image rather than on top
+   of it: text over a photograph behind a scrim is a web habit and reads worse —
+   in the language of drawings, the caption sits under the figure.
+
+   .blog-section, .blog-header, .blog-grid, .blog-item and .blog-overlay keep
+   their class names. */
+.blog-section {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 6vw 96px;
+    width: auto;
+}
+
+.blog-header { margin-bottom: 34px; max-width: 30ch; }
+.blog-header h2 { margin-bottom: 0; }
+
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    border-top: 1px solid rgba(var(--ink), 0.14);
+    border-left: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.blog-item {
+    position: relative;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 2;
+    align-content: start;
+    min-height: 0;
+    padding: 24px 24px 28px;
+    background: none;
+    border: 0;
+    border-right: 1px solid var(--line, rgba(var(--ink), 0.08));
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+    border-radius: 0;
+    overflow: visible;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: none;
+    transition: background 0.32s ease;
+}
+
+.blog-item:hover {
+    transform: none;
+    background: rgba(var(--ink), 0.014);
+    box-shadow: none;
+}
+
+.blog-item::before { content: none; }
+
+.blog-item::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.blog-item:hover::after { transform: scaleX(1); }
+
+.ic-shot {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--line, rgba(var(--ink), 0.08));
+    overflow: hidden;
+}
+
+/* These images keep THEIR OWN colour: photographs of past events carry
+   information — the hall, the people, the setting — that desaturation flattens
+   to nothing. Only a slight contrast adjustment is applied, as on the
+   banners. */
+.ic-shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: contrast(1.04) saturate(1.02);
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.blog-item:hover .ic-shot img { transform: scale(1.03); }
+
+.ic-shot::before,
+.ic-shot::after {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+}
+
+.ic-shot::before { top: -1px; left: -1px; border-top: 2px solid var(--accent, #ff3636); border-left: 2px solid var(--accent, #ff3636); }
+.ic-shot::after { bottom: -1px; right: -1px; border-bottom: 2px solid var(--accent, #ff3636); border-right: 2px solid var(--accent, #ff3636); }
+
+.ic-shot-index {
+    position: absolute;
+    z-index: 3;
+    top: 10px;
+    left: 10px;
+    padding: 4px 8px;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.blog-overlay {
+    position: relative;
+    z-index: 2;
+    padding: 0;
+    text-align: left;
+    min-width: 0;
+}
+
+.blog-overlay h4 {
+    margin: 0 0 10px;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 1.26;
+    letter-spacing: 0.015em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+    text-shadow: none;
+    text-wrap: pretty;
+}
+
+.blog-overlay p {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-shadow: none;
+}
+
+.blog-overlay p::before {
+    content: "";
+    width: 14px;
+    height: 1px;
+    flex: none;
+    background: var(--accent, #ff3636);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ic-wordmark, .scroll-down-arrow svg { animation: none; }
+    .pillar-card, .pillar-card::after, .blog-item, .blog-item::after,
+    .ic-shot img, .map, .icon-box img { transition: none; }
+    .ic-shot img { transform: none; }
+}
+
+/* ── Tablet ──────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+    .hero-content-narrow { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+    .hero-content-narrow h2 { max-width: 24ch; }
+    .grid-4-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .venue-grid { grid-template-columns: minmax(0, 1fr); }
+    .map-placeholder, .map { min-height: 300px; }
+}
+
+@media (max-width: 980px) {
+    .ic-banner img { max-height: 320px; }
+}
+
+/* ── Phone ───────────────────────────────────────────────── */
+@media (max-width: 820px) {
+    .ic-pad, .hero-section-icbi, .pillars-section, .venue-section, .blog-section {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+
+    .scroll-down-arrow { left: 22px; bottom: 22px; }
+    .ic-banner img { max-height: 230px; }
+    .ic-frame { inset: 10px; }
+
+    .hero-section-icbi { padding-top: 26px; padding-bottom: 34px; }
+    .ic-topline { margin-bottom: 28px; }
+    .hero-quote { font-size: 15px; }
+
+    .pillars-section { padding-top: 44px; padding-bottom: 56px; }
+    .venue-section { padding-bottom: 56px; }
+    .blog-section { padding-bottom: 64px; }
+
+    /* In one column the subgrid has nothing to align, and the fixed rows
+       only fight the natural height. */
+    .grid-4-col, .blog-grid { grid-template-columns: minmax(0, 1fr); border-left: 0; }
+
+    .pillar-card, .blog-item {
+        grid-template-rows: none;
+        grid-row: auto;
+        padding-left: 0;
+        padding-right: 0;
+        border-right: 0;
+    }
+
+    /* The plate gives up its inner padding but keeps the frame and the
+       marks: at 390px it would otherwise leave 250px for the text. */
+    .ic-plate { padding: 26px 20px 22px; }
+    .ic-plate .ic-sec-head { max-width: none; }
+    .venue-grid { gap: 26px; margin-top: 26px; }
+    .map-placeholder, .map { min-height: 240px; }
+}

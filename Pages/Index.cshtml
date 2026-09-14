@@ -1,0 +1,411 @@
+@page
+@model IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+@* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── *@
+
+@{
+    ViewData["Title"] = Localizer["Home_PageTitle"];
+}
+
+@* indexStyle.css is loaded on this page alone. *@
+@section Styles {
+    <link rel="stylesheet" href="~/css/indexStyle.css" asp-append-version="true" />
+}
+
+@section Scripts {
+        @* The countdown in the hero, and the measurement of the top bar
+           height that the layout below depends on. *@
+    <script src="~/js/homeCountdown.js" asp-append-version="true"></script>
+    @* The portrait modal, shared with the Lecturers page. *@
+    <script src="~/js/lecturerModal.js" asp-append-version="true"></script>
+    @* The rotation of the four lecturer cards; this used to be an inline
+       script in this file. *@
+    <script src="~/js/homeLecturers.js" asp-append-version="true"></script>
+}
+
+<main>
+    @* ── HERO ─────────────────────────────────────────────────────────────
+       A split screen: a dark panel with the title on the left, the photograph
+       on the right, and a "pass" strip with the key facts along the bottom.
+
+       Two details are deliberate:
+       · the photograph is a real <img> inside .hero-visual rather than a CSS
+         background, so that it can be cropped with object-fit and carry its
+         own gradient towards the panel;
+       · .meta-label and .meta-value are kept as class names even though the
+         surrounding elements were renamed, because the old rules for them
+         still apply. *@
+    <section class="hero index-hero">
+        <div class="hero-split">
+
+            <div class="hero-panel">
+                @* A grid of seats, echoing the hall in the photograph. A pure
+                   CSS gradient, no image. *@
+                <span class="hero-seatmap" aria-hidden="true"></span>
+
+                @* The countdown sits on the label line rather than in a box of
+                   its own: the date is already in the pass, and this is only the
+                   reason to act now. The date is set HERE, in data-countdown (ISO
+                   format), not in the JavaScript file; if it has passed or is
+                   missing, nothing is shown at all. *@
+                <div class="hero-eyebrow-row">
+                    <p class="hero-subtitle">@Localizer["Home_HeroSubtitle"]</p>
+                    @* data-countdown-end covers all three days of the
+                       conference: without it the badge would say "today" on the
+                       29th only, and disappear on the 30th and 31st while the
+                       event was still running. The wording arrives through data-*
+                       attributes, so that resx stays the only place language
+                       lives and one JavaScript file serves both. *@
+                    <span class="hero-countdown"
+                          data-countdown="2026-10-29"
+                          data-countdown-end="2026-10-31"
+                          data-label-suffix="@Localizer["Home_CountdownSuffix"]"
+                          data-label-suffix-one="@Localizer["Home_CountdownSuffixOne"]"
+                          data-label-today="@Localizer["Home_CountdownToday"]"
+                          hidden>
+                        <b>—</b> <span class="hero-countdown-text">@Localizer["Home_CountdownSuffix"]</span>
+                    </span>
+                </div>
+
+                <h1 class="hero-title">@Localizer["Home_HeroTitle"]</h1>
+                <p class="hero-conference-name">@Localizer["Home_HeroConferenceName"]</p>
+
+                <div class="hero-organisers">
+                    @{
+                        // Localizer[...] here is an IViewLocalizer, whose indexer
+                        // returns a LocalizedHtmlString — a type that has NO
+                        // .ResourceNotFound (CS1061 if you try). GetString(...)
+                        // on the same localizer returns a plain LocalizedString,
+                        // which does have it, and looks in the same resx file.
+                        // The label is optional: a missing key renders nothing
+                        // rather than the key itself.
+                        var orgLabel = Localizer.GetString("Home_HeroOrganisers");
+                    }
+                    @if (!orgLabel.ResourceNotFound)
+                    {
+                        <span class="hero-foot-label">@orgLabel</span>
+                    }
+                    <div class="partners-bar">
+                        <div class="partner-logo"><img src="~/images/logos/UNWE.png" alt="UNWE"></div>
+                        <div class="partner-logo"><img src="~/images/logos/ICBI.png" alt="ICBI"></div>
+                        <div class="partner-logo"><img src="~/images/logos/NABI.png" alt="NABI"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                @* Url.Content rather than "~/": Razor resolves "~/" only in the
+                   src and href of a tag helper, not inside the srcset of a
+                   <source>. *@
+                <picture>
+                    <source media="(max-width: 1024px) and (orientation: portrait)" srcset="@Url.Content("~/images/home/bannerHomeMobile.png")">
+                    <img src="@Url.Content("~/images/home/bannerHome.png")" alt="">
+                </picture>
+                <span class="hero-visual-blur" aria-hidden="true"></span>
+                @* Only below 1024px, where the photograph becomes the
+                   background of the text; on a desktop it is display: none. *@
+                <span class="hero-visual-scrim" aria-hidden="true"></span>
+                <span class="hero-visual-fade" aria-hidden="true"></span>
+                <span class="hero-venue" aria-hidden="true">@Localizer["Home_HeroLocValue"]</span>
+            </div>
+
+        </div>
+
+        <div class="hero-pass">
+            <div class="hero-pass-fields">
+                <div class="hero-pass-cell">
+                    <span class="meta-label">@Localizer["Global_Date"]</span>
+                    <span class="meta-value">@Localizer["Home_HeroDateValue"]</span>
+                </div>
+                <div class="hero-pass-cell">
+                    <span class="meta-label">@Localizer["Global_Location"]</span>
+                    <span class="meta-value">@Localizer["Home_HeroLocValue"]</span>
+                </div>
+                <div class="hero-pass-cell">
+                    <span class="meta-label">@Localizer["Global_Duration"]</span>
+                    <span class="meta-value">@Localizer["Home_HeroDurationValue"]</span>
+                </div>
+                <div class="hero-pass-cell">
+                    <span class="meta-label">@Localizer["Global_Language"]</span>
+                    <span class="meta-value">@Localizer["Home_HeroLangValue"]</span>
+                </div>
+            </div>
+
+            @* The perforation between the fields and the stub: the two circles
+               are painted in the page background colour (--bg), which is what
+               makes them read as punched out. *@
+            <span class="hero-pass-perf" aria-hidden="true"></span>
+
+            <a class="hero-pass-stub" href="/Register">
+                <span class="hero-pass-stub-label">@Localizer["Nav_Register"]</span>
+                <span class="hero-pass-stub-value"><span class="hero-pass-arrow" aria-hidden="true"><span></span><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="13 6 19 12 13 18"></polyline></svg></span></span>
+            </a>
+        </div>
+    </section>
+
+    <section class="partherAnimation-section" id="partners-marquee-section">
+        <div class="section-inner reveal">
+            
+            <div class="partners-marquee">
+                
+                @if (Model.PartnersLogos != null && Model.PartnersLogos.Any())
+                {
+                    <div class="marquee-group">
+                        @foreach (var logo in Model.PartnersLogos)
+                        {
+                            <div class="marquee-logo">
+                                <img src="@logo.ImagePath" alt="Partner Logo">
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="marquee-group" aria-hidden="true">
+                        @foreach (var logo in Model.PartnersLogos)
+                        {
+                            <div class="marquee-logo">
+                                <img src="@logo.ImagePath" alt="Partner Logo">
+                            </div>
+                        }
+                    </div>
+                }
+
+            </div>
+
+        </div>
+    </section>
+
+    <section class="intro-section" id="intro-section">
+        <div class="section-inner reveal">
+            <div class="intro-grid">
+                <div class="intro-text">
+                    <p class="section-label">@Localizer["Home_AboutLabel"]</p>
+                    <h2>@Localizer["Home_GapTitle"]</h2>
+                    <p>@Localizer["Home_GapDesc1"]</p>
+                    <p>@Localizer["Home_GapDesc2"]</p>
+                    <div class="btn-group">
+                        <a href="/Conference" class="btn btn-red">@Localizer["Global_BtnLearnMore"]</a>
+                        <a href="/Schedule" class="btn btn-outline">@Localizer["Global_BtnViewAgenda"]</a>
+                    </div>
+                </div>
+                <div class="intro-quote">
+                    <blockquote>
+                        @Localizer["Home_Quote"]
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="outcomes-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Home_DelivLabel"]</p>
+            <h2>@Localizer["Home_DelivTitle"]</h2>
+            
+            <div class="outcomes-row">
+                <div class="outcome-item">
+                    <span class="number">01</span>
+                    <h4>@Localizer["Home_Deliv1_Title"]</h4>
+                    <p>@Localizer["Home_Deliv1_Desc"]</p>
+                </div>
+                <div class="outcome-item">
+                    <span class="number">02</span>
+                    <h4>@Localizer["Home_Deliv2_Title"]</h4>
+                    <p>@Localizer["Home_Deliv2_Desc"]</p>
+                </div>
+                <div class="outcome-item">
+                    <span class="number">03</span>
+                    <h4>@Localizer["Home_Deliv3_Title"]</h4>
+                    <p>@Localizer["Home_Deliv3_Desc"]</p>
+                </div>
+                <div class="outcome-item">
+                    <span class="number">04</span>
+                    <h4>@Localizer["Home_Deliv4_Title"]</h4>
+                    <p>@Localizer["Home_Deliv4_Desc"]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="domains-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Home_DomainsLabel"]</p>
+            <h2>@Localizer["Home_DomainsTitle"]</h2>
+            
+            <div class="grid-4-col">
+                <div class="domain-card">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.8-1.3-4-2-6.5-2A1.5 1.5 0 0 0 4 6v11a1 1 0 0 0 1.2 1c2.2-.4 4.2.1 6.8 2 2.6-1.9 4.6-2.4 6.8-2a1 1 0 0 0 1.2-1V6a1.5 1.5 0 0 0-1.5-1.5c-2.5 0-4.7.7-6.5 2Z"></path><path d="M12 6.5V20"></path></svg></div>
+                    <h4>@Localizer["Home_Dom1_Title"]</h4>
+                    <p>@Localizer["Home_Dom1_Desc"]</p>
+                </div>
+                <div class="domain-card">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"></path><path d="M7 21h10"></path><path d="M5 7h4"></path><path d="M15 7h4"></path><path d="M3 7l2 5a2.2 2.2 0 0 0 4 0l2-5"></path><path d="M13 7l2 5a2.2 2.2 0 0 0 4 0l2-5"></path></svg></div>
+                    <h4>@Localizer["Home_Dom2_Title"]</h4>
+                    <p>@Localizer["Home_Dom2_Desc"]</p>
+                </div>
+                <div class="domain-card">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1.5"></rect><rect x="9.5" y="9.5" width="5" height="5" rx="0.5"></rect><path d="M9 2v2M12 2v2M15 2v2M9 20v2M12 20v2M15 20v2M2 9h2M2 12h2M2 15h2M20 9h2M20 12h2M20 15h2"></path></svg></div>
+                    <h4>@Localizer["Home_Dom3_Title"]</h4>
+                    <p>@Localizer["Home_Dom3_Desc"]</p>
+                </div>
+                <div class="domain-card">
+                    <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"></circle><ellipse cx="12" cy="12" rx="9" ry="3.8"></ellipse><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(60 12 12)"></ellipse><ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(120 12 12)"></ellipse></svg></div>
+                    <h4>@Localizer["Home_Dom4_Title"]</h4>
+                    <p>@Localizer["Home_Dom4_Desc"]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (Model.TopLecturers != null && Model.TopLecturers.Any())
+    {
+        var isBg = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+        var lecturersJson = System.Text.Json.JsonSerializer.Serialize(Model.AllLecturers.Select(l => new {
+            nameEn = l.FullNameEn,
+            nameBg = string.IsNullOrWhiteSpace(l.FullNameBg) ? l.FullNameEn : l.FullNameBg,
+            roleEn = l.RoleEn ?? "",
+            roleBg = string.IsNullOrWhiteSpace(l.RoleBg) ? (l.RoleEn ?? "") : l.RoleBg,
+            orgEn  = l.OrganizationEn ?? "",
+            orgBg  = string.IsNullOrWhiteSpace(l.OrganizationBg) ? (l.OrganizationEn ?? "") : l.OrganizationBg,
+            bioEn  = l.BiographyEn != null && l.BiographyEn.Length > 90 ? l.BiographyEn[..90] + "..." : (l.BiographyEn ?? ""),
+            bioBg  = l.BiographyBg != null && l.BiographyBg.Length > 90 ? l.BiographyBg[..90] + "..." : (string.IsNullOrWhiteSpace(l.BiographyBg) ? (l.BiographyEn != null && l.BiographyEn.Length > 90 ? l.BiographyEn[..90] + "..." : (l.BiographyEn ?? "")) : l.BiographyBg),
+            url    = l.ProfileUrl ?? "",
+            avatar = string.IsNullOrEmpty(l.AvatarImagePath) ? "/images/logos/avatar.png" : l.AvatarImagePath
+        }));
+
+        <section class="faculty-section">
+            <div class="section-inner reveal center-section">
+                <p class="section-label">@Localizer["Speakers_Subtitle"]</p>
+                <h2>@Localizer["Speakers_Title"]</h2>
+
+                <div class="grid-4-col" id="lecturers-grid" data-locale="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" data-close-label="@(isBg ? "Затвори" : "Close")">
+                    @{ int slot = 0; }
+                    @foreach (var lecturer in Model.TopLecturers)
+                    {
+                        var name = isBg ? (string.IsNullOrWhiteSpace(lecturer.FullNameBg) ? lecturer.FullNameEn : lecturer.FullNameBg) : lecturer.FullNameEn;
+                        var role = isBg ? (string.IsNullOrWhiteSpace(lecturer.RoleBg) ? lecturer.RoleEn : lecturer.RoleBg) : lecturer.RoleEn;
+                        var org  = isBg ? (string.IsNullOrWhiteSpace(lecturer.OrganizationBg) ? lecturer.OrganizationEn : lecturer.OrganizationBg) : lecturer.OrganizationEn;
+                        var bio  = isBg ? (string.IsNullOrWhiteSpace(lecturer.BiographyBg) ? lecturer.BiographyEn : lecturer.BiographyBg) : lecturer.BiographyEn;
+                        var avatarPath = string.IsNullOrEmpty(lecturer.AvatarImagePath) ? "/images/logos/avatar.png" : lecturer.AvatarImagePath;
+                        if (!string.IsNullOrEmpty(bio) && bio.Length > 90) bio = bio[..90] + "...";
+                        var hasUrl = !string.IsNullOrEmpty(lecturer.ProfileUrl);
+
+                        <div class="faculty-card"
+                             data-slot="@slot"
+                             data-url="@(lecturer.ProfileUrl ?? "")"
+                             style="cursor:@(hasUrl ? "pointer" : "default")">
+                            <span class="lc-index">@((slot + 1).ToString("00"))</span>
+                            <div class="avatar-lg" role="button" tabindex="0" aria-label="@(isBg ? "Виж снимката в едър план" : "View larger photo")"><img src="@avatarPath" alt="@name"></div>
+                            <h4>@name</h4>
+                            <div class="lc-ident">
+                                <p class="role">@role</p>
+                                <p class="org">@org</p>
+                            </div>
+                            <p class="bio">@bio</p>
+                            <p class="lc-more">@(isBg ? "Профил" : "Profile") <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></p>
+                        </div>
+
+                        slot++;
+                    }
+                </div>
+
+                <a href="/Lecturers" class="view-all-link mt-4"><span>@Localizer["Home_ViewAllLecturers"]</span><i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></i></a>
+            </div>
+        </section>
+
+        @* The rotation data is plain data in an application/json block, not
+           generated JavaScript. The logic lives in ~/js/homeLecturers.js: one
+           cacheable file, the same for both languages, testable on its own. *@
+        <script type="application/json" id="lecturers-data">@Html.Raw(lecturersJson)</script>
+    }
+
+    <section class="timeline-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Home_TimelineLabel"]</p>
+            <h2>@Localizer["Home_TimelineTitle"]</h2>
+            
+            <div class="timeline-track">
+                <div class="timeline-item">
+                    <div class="timeline-node">01</div>
+                    <div class="timeline-content">
+                        <span class="item-label">@Localizer["Home_Time1_Label"]</span>
+                        <h3 class="item-date">@Localizer["Home_Time1_Date"]</h3>
+                        <p class="item-desc">@Localizer["Home_Time1_Desc"]</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-node">02</div>
+                    <div class="timeline-content">
+                        <span class="item-label">@Localizer["Home_Time4_Label"]</span>
+                        <h3 class="item-date">@Localizer["Home_Time4_Date"]</h3>
+                        <p class="item-desc">@Localizer["Home_Time4_Desc"]</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-node">03</div>
+                    <div class="timeline-content">
+                        <span class="item-label">@Localizer["Home_Time5_Label"]</span>
+                        <h3 class="item-date">@Localizer["Home_Time5_Date"]</h3>
+                        <p class="item-desc">@Localizer["Home_Time5_Desc"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="agenda-preview-section">
+        <div class="section-inner reveal center-section">
+            <p class="section-label">@Localizer["Home_AgendaLabel"]</p>
+            <h2>@Localizer["Home_AgendaTitle"]</h2>
+            
+            <div class="grid-3-col agenda-days">
+                <div class="day-col">
+                    <div class="day-header">
+                        <span class="number">01</span>
+                        <h4>@Localizer["Day01Title"]</h4>
+                    </div>
+                    @Html.Raw(Localizer["Home_Day01List_Html"].Value)
+                </div>
+                <div class="day-col">
+                    <div class="day-header">
+                        <span class="number">02</span>
+                        <h4>@Localizer["Day02Title"]</h4>
+                    </div>
+                    @Html.Raw(Localizer["Home_Day02List_Html"].Value)
+                </div>
+                <div class="day-col">
+                    <div class="day-header">
+                        <span class="number">03</span>
+                        <h4>@Localizer["Day03Title"]</h4>
+                    </div>
+                    @Html.Raw(Localizer["Home_Day03List_Html"].Value)
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="/Schedule" class="btn btn-outline">@Localizer["Global_BtnFullSchedule"]</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-cta-section">
+        <div class="section-inner reveal">
+            <div class="cta-grid">
+                <div class="cta-text">
+                    <h2>@Localizer["Home_CtaTitle"]</h2>
+                    <p>@Localizer["Home_CtaPara1"]</p>
+                    <p>@Localizer["Home_CtaPara2"]</p>
+                </div>
+                <div class="cta-card">
+                    <h3>@Localizer["Home_StudyTitle"]</h3>
+                    <p>@Localizer["Home_StudyDesc"]</p>
+                    <a href="https://www.unwe.bg/en/pages/11856/fields-and-specialties.html#3760" target="_blank" class="btn btn-red full-width mb-3">@Localizer["Home_BtnBachelor"]</a>
+                    <a href="https://www.unwe.bg/bg/pages/11855/%d1%81%d0%bf%d0%b5%d1%86%d0%b8%d0%b0%d0%bb%d0%bd%d0%be%d1%81%d1%82%d0%b8.html#3762" target="_blank" class="btn btn-outline full-width">@Localizer["Home_BtnMaster"]</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>

@@ -1,0 +1,395 @@
+@page
+@model ConferenceModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+@* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── *@
+
+@{
+    ViewData["Title"] = Localizer["Nav_Conference"].Value ?? "Conference";
+
+    var isBg = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg";
+
+    // The goals, themes, outcomes, days and documents are built as arrays and
+    // rendered by one loop each. The markup for them is identical, and it used
+    // to be written out four times per section.
+    var goals = new[]
+    {
+        new { Icon = "reward.png", Title = Localizer["Conf_Goal1_Title"].Value, Desc = Localizer["Conf_Goal1_Desc"].Value },
+        new { Icon = "book.png", Title = Localizer["Conf_Goal2_Title"].Value, Desc = Localizer["Conf_Goal2_Desc"].Value },
+        new { Icon = "judge.png", Title = Localizer["Conf_Goal3_Title"].Value, Desc = Localizer["Conf_Goal3_Desc"].Value },
+        new { Icon = "institution.png", Title = Localizer["Conf_Goal4_Title"].Value, Desc = Localizer["Conf_Goal4_Desc"].Value }
+    };
+
+    var themes = new[]
+    {
+        new { Icon = "openbook.png", Title = Localizer["Conf_Theme1_Title"].Value },
+        new { Icon = "judge.png", Title = Localizer["Conf_Theme2_Title"].Value },
+        new { Icon = "chip.png", Title = Localizer["Conf_Theme3_Title"].Value },
+        new { Icon = "atom.png", Title = Localizer["Conf_Theme4_Title"].Value }
+    };
+
+    var deliverables = new[]
+    {
+        new { Title = Localizer["Conf_Deliv1_Title"].Value, Desc = Localizer["Conf_Deliv1_Desc"].Value },
+        new { Title = Localizer["Conf_Deliv2_Title"].Value, Desc = Localizer["Conf_Deliv2_Desc"].Value },
+        new { Title = Localizer["Conf_Deliv3_Title"].Value, Desc = Localizer["Conf_Deliv3_Desc"].Value },
+        new { Title = Localizer["Conf_Deliv4_Title"].Value, Desc = Localizer["Conf_Deliv4_Desc"].Value }
+    };
+
+    var days = new[]
+    {
+        new { Label = Localizer["Conf_Day1"].Value, Title = Localizer["Conf_Day1_Title"].Value, List = Localizer["Conf_Day1_List"].Value },
+        new { Label = Localizer["Conf_Day2"].Value, Title = Localizer["Conf_Day2_Title"].Value, List = Localizer["Conf_Day2_List"].Value },
+        new { Label = Localizer["Conf_Day3"].Value, Title = Localizer["Conf_Day3_Title"].Value, List = Localizer["Conf_Day3_List"].Value }
+    };
+
+    @* The icon and the wording stay here — they are part of the design. The
+       FILE itself comes from the database, uploaded from the panel: it used to
+       be a hard-coded name that had to be matched exactly on an FTP upload. *@
+    var documents = new[]
+    {
+        new { Icon = "docs.png",     Key = ConferenceApp.Models.DownloadableFile.DocTemplate,    Title = Localizer["Conf_Doc1_Title"].Value, Desc = Localizer["Conf_Doc1_Desc"].Value },
+        new { Icon = "sign.png",     Key = ConferenceApp.Models.DownloadableFile.DocDeclaration, Title = Localizer["Conf_Doc2_Title"].Value, Desc = Localizer["Conf_Doc2_Desc"].Value },
+        new { Icon = "database.png", Key = ConferenceApp.Models.DownloadableFile.DocCopyright,   Title = Localizer["Conf_Doc3_Title"].Value, Desc = Localizer["Conf_Doc3_Desc"].Value }
+    };
+
+    // The partners and the committees the same way: three copies of one block
+    // in the original, each repeating the language check inside the loop.
+    var partnerGroups = new[]
+    {
+        new { Heading = Localizer["Conf_InstPartners"].Value, Items = Model.InstitutionalPartners },
+        new { Heading = Localizer["Conf_BusPartners"].Value, Items = Model.BusinessPartners },
+        new { Heading = Localizer["Conf_MediaPartners"].Value, Items = Model.MediaPartners }
+    };
+
+    var committees = new[]
+    {
+        new { Heading = Localizer["Conf_OrgCommittee"].Value, Items = Model.OrganizingCommittee },
+        new { Heading = Localizer["Conf_ProgCommittee"].Value, Items = Model.ProgramCommittee },
+        new { Heading = Localizer["Conf_StuCommittee"].Value, Items = Model.StudentCommittee }
+    };
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/conferenceStyle.css" asp-append-version="true" />
+}
+
+@*
+    Страница „Конференция", редизайн.
+
+    Model-ът НЕ е променян: същите шест списъка (три комитета, три
+    категории партньори), същото филтриране, същите полета. Няма промени
+    в mainStyle.css, _Layout.cshtml, навигацията или футъра. Страницата
+    не ползва свой JS.
+
+    СОБСТВЕНИЯТ мотив на банера е аксонометрична решетка — три посоки на
+    60°, както се разчертава изометрична проекция. (Квадратна решетка:
+    FAQ, „Участие". Времева скала: „Програма". Диагонално щриховане:
+    „Лектори". Милиметрова хартия: ICBI.)
+
+    РИТЪМ: оригиналът беше осем пъти „центрирано заглавие + решетка от
+    карти". Сега всяка секция има своя форма — две колони текст,
+    номерирани клетки, плътна лента, дневни колони с хairline списъци,
+    светла плоча с редове, редове за сваляне, партньорски колони,
+    компактни редове за хора.
+
+    .light-section вече не е бяла банда на цялата широчина, а ПЛОЧА с
+    рамка и маркери — виж шапката на conferenceStyle.css защо това има
+    значение за бъдещия общ фон.
+
+    Нови resx ключове: Conf_JumpToConference, Conf_EditionLabel,
+      Conf_EditionValue, Conf_CommitteesTitle, Conf_Download
+*@
+
+<main class="site-main">
+<div class="conference-page">
+
+    <section class="hero conference-hero">
+        @* A real <img> rather than a CSS background-image: the banner then
+           gets the same treatment as on the other pages, and takes its height
+           from the photograph instead of a fixed 72vh. *@
+        <img class="cf-banner-img" src="~/images/conference/bannerAbout.png" alt="">
+        <div class="hero-overlay"></div>
+        <div class="cf-banner-tint"></div>
+        <div class="cf-banner-iso"></div>
+        <div class="cf-frame">
+            <span class="c-tl-h"></span>
+            <span class="c-tl-v"></span>
+            <span class="c-br-h"></span>
+            <span class="c-br-v"></span>
+        </div>
+        <a href="#conference-section" class="scroll-down-arrow" aria-label="@Localizer["Conf_JumpToConference"]">
+            <span>@Localizer["Conf_JumpToConference"]</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="6 13 12 19 18 13"></polyline>
+            </svg>
+        </a>
+    </section>
+
+    <section class="about-section" id="conference-section">
+        <div class="section-inner reveal center-section">
+            <div class="cf-topline">
+                <span class="cf-wordmark">BLOCKCHAIN EDUCATION 2026</span>
+                <b>УНСС / ICBI</b>
+            </div>
+            <div class="cf-about-grid">
+                <div>
+                    <p class="section-label">@Localizer["Conf_SofiaLabel"]</p>
+                    <h2>@Localizer["Conf_AboutTitle"]</h2>
+                    <span class="cf-rule"></span>
+                    <div class="cf-stamp">
+                        <b>@Localizer["Conf_EditionLabel"]</b>
+                        <span>@Localizer["Conf_EditionValue"]</span>
+                    </div>
+                </div>
+                <div class="about-text">
+                    <p>@Localizer["Conf_AboutPara1"]</p>
+                    <p>@Localizer["Conf_AboutPara2"]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="goals-section">
+        <div class="section-inner reveal center-section">
+            <div class="cf-sec-head">
+                <p class="section-label">@Localizer["Conf_GoalsLabel"]</p>
+                <h2>@Localizer["Conf_GoalsTitle"]</h2>
+                <span class="cf-rule"></span>
+            </div>
+            <div class="grid-2-col">
+                @{ var goalIndex = 0; }
+                @foreach (var g in goals)
+                {
+                    goalIndex++;
+                    <div class="feature-card">
+                        <div class="cf-cell-head">
+                            <span class="cf-num">@goalIndex.ToString("00")</span>
+                            <div class="icon-box"><img src="~/images/conference/@g.Icon" alt=""></div>
+                        </div>
+                        <h4>@g.Title</h4>
+                        <p>@g.Desc</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* .cf-themes makes the band shorter: the themes are headings with an icon
+       and no descriptions. *@
+    <section class="themes-section cf-themes">
+        <div class="section-inner reveal center-section">
+            <div class="cf-sec-head">
+                <p class="section-label">@Localizer["Conf_ThemesLabel"]</p>
+                <h2>@Localizer["Conf_ThemesTitle"]</h2>
+                <span class="cf-rule"></span>
+            </div>
+            <div class="grid-4-col">
+                @foreach (var t in themes)
+                {
+                    <div class="theme-card">
+                        <div class="icon-box"><img src="~/images/conference/@t.Icon" alt=""></div>
+                        <h4>@t.Title</h4>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="structure-section">
+        <div class="section-inner reveal center-section">
+            <div class="cf-sec-head">
+                <p class="section-label">@Localizer["Conf_StructureLabel"]</p>
+                <h2>@Localizer["Conf_StructureTitle"]</h2>
+                <span class="cf-rule"></span>
+            </div>
+            <div class="grid-3-col">
+                @foreach (var d in days)
+                {
+                    <div class="feature-card">
+                        <p class="day-label">@d.Label</p>
+                        <h4>@d.Title</h4>
+                        @Html.Raw(d.List)
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="deliverables-section light-section">
+        <div class="section-inner reveal center-section">
+            @* A plate rather than a full-width band: a border, corner markers,
+               and space away from the edges. *@
+            <div class="cf-plate">
+                <i class="corner tl"></i>
+                <i class="corner tr"></i>
+                <i class="corner bl"></i>
+                <i class="corner br"></i>
+
+                <div class="cf-sec-head">
+                    <p class="section-label">@Localizer["Conf_OutcomesLabel"]</p>
+                    <h2>@Localizer["Conf_DeliverablesTitle"]</h2>
+                    <span class="cf-rule"></span>
+                </div>
+
+                <div class="grid-4-col">
+                    @{ var delivIndex = 0; }
+                    @foreach (var dv in deliverables)
+                    {
+                        delivIndex++;
+                        <div class="deliverable-item">
+                            <span class="item-number">@delivIndex.ToString("00")</span>
+                            <div>
+                                <h4>@dv.Title</h4>
+                                <p>@dv.Desc</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* The documents are rows rather than cards: they are actions, not
+       content. In the original an <a> wrapped a .theme-card — something that
+       looked like the themes above but behaved like a button. *@
+    <section class="themes-section">
+        <div class="section-inner reveal center-section">
+            <div class="cf-sec-head">
+                <p class="section-label">@Localizer["Conf_ResourcesLabel"]</p>
+                <h2>@Localizer["Conf_ResourcesTitle"]</h2>
+                <span class="cf-rule"></span>
+            </div>
+            <div class="cf-docs">
+                @foreach (var doc in documents)
+                {
+                    Model.Documents.TryGetValue(doc.Key, out var file);
+
+                    @* Not uploaded means not rendered. A row that leads nowhere
+                       is worse than a missing row: the visitor clicks and gets a
+                       404 with no explanation. *@
+                    if (file is null || !file.IsUploaded) { continue; }
+
+                    <a class="cf-doc" href="@file.FilePath" download="@file.DownloadName">
+                        <div class="icon-box"><img src="~/images/conference/@doc.Icon" alt=""></div>
+                        <div class="cf-doc-body">
+                            <h4>@doc.Title</h4>
+                            <h5>@Html.Raw(doc.Desc)</h5>
+                            <span class="cf-doc-meta">@file.TypeLabel · @file.SizeLabel</span>
+                        </div>
+                        <span class="cf-doc-get">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3v12"></path>
+                                <polyline points="7 11 12 16 17 11"></polyline>
+                                <path d="M4 20h16"></path>
+                            </svg>
+                            @Localizer["Conf_Download"]
+                        </span>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+
+    @if (Model.InstitutionalPartners.Any() || Model.BusinessPartners.Any() || Model.MediaPartners.Any())
+    {
+        <section class="partners-section">
+            <div class="section-inner reveal center-section">
+                <div class="cf-sec-head">
+                    <p class="section-label">@Localizer["Conf_PartnersLabel"]</p>
+                    <h2>@Localizer["Conf_PartnersTitle"]</h2>
+                    <span class="cf-rule"></span>
+                </div>
+
+                <div class="partners-3col">
+                    @foreach (var group in partnerGroups)
+                    {
+                        if (!group.Items.Any()) { continue; }
+
+                        <div class="partners-col">
+                            <p class="partners-col-heading">@group.Heading</p>
+                            @foreach (var partner in group.Items)
+                            {
+                                var name = isBg ? (string.IsNullOrWhiteSpace(partner.NameBg) ? partner.NameEn : partner.NameBg) : partner.NameEn;
+                                var logo = string.IsNullOrEmpty(partner.LogoImagePath) ? "/images/logos/avatar.png" : partner.LogoImagePath;
+
+                                if (!string.IsNullOrEmpty(partner.WebsiteUrl))
+                                {
+                                    <a class="partner-tile clickable" href="@partner.WebsiteUrl" target="_blank" rel="noopener">
+                                        <span class="partner-tile-arrow">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="7" y1="17" x2="17" y2="7"></line>
+                                                <polyline points="7 7 17 7 17 17"></polyline>
+                                            </svg>
+                                        </span>
+                                        <div class="partner-tile-logo"><img src="@logo" alt="@name"></div>
+                                        <span class="partner-tile-name">@name</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="partner-tile">
+                                        <div class="partner-tile-logo"><img src="@logo" alt="@name"></div>
+                                        <span class="partner-tile-name">@name</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+
+    @if (Model.OrganizingCommittee.Any() || Model.ProgramCommittee.Any() || Model.StudentCommittee.Any())
+    {
+        <section class="committees-section">
+            <div class="section-inner reveal center-section">
+                <div class="cf-sec-head">
+                    <p class="section-label">@Localizer["Conf_LeadershipLabel"]</p>
+                    @* This heading used to be a hard-coded "Our Committees", so
+                       the Bulgarian page showed English text. *@
+                    <h2>@Localizer["Conf_CommitteesTitle"]</h2>
+                    <span class="cf-rule"></span>
+                </div>
+
+                <div class="grid-3-col">
+                    @foreach (var committee in committees)
+                    {
+                        if (!committee.Items.Any()) { continue; }
+
+                        <div class="committee-column">
+                            @* This was an <h2> with an inline font size — a third
+                               <h2> in the same section, after its own heading. *@
+                            <p class="cf-col-head">@committee.Heading</p>
+                            <div class="person-list">
+                                @foreach (var member in committee.Items)
+                                {
+                                    var name = isBg ? (string.IsNullOrWhiteSpace(member.FullNameBg) ? member.FullNameEn : member.FullNameBg) : member.FullNameEn;
+                                    var role = isBg ? (string.IsNullOrWhiteSpace(member.RoleBg) ? member.RoleEn : member.RoleBg) : member.RoleEn;
+                                    var org = isBg ? (string.IsNullOrWhiteSpace(member.OrganizationBg) ? member.OrganizationEn : member.OrganizationBg) : member.OrganizationEn;
+                                    var avatarSrc = string.IsNullOrEmpty(member.AvatarImagePath) ? "/images/logos/avatar.png" : member.AvatarImagePath;
+
+                                    <div class="person-card">
+                                        <div class="avatar"><img src="@avatarSrc" alt="@name"></div>
+                                        <div class="person-info">
+                                            <h4>@name</h4>
+                                            <p class="role">@role</p>
+                                            <p class="org">@org</p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+
+</div>
+</main>

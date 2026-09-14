@@ -1,0 +1,172 @@
+@page
+@model ConferenceApp.Pages.FAQModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+@* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── *@
+
+@{
+    ViewData["Title"] = Localizer["Nav_FAQ"].Value ?? "FAQ";
+
+    var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.Name;
+    bool isBg = currentCulture.StartsWith("bg");
+    var faqs = Model.Faqs ?? new List<ConferenceApp.Models.FaqModel>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/stylesFAQ.css" asp-append-version="true" />
+}
+
+<main class="faq-page">
+
+    @* The banner is exactly as tall as the photograph; the heading goes below
+       it rather than on top. *@
+    <section class="fq-banner">
+        <img src="~/images/FAQ/banner.png" alt="" />
+        <div class="fq-banner-tint"></div>
+        <div class="fq-banner-grid"></div>
+        <div class="fq-frame">
+            <span class="c-tl-h"></span>
+            <span class="c-tl-v"></span>
+            <span class="c-br-h"></span>
+            <span class="c-br-v"></span>
+        </div>
+    </section>
+
+    <section class="fq-hero">
+        <div class="fq-hero-inner">
+            <div class="fq-topline">
+                <span class="fq-wordmark">@Localizer["FAQ_Brand"]</span>
+                <b>@Localizer["FAQ_Kicker"]</b>
+            </div>
+
+            <div>
+                <p class="fq-eyebrow">@Localizer["FAQ_Eyebrow"]</p>
+                <h1 class="fq-title">@Localizer["FAQ_Heading"]</h1>
+                <span class="fq-rule"></span>
+
+                <div class="fq-meta">
+                    <div>
+                        <b>@Localizer["FAQ_Meta_CountLabel"]</b>
+                        <span>@faqs.Count @Localizer["FAQ_Meta_CountUnit"]</span>
+                    </div>
+                    <div>
+                        <b>@Localizer["FAQ_Meta_UpdatedLabel"]</b>
+                        <span>@Localizer["FAQ_Meta_UpdatedValue"]</span>
+                    </div>
+                    <div>
+                        <b>@Localizer["FAQ_Meta_ReplyLabel"]</b>
+                        <span>@Localizer["FAQ_Meta_ReplyValue"]</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="fq-sec" id="tickets-section">
+        <div class="fq-pad">
+            <div class="fq-sec-head fq-reveal" data-reveal>
+                <span class="fq-ghost" aria-hidden="true">?</span>
+                <p class="fq-eyebrow">@Localizer["FAQ_Label"]</p>
+                <h2>@Localizer["FAQ_Title"]</h2>
+                <span class="fq-rule"></span>
+            </div>
+
+            @if (faqs.Any())
+            {
+                <div class="fq-toolbar fq-reveal" data-reveal>
+                    <div class="fq-search">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#8a8680" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                        </svg>
+                        <input type="search" data-faq-search
+                               placeholder="@Localizer["FAQ_SearchPlaceholder"]"
+                               aria-label="@Localizer["FAQ_SearchLabel"]" />
+                        <button type="button" class="fq-clear" data-faq-clear hidden
+                                aria-label="@Localizer["FAQ_SearchClear"]">@Localizer["FAQ_SearchClear"]</button>
+                    </div>
+
+                    <div class="fq-toolbar-right">
+                        <span class="fq-count" data-faq-count
+                              data-of="@Localizer["FAQ_CountOf"]"
+                              data-unit="@Localizer["FAQ_Meta_CountUnit"]">@faqs.Count @Localizer["FAQ_Meta_CountUnit"]</span>
+                        <button type="button" class="fq-tool" data-faq-toggle-all
+                                data-label-expand="@Localizer["FAQ_ExpandAll"]"
+                                data-label-collapse="@Localizer["FAQ_CollapseAll"]">@Localizer["FAQ_ExpandAll"]</button>
+                    </div>
+                </div>
+
+                <div class="fq-list" data-faq-list>
+                    @{ var index = 0; }
+                    @foreach (var faq in faqs)
+                    {
+                        var isOpen = index == 0; @* the first question starts open *@
+                        var question = isBg ? faq.QuestionBg : faq.QuestionEn;
+                        var answer = isBg ? faq.AnswerBg : faq.AnswerEn;
+                        index++;
+
+                        <article class="fq-item @(isOpen ? "is-open" : "")">
+                            <button class="fq-q" type="button" aria-expanded="@(isOpen ? "true" : "false")">
+                                <b class="fq-idx">@index.ToString("00")</b>
+                                <span class="fq-q-text">@question</span>
+                                <span class="fq-sign" aria-hidden="true"></span>
+                            </button>
+                            <div class="fq-a">
+                                <div>
+                                    <div class="fq-a-inner">
+                                        @* Html.Raw: the answers are written in the admin panel and
+                                           may contain <a> or <br>. *@
+                                        <p>@Html.Raw(answer)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                <div class="fq-empty" data-faq-empty hidden>
+                    <p class="fq-empty-label">@Localizer["FAQ_NoResultLabel"]</p>
+                    <p class="fq-empty-text">@Localizer["FAQ_NoResultTextBefore"] „<span data-faq-term></span>“. @Localizer["FAQ_NoResultTextAfter"]</p>
+                    <button type="button" class="fq-tool" data-faq-showall>@Localizer["FAQ_ShowAll"]</button>
+                </div>
+            }
+            else
+            {
+                <p class="fq-empty-text">@Localizer["FAQ_Unavailable"]</p>
+            }
+        </div>
+    </section>
+
+    <section class="fq-sec fq-sec--last">
+        <div class="fq-pad">
+            <div class="fq-ask fq-reveal" data-reveal>
+                <div class="fq-ask-left">
+                    <p class="fq-eyebrow">@Localizer["FAQ_Ask_Eyebrow"]</p>
+                    <h2>@Localizer["FAQ_Ask_Title"]</h2>
+                    <p>@Localizer["FAQ_Ask_Desc"]</p>
+                </div>
+                <div class="fq-ask-right">
+                    <div class="fq-ask-fact">
+                        <b>@Localizer["FAQ_Ask_EmailLabel"]</b>
+                        <span>conference.education@unwe.bg</span>
+                    </div>
+                    <a href="mailto:conference.education@unwe.bg" class="fq-ask-btn">
+                        @Localizer["FAQ_Ask_Cta"]
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="13 6 19 12 13 18"></polyline>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+@section Scripts {
+    <script src="~/js/faq.js" asp-append-version="true"></script>
+}

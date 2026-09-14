@@ -1,0 +1,49 @@
+@* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── *@
+
+@*
+    Emits the VALUES set in the admin panel: the six CSS custom properties
+    (all but --gfx-intensity, which the _GlobalEffects partial already handles)
+    and the page's own custom CSS.
+
+    Why it is a second partial rather than a few lines in the first:
+    _GlobalEffects.cshtml, globalEffects.css and globalEffects.js are the
+    original layer and are deliberately left untouched, so that a change here
+    cannot break a page that has no settings at all.
+
+    Rendered by _Layout.cshtml IMMEDIATELY AFTER
+    <partial name="_GlobalEffects" />, so that it comes after the stylesheet and
+    wins on cascade order.
+
+    The escape hatch: ?gfxsafe=1 in the address ignores the custom CSS for that
+    one load. The variables stay — they cannot hide text.
+*@
+
+@{
+    var gvIsAdminArea = string.Equals(
+        ViewContext.RouteData.Values["area"]?.ToString(), "Admin", StringComparison.OrdinalIgnoreCase);
+
+    // GlobalStylesFilter puts both of these into ViewData. GfxVars is a ready
+    // string of custom properties and GfxCustomCss is already sanitized — on
+    // WRITE, not here; this partial only emits them.
+    var gvVars = ViewData["GfxVars"]?.ToString();
+    var gvCss  = ViewData["GfxCustomCss"]?.ToString();
+
+    var gvSafeMode = Context.Request.Query["gfxsafe"] == "1";
+}
+
+@if (!gvIsAdminArea && (!string.IsNullOrWhiteSpace(gvVars) || (!string.IsNullOrWhiteSpace(gvCss) && !gvSafeMode)))
+{
+    <style id="gfx-page-vars">
+        @if (!string.IsNullOrWhiteSpace(gvVars))
+        {
+            @Html.Raw(":root{" + gvVars + "}")
+        }
+        @if (!string.IsNullOrWhiteSpace(gvCss) && !gvSafeMode)
+        {
+            @Html.Raw(gvCss)
+        }
+    </style>
+}

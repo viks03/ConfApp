@@ -1,0 +1,71 @@
+@* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── *@
+
+@* The hand-off after the last step of an authentication flow.
+
+   What it is for: the final step — signing in with a password, confirming a
+   code, finishing a registration — no longer looks like nothing is happening.
+   The overlay appears on submit and stays until the server answers with a
+   redirect to /Profile.
+
+   To use it: put <partial name="_AuthHandoff" /> just before </main> and add
+   data-auth-handoff="true" to the form whose submit leads to the profile. The
+   script does not show the overlay if the form is invalid. *@
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+<div class="auth-handoff" id="auth-handoff" aria-hidden="true">
+    <div class="auth-handoff-inner" role="status" aria-live="polite">
+        <img src="~/images/logos/mainLogo.png" alt="">
+        <p class="auth-handoff-eyebrow">@Localizer["handoff_eyebrow"]</p>
+        <h2 class="auth-handoff-title">@Localizer["handoff_title"]</h2>
+        <span class="auth-handoff-bar" aria-hidden="true"><i></i></span>
+        <span class="auth-handoff-note">@Localizer["handoff_note"]</span>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var overlay = document.getElementById('auth-handoff');
+        if (!overlay) return;
+
+        function hide() {
+            overlay.classList.remove('is-visible');
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+
+        // The listener used to be on the capture phase (`true`), which runs
+        // BEFORE validation.js — that one is bound to the form itself and works
+        // in the bubble phase. So the overlay went up before validation had had
+        // its say; validation.js then called preventDefault(), the form never
+        // submitted, and the overlay stayed on the screen for good.
+        //
+        // It listens in the bubble phase now — after every other listener — and
+        // checks whether anyone has already stopped the submit.
+        document.addEventListener('submit', function (e) {
+            var form = e.target.closest('form[data-auth-handoff]');
+            if (!form) return;
+
+            // Somebody — validation.js, or the browser's own validation — has
+            // stopped the submit.
+            if (e.defaultPrevented) return;
+            if (typeof form.checkValidity === 'function' && !form.checkValidity()) return;
+            if (form.querySelector('.input-validation-error, .is-invalid')) return;
+
+            overlay.classList.add('is-visible');
+            overlay.setAttribute('aria-hidden', 'false');
+
+            // A safety net: if the navigation does not happen for some reason
+            // — a network error, a broken response — the overlay must not be
+            // left blocking the page indefinitely.
+            setTimeout(function () {
+                if (document.visibilityState !== 'hidden') hide();
+            }, 20000);
+        }, false);
+
+        // Coming back through the history must not leave the overlay up;
+        // pageshow fires for a bfcache restore, where load does not.
+        window.addEventListener('pageshow', hide);
+    })();
+</script>

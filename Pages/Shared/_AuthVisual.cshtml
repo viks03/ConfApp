@@ -1,0 +1,69 @@
+@* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── *@
+
+@* The shared visual panel of the authentication pages.
+
+   Called as <partial name="_AuthVisual" model="1" />, where the model is the
+   current step: 1 = the first step, 2 = code or password, 3 = the profile.
+
+   The first step is named differently depending on the flow — "Register" on
+   /Register, "Sign in" on /Login and on /Verification after a sign-in — so the
+   flow is passed through ViewData["AuthFlowIsLogin"] rather than by widening
+   the model. *@
+@model int
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    var isLoginFlow = ViewData["AuthFlowIsLogin"] as bool? ?? false;
+    var isAdminPath = ViewData["AuthAdminPath"] as bool? ?? false;
+
+    var stepOne = isLoginFlow ? Localizer["ladder_login"] : Localizer["ladder_register"];
+    var stepTwo = isAdminPath ? Localizer["ladder_password"] : Localizer["ladder_code"];
+
+    @* On a 403 the "three steps to your profile" ladder means nothing, so the
+       panel lists what can be done instead. AccessDenied.cshtml passes
+       ViewData["AuthDenied"] = true. *@
+    var isDenied = ViewData["AuthDenied"] as bool? ?? false;
+}
+
+<aside class="auth-visual">
+    <img src="~/images/register/register.png" alt="">
+    <span class="auth-visual-fade" aria-hidden="true"></span>
+    <span class="auth-visual-grid" aria-hidden="true"></span>
+    <span class="auth-visual-edge" aria-hidden="true"></span>
+
+    <div class="auth-visual-inner">
+        <div class="auth-visual-top">
+            <span class="auth-wordmark">@Localizer["visual_wordmark"]</span>
+            <b>2026</b>
+        </div>
+
+        <div class="auth-visual-bottom">
+            <p class="auth-visual-claim">@(isDenied ? Localizer["visual_claim_denied"] : Localizer["visual_claim"])</p>
+
+            @if (isDenied)
+            {
+                <ol class="auth-ladder auth-ladder--routes">
+                    <li><b>01</b> <span>@Localizer["denied_route_1"]</span></li>
+                    <li><b>02</b> <span>@Localizer["denied_route_2"]</span></li>
+                    <li><b>03</b> <span>@Localizer["denied_route_3"]</span></li>
+                </ol>
+            }
+            else
+            {
+                <ol class="auth-ladder">
+                    <li class="@(Model == 1 ? "is-current" : "")">
+                        <b>01</b> <span>@stepOne</span>
+                    </li>
+                    <li class="@(Model == 2 ? "is-current" : "")">
+                        <b>02</b> <span>@stepTwo</span>
+                    </li>
+                    <li class="@(Model == 3 ? "is-current" : "")">
+                        <b>03</b> <span>@Localizer["ladder_profile"]</span>
+                    </li>
+                </ol>
+            }
+        </div>
+    </div>
+</aside>

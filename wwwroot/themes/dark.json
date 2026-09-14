@@ -1,0 +1,26 @@
+{
+  "name": "Тъмна (по подразбиране)",
+  "tokens": {
+    "--bg": "#050505",
+    "--panel": "#0b0b0b",
+    "--surface": "#0a0a0a",
+    "--surface-alt": "#17181a",
+    "--text": "#f4f2ec",
+    "--text-soft": "#d8d5cf",
+    "--muted": "#a7a39b",
+    "--text-dim": "#8a8680",
+    "--text-faint": "#6f6b66",
+    "--accent": "#FF3636",
+    "--accent-soft": "#ff363692",
+    "--ink": "255, 255, 255",
+    "--line": "rgba(255, 255, 255, 0.08)",
+    "--panel-soft": "rgba(255, 255, 255, 0.04)",
+    "--ok": "#4ea86b",
+    "--warn": "#d9932b",
+    "--danger": "#b81c1c",
+    "--danger-bright": "#e03535",
+    "--shadow": "0 30px 80px rgba(0, 0, 0, 0.35)",
+    "--max-width": "1180px",
+    "--mobile-nav-strip-width": "clamp(56px, 15vw, 84px)"
+  }
+}

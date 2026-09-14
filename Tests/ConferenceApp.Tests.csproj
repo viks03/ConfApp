@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Същата версия като приложението: тестовете вдигат Program.cs в своя
+         процес, тоест двете сглобки вървят под един и същи runtime. -->
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- Приложението вдига TreatWarningsAsErrors; тестовете не го наследяват
+         нарочно — предупреждение в тест не бива да спира намирането на бъг. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <!-- WebApplicationFactory: вдига истинския Program.cs в процеса на теста. -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.12" />
+    <!-- Браузърът за всичко, което човек прави с мишка. -->
+    <PackageReference Include="Microsoft.Playwright" Version="1.56.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ConferenceApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

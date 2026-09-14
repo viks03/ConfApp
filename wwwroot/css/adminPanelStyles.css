@@ -1,0 +1,938 @@
+/* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── */
+/* ============================================================
+   adminPanelStyles.css — the "Visual styles" tab of the admin panel.
+
+   A separate file rather than an addition to adminPanel.css, so that the
+   whole feature can be added or removed with one <link>. Every class is
+   prefixed gfx- and collides with no existing name.
+
+   It takes the panel's tokens (--c-*, --f-*, --transition) from
+   adminPanel.css, which is why it is loaded AFTER it.
+
+   IMPORTANT about the thumbnails: the backgrounds here are DRAWN AGAIN, in
+   miniature, on a dark card. globalEffects.css is NOT reused: it is written
+   for the public site (position: fixed, #ambient-fx, blend screen) and dropped
+   into a light panel it would either cover the screen or be invisible. So:
+   the same drawings, a different context. If a drawing changes in
+   globalEffects.css, it has to be changed here by hand — the price of leaving
+   the working layer alone.
+   ============================================================ */
+
+/* ── The card that carries the drawing ────────────────────────
+   One element serves the thumbnail in a row, the picker in the editor and the
+   large preview. The scale is a single variable (--ga-scale). */
+.gfx-art {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: #050505;
+    --ga-ink: 0.5;
+    --ga-glow: 0.85;
+    --ga-grid: 14px;
+    --ga-step: 4px;
+    --ga-intensity: 1;
+}
+
+.gfx-art > span {
+    position: absolute;
+    inset: -2px;
+    display: block;
+    opacity: var(--ga-intensity);
+}
+
+/* The mask repeats the one on the site: solid at the top, fading out
+   downwards. */
+.gfx-art > span {
+    -webkit-mask-image: radial-gradient(130% 108% at 50% -4%, #000 0%, rgba(0,0,0,0.72) 34%, rgba(0,0,0,0.3) 62%, rgba(0,0,0,0.08) 84%, transparent 100%);
+    mask-image: radial-gradient(130% 108% at 50% -4%, #000 0%, rgba(0,0,0,0.72) 34%, rgba(0,0,0,0.3) 62%, rgba(0,0,0,0.08) 84%, transparent 100%);
+}
+
+.gfx-art[data-bg="grid"] .gfx-art-a {
+    background:
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.14)) 1px, transparent 1px) 0 0 / 100% var(--ga-grid),
+        linear-gradient(90deg, rgba(255,255,255,calc(var(--ga-ink) * 0.14)) 1px, transparent 1px) 0 0 / var(--ga-grid) 100%;
+}
+
+.gfx-art[data-bg="paper"] .gfx-art-a {
+    background:
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.07)) 1px, transparent 1px) 0 0 / 100% var(--ga-step),
+        linear-gradient(90deg, rgba(255,255,255,calc(var(--ga-ink) * 0.07)) 1px, transparent 1px) 0 0 / var(--ga-step) 100%;
+}
+.gfx-art[data-bg="paper"] .gfx-art-b {
+    background:
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.16)) 1px, transparent 1px) 0 0 / 100% calc(var(--ga-step) * 6),
+        linear-gradient(90deg, rgba(255,255,255,calc(var(--ga-ink) * 0.16)) 1px, transparent 1px) 0 0 / calc(var(--ga-step) * 6) 100%;
+}
+
+.gfx-art[data-bg="hatch"] .gfx-art-a {
+    background: repeating-linear-gradient(45deg, rgba(255,255,255,calc(var(--ga-ink) * 0.15)) 0 1px, transparent 1px 7px);
+}
+.gfx-art[data-bg="hatch"] .gfx-art-b {
+    background: repeating-linear-gradient(45deg, rgba(255,54,54,calc(var(--ga-ink) * 0.5)) 0 1px, transparent 1px 34px);
+}
+
+.gfx-art[data-bg="glow"] .gfx-art-a {
+    background: radial-gradient(60% 90% at 50% -18%,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.4)) 0%,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.26)) 26%,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.14)) 46%,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.06)) 66%,
+        rgba(255,54,54,0) 100%);
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+.gfx-art.gfx-art.gfx-art[data-bg="contour"] .gfx-art-a {
+    background: repeating-radial-gradient(circle at 18% -8%, transparent 0 13px, rgba(255,255,255,calc(var(--ga-ink) * 0.16)) 13px 14px);
+}
+.gfx-art[data-bg="contour"] .gfx-art-b {
+    background: repeating-radial-gradient(circle at 88% 108%, transparent 0 18px, rgba(255,54,54,calc(var(--ga-ink) * 0.4)) 18px 19px);
+}
+
+/* "off" is an empty dark card with a diagonal, so that it does not read as
+   an error */
+.gfx-art[data-bg="off"] .gfx-art-a {
+    background: linear-gradient(135deg, transparent calc(50% - 1px), rgba(255,255,255,0.14) 50%, transparent calc(50% + 1px));
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+/* An unknown value — an old row, a deleted custom background: the card shows
+   a questioning raster rather than nothing, which would read as "off". */
+.gfx-art[data-bg="unknown"] .gfx-art-a {
+    background: repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 6px);
+}
+
+/* ── A page row ───────────────────────────────────────────────
+   Flat rows with one rule between them — the same language as
+   .email-toggle-row and .pay-gate-row, not another kind of card. */
+.gfx-safety {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    background: var(--c-amber-light);
+    border: 1px solid var(--c-amber-border);
+}
+
+.gfx-safety-text { max-width: 78ch; margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--c-text-secondary); }
+.gfx-safety-text b { color: var(--c-amber); font-weight: 600; }
+
+.gfx-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+
+.gfx-filter-btn {
+    height: 30px;
+    padding: 0 12px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border-strong);
+    color: var(--c-text-secondary);
+    font-family: var(--f-text);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.gfx-filter-btn:hover { border-color: var(--c-accent); color: var(--c-text); }
+.gfx-filter-btn.active { background: var(--c-accent-tint); border-color: var(--c-accent); color: var(--c-accent-ink); }
+.gfx-filter-btn:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.gfx-filter-btn i { font-style: normal; margin-left: 6px; color: var(--c-text-faint); font-variant-numeric: tabular-nums; }
+
+.gfx-group { margin-bottom: 18px; }
+.gfx-group:last-child { margin-bottom: 0; }
+
+.gfx-group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 0 0 7px;
+    border-bottom: 1px solid var(--c-border-strong);
+}
+.gfx-group-title {
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-text);
+}
+.gfx-group-note { font-size: 12px; color: var(--c-text-muted); }
+
+.gfx-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 2px;
+    border-bottom: 1px solid var(--c-border);
+}
+.gfx-row:last-child { border-bottom: 0; }
+.gfx-row.is-saving { opacity: 0.55; pointer-events: none; }
+.gfx-row[hidden] { display: none; }
+
+.gfx-row .gfx-art { flex: none; width: 84px; height: 48px; border: 1px solid var(--c-border-strong); }
+
+.gfx-row-text { flex: 1 1 auto; min-width: 0; }
+.gfx-row-name {
+    display: block;
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    color: var(--c-text);
+}
+.gfx-row-key { display: block; margin-top: 1px; font-family: var(--f-mono); font-size: 11.5px; color: var(--c-text-faint); }
+
+.gfx-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; flex: none; }
+
+.gfx-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px;
+    border: 1px solid var(--c-border-strong);
+    background: var(--c-surface-sunk);
+    font-size: 11.5px;
+    color: var(--c-text-secondary);
+    white-space: nowrap;
+}
+.gfx-tag-value { font-family: var(--f-mono); font-size: 11.5px; color: var(--c-text); }
+.gfx-tag.is-manual { background: var(--c-blue-light); border-color: var(--c-blue-border); color: var(--c-blue); }
+.gfx-tag.is-default { background: var(--c-surface-sunk); }
+.gfx-tag.is-css { background: var(--c-amber-light); border-color: var(--c-amber-border); color: var(--c-amber); }
+.gfx-tag.is-css-off { background: var(--c-slate-light); border-color: var(--c-slate-border); color: var(--c-slate); }
+
+.gfx-row-actions { display: flex; align-items: center; gap: 7px; flex: none; }
+
+.gfx-mini-btn {
+    height: 30px;
+    padding: 0 12px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border-strong);
+    color: var(--c-text);
+    font-family: var(--f-text);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.gfx-mini-btn:hover { border-color: var(--c-accent); background: var(--c-accent-tint); color: var(--c-accent-ink); }
+.gfx-mini-btn:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 2px; }
+.gfx-mini-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+@media (max-width: 860px) {
+    .gfx-row { flex-wrap: wrap; }
+    .gfx-row-text { flex: 1 1 100%; order: 2; }
+    .gfx-row-meta { order: 3; }
+    .gfx-row-actions { order: 4; margin-left: auto; }
+}
+
+/* ── The editor, inside the existing .modal-overlay ───────────
+   The preview is a dark block in a light panel, deliberately: the effect only
+   exists against dark, and any "translation" of it into light would be a lie.
+   So the preview is framed as a screen, with a label, rather than as part of
+   the form. */
+.gfx-preview {
+    position: relative;
+    margin: 0 0 16px;
+    border: 1px solid var(--c-rule);
+    background: #050505;
+}
+
+.gfx-preview .gfx-art {
+    width: 100%;
+    height: 200px;
+    --ga-grid: 34px;
+    --ga-step: 7px;
+}
+
+.gfx-preview-label {
+    position: absolute;
+    z-index: 2;
+    top: 8px;
+    left: 8px;
+    padding: 3px 7px;
+    background: rgba(5,5,5,0.8);
+    border: 1px solid rgba(255,255,255,0.18);
+    font-family: var(--f-mono);
+    font-size: 11px;
+    color: #f4f2ec;
+}
+
+.gfx-preview-copy {
+    position: absolute;
+    z-index: 2;
+    left: 22px;
+    right: 22px;
+    bottom: 18px;
+    pointer-events: none;
+}
+.gfx-preview-copy b {
+    display: block;
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 19px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #f4f2ec;
+}
+.gfx-preview-copy span { display: block; margin-top: 4px; font-size: 12.5px; color: #a7a39b; }
+
+/* The cursor glow inside the preview — the same gesture as on the site. */
+.gfx-preview-cursor {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 260px;
+    margin: -130px 0 0 -130px;
+    pointer-events: none;
+    background: radial-gradient(circle closest-side,
+        rgba(255,54,54,calc(var(--ga-cursor, 0.05) * 3)) 0%,
+        rgba(255,54,54,calc(var(--ga-cursor, 0.05) * 1.6)) 30%,
+        rgba(255,54,54,calc(var(--ga-cursor, 0.05) * 0.6)) 60%,
+        rgba(255,54,54,0) 100%);
+    transform: translate3d(var(--ga-cx, -9999px), var(--ga-cy, -9999px), 0);
+    opacity: 0;
+    transition: opacity 380ms ease;
+}
+.gfx-preview:hover .gfx-preview-cursor { opacity: 1; }
+
+/* ── Choosing a background ────────────────────────────────────
+   Cards rather than a dropdown: the word "hatch" says nothing on its own. */
+.gfx-choices {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 0 16px;
+}
+
+.gfx-choice {
+    position: relative;
+    display: block;
+    padding: 0;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border-strong);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+.gfx-choice:hover { border-color: var(--c-accent); }
+.gfx-choice input { position: absolute; opacity: 0; width: 0; height: 0; }
+.gfx-choice .gfx-art { width: 100%; height: 52px; --ga-grid: 11px; --ga-step: 3px; }
+.gfx-choice-name {
+    display: block;
+    padding: 6px 8px;
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    color: var(--c-text-secondary);
+    border-top: 1px solid var(--c-border);
+}
+.gfx-choice.is-selected { border-color: var(--c-accent); box-shadow: inset 0 0 0 1px var(--c-accent); }
+.gfx-choice.is-selected .gfx-choice-name { background: var(--c-accent-tint); color: var(--c-accent-ink); }
+.gfx-choice input:focus-visible ~ .gfx-choice-name { outline: 2px solid var(--c-accent); outline-offset: -2px; }
+
+@media (max-width: 640px) {
+    .gfx-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── Sliders ──────────────────────────────────────────────────
+   Intensity is a visible effect rather than a number, so it is a slider with
+   the preview above it. The number stays on the right, because the same value
+   has to be repeatable on another page. */
+.gfx-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.gfx-slider-row label {
+    flex: 0 0 148px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--c-text-secondary);
+}
+.gfx-slider-row input[type="range"] { flex: 1 1 auto; min-width: 0; accent-color: var(--c-accent); }
+.gfx-slider-row output {
+    flex: 0 0 62px;
+    text-align: right;
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--c-text);
+}
+.gfx-slider-row .gfx-inherit {
+    flex: none;
+    font-size: 11.5px;
+    color: var(--c-text-faint);
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.gfx-slider-row.is-inherited output { color: var(--c-text-faint); }
+
+/* ── Advanced settings and custom CSS: both collapsed ─────────
+   The complicated things stay available without being the first thing an
+   administrator sees. */
+.gfx-fold { border: 1px solid var(--c-border-strong); margin-bottom: 12px; background: var(--c-surface); }
+.gfx-fold > summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-family: var(--f-display);
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--c-text);
+    list-style: none;
+}
+.gfx-fold > summary::-webkit-details-marker { display: none; }
+.gfx-fold > summary::before { content: "+"; font-family: var(--f-mono); color: var(--c-accent); }
+.gfx-fold[open] > summary::before { content: "–"; }
+.gfx-fold > summary:focus-visible { outline: 2px solid var(--c-accent); outline-offset: -2px; }
+.gfx-fold-body { padding: 12px; border-top: 1px solid var(--c-border); }
+
+.gfx-css-area {
+    width: 100%;
+    min-height: 132px;
+    padding: 10px 11px;
+    background: var(--c-surface-sunk);
+    border: 1px solid var(--c-border-strong);
+    font-family: var(--f-mono);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--c-text);
+    resize: vertical;
+}
+.gfx-css-area:focus { outline: none; border-color: var(--c-accent); box-shadow: inset 0 -2px 0 var(--c-accent); }
+
+.gfx-css-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
+.gfx-css-switch-text { font-size: 12.5px; color: var(--c-text-secondary); }
+
+.gfx-css-report {
+    margin: 9px 0 0;
+    padding: 9px 11px;
+    border: 1px solid var(--c-border-strong);
+    background: var(--c-surface-sunk);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--c-text-secondary);
+}
+.gfx-css-report[hidden] { display: none; }
+.gfx-css-report.is-ok { background: var(--c-green-light); border-color: var(--c-green-border); color: var(--c-green); }
+.gfx-css-report.is-warn { background: var(--c-amber-light); border-color: var(--c-amber-border); color: var(--c-amber); }
+.gfx-css-report.is-bad { background: var(--c-red-light); border-color: var(--c-red-border); color: var(--c-red); }
+.gfx-css-report ul { margin: 6px 0 0; padding-left: 18px; }
+.gfx-css-report code { font-family: var(--f-mono); font-size: 11.5px; }
+
+.gfx-editor-foot-note { margin: 0; font-size: 12px; color: var(--c-text-muted); }
+
+/* ── The preview of a custom background ───────────────────────
+   The rule for .gfx-art[data-bg="custom-preview"] is generated by
+   adminPanelStyles.js into <style id="gfx-custom-preview-style">, because the
+   parameters change on every drag. Only the animations are here: there are
+   four of them and they do not need rewriting on every frame. */
+@keyframes gfx-c-slide {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(18%, 0, 0); }
+}
+
+@keyframes gfx-c-swell {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.16); }
+}
+
+@keyframes gfx-c-drift {
+    0%   { transform: translate3d(-3%, 0, 0); }
+    50%  { transform: translate3d(3%, 2%, 0); }
+    100% { transform: translate3d(-3%, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gfx-art > span { animation: none !important; }
+}
+
+/* ── The guide ───────────────────────────────────────────────────────── */
+/* Collapsed by default: somebody who already knows should not have to scroll
+   past a screen of text every time. <details> works without JavaScript. */
+.gfx-guide {
+    margin: 0 0 18px;
+    border: 1px solid var(--admin-line, #e2e8f0);
+    background: var(--admin-soft, #f7f9fb);
+}
+
+.gfx-guide > summary {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.gfx-guide > summary::-webkit-details-marker { display: none; }
+
+.gfx-guide > summary::before {
+    content: "";
+    width: 0; height: 0;
+    border-left: 5px solid currentColor;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    transition: transform 0.18s ease;
+}
+
+.gfx-guide[open] > summary::before { transform: rotate(90deg); }
+
+.gfx-guide > summary b { font-size: 14px; }
+.gfx-guide > summary span { font-size: 12px; color: var(--admin-muted, #7b8794); }
+
+.gfx-guide-body {
+    padding: 4px 18px 20px;
+    max-width: 760px;
+    font-size: 13px;
+    line-height: 1.62;
+}
+
+.gfx-guide-body h4 {
+    margin: 22px 0 6px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--admin-muted, #7b8794);
+}
+
+.gfx-guide-body h4:first-child { margin-top: 8px; }
+.gfx-guide-body p { margin: 0 0 10px; }
+
+.gfx-guide-list { margin: 0 0 12px; padding-left: 18px; }
+.gfx-guide-list li { margin-bottom: 5px; }
+
+.gfx-guide-body code {
+    padding: 1px 5px;
+    background: rgba(0, 0, 0, 0.06);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+}
+
+.gfx-guide-code {
+    margin: 0 0 12px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    border-left: 2px solid var(--admin-accent, #ff3636);
+    background: #131c25;
+    color: #e6edf3;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.gfx-guide-note {
+    padding-left: 12px;
+    border-left: 2px solid var(--admin-line, #e2e8f0);
+    color: var(--admin-muted, #7b8794);
+    font-size: 12.5px;
+}
+
+/* ── The mode switch of a custom background ──────────────────────────── */
+.gfx-mode-switch {
+    display: flex;
+    gap: 0;
+    margin: 0 0 16px;
+    border: 1px solid var(--admin-line, #e2e8f0);
+}
+
+.gfx-mode-opt { flex: 1; }
+.gfx-mode-opt input { position: absolute; opacity: 0; pointer-events: none; }
+
+.gfx-mode-opt span {
+    display: block;
+    padding: 9px 12px;
+    text-align: center;
+    font-size: 12.5px;
+    cursor: pointer;
+    color: var(--admin-text, #131c25);
+    background: #fff;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.gfx-mode-opt label:hover span,
+.gfx-mode-opt:hover span { background: var(--admin-soft, #f7f9fb); }
+
+.gfx-mode-opt + .gfx-mode-opt span { border-left: 1px solid var(--admin-line, #e2e8f0); }
+
+.gfx-mode-opt input:checked + span {
+    background: var(--admin-accent, #ff3636);
+    color: #fff;
+}
+
+.gfx-mode-opt input:focus-visible + span {
+    outline: 2px solid var(--admin-accent, #ff3636);
+    outline-offset: -2px;
+}
+
+#gfx-custom-css {
+    width: 100%;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+
+/* ── Thumbnails of the newer backgrounds ─────────────────────────────── */
+
+/* ── Thumbnails, third revision ───────────────────────────────────── */
+[data-bg="fiber"] .gfx-art-a {
+    background:
+        repeating-linear-gradient(82deg, transparent 0 7px, rgba(255,255,255,calc(var(--ga-ink) * 0.1)) 7.6px, rgba(255,255,255,calc(var(--ga-ink) * 0.3)) 8px, transparent 8.6px 15px),
+        repeating-linear-gradient(83.5deg, transparent 0 10px, rgba(255,255,255,calc(var(--ga-ink) * 0.2)) 11px, transparent 12px 21px);
+}
+[data-bg="fiber"] .gfx-art-b {
+    background: repeating-linear-gradient(82.6deg, transparent 0 18px, rgba(255,54,54,calc(var(--ga-glow) * 0.3)) 19.4px, transparent 21px 35px);
+}
+
+/* ── The motion controls ─────────────────────────────────────────────── */
+.gfx-motion-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 0 0 14px;
+}
+
+.gfx-motion-label {
+    flex: none;
+    min-width: 74px;
+    font-size: 12.5px;
+    color: var(--admin-muted, #7b8794);
+}
+
+.gfx-motion-opts {
+    display: flex;
+    flex: 1;
+    border: 1px solid var(--admin-line, #e2e8f0);
+}
+
+.gfx-motion-opts label { flex: 1; }
+.gfx-motion-opts input { position: absolute; opacity: 0; pointer-events: none; }
+
+.gfx-motion-opts span {
+    display: block;
+    padding: 7px 6px;
+    text-align: center;
+    font-size: 12px;
+    cursor: pointer;
+    /* Without an explicit colour the unselected options inherited a very
+       pale value from the parent and were all but unreadable. */
+    color: var(--admin-text, #131c25);
+    background: #fff;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.gfx-motion-opts label:hover span { background: var(--admin-soft, #f7f9fb); }
+
+.gfx-motion-opts label + label span { border-left: 1px solid var(--admin-line, #e2e8f0); }
+
+.gfx-motion-opts input:checked + span {
+    background: var(--admin-accent, #ff3636);
+    color: #fff;
+}
+
+.gfx-motion-opts input:focus-visible + span {
+    outline: 2px solid var(--admin-accent, #ff3636);
+    outline-offset: -2px;
+}
+
+/* Seven options on one line become too narrow; with little room they wrap
+   onto two lines rather than being squeezed until they cannot be read. */
+.gfx-motion-opts--wide { flex-wrap: wrap; }
+
+.gfx-motion-opts--wide label { flex: 1 0 auto; min-width: 84px; }
+
+.gfx-motion-opts--wide label span { padding-left: 10px; padding-right: 10px; }
+
+/* The warning about a risky combination. It appears only when there is one:
+   a permanent warning is one people learn to ignore. */
+.gfx-motion-warn {
+    margin: -6px 0 14px;
+    padding: 10px 12px;
+    border-left: 2px solid var(--admin-accent, #ff3636);
+    background: rgba(255, 54, 54, 0.05);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--admin-text, #131c25);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MOTION IN THE PREVIEW
+   ══════════════════════════════════════════════════════════════════════
+   The thumbnails had no animation at all, so the choice of motion was visible
+   nowhere until it was saved and the real page opened.
+
+   The card is about 150×90px, roughly ten times smaller than the screen. With
+   the same amplitudes the movement leaves the card and all that can be seen is
+   something entering and leaving. So the amplitudes here are reduced and the
+   durations SHORTENED to 8–14s: a preview is watched for seconds, not minutes.
+   The point is to recognise the KIND of motion, not its speed.          */
+
+.gfx-art[data-motion="drift"] .gfx-art-a,
+.gfx-art[data-motion="drift"] .gfx-art-b { animation: gfxPvDrift 11s ease-in-out infinite; }
+
+.gfx-art[data-motion="slide"] .gfx-art-a,
+.gfx-art[data-motion="slide"] .gfx-art-b { animation: gfxPvSlide 9s linear infinite; }
+
+.gfx-art[data-motion="swell"] .gfx-art-a,
+.gfx-art[data-motion="swell"] .gfx-art-b { animation: gfxPvSwell 8s ease-in-out infinite; }
+
+.gfx-art[data-motion="breathe"] .gfx-art-a,
+.gfx-art[data-motion="breathe"] .gfx-art-b { animation: gfxPvBreathe 8s ease-in-out infinite; }
+
+.gfx-art[data-motion="turn"] .gfx-art-a,
+.gfx-art[data-motion="turn"] .gfx-art-b { animation: gfxPvTurn 14s linear infinite; }
+
+/* The second layer lags behind, as it does on the live page. */
+.gfx-art[data-motion] .gfx-art-b { animation-duration: 13s; }
+
+.gfx-art[data-motion="off"] .gfx-art-a,
+.gfx-art[data-motion="off"] .gfx-art-b { animation: none; }
+
+/* The layers in the card sit at inset: -2px — two pixels of margin. Any
+   movement immediately exposes the edge and the drawing ends abruptly.
+
+   For the sliding motions a percentage margin is enough. For the rotation it
+   is NOT: a 150×90 card has a diagonal of 175px, so the layer has to be at
+   least 175 tall as well — and -45% gives only 171. Hence the diagonal band.
+   So for rotation the layer becomes a SQUARE, larger than the diagonal. */
+.gfx-art[data-motion="drift"] .gfx-art-a,
+.gfx-art[data-motion="drift"] .gfx-art-b,
+.gfx-art[data-motion="slide"] .gfx-art-a,
+.gfx-art[data-motion="slide"] .gfx-art-b {
+    inset: -22%;
+}
+
+.gfx-art[data-motion="swell"] .gfx-art-a,
+.gfx-art[data-motion="swell"] .gfx-art-b {
+    inset: -10%;
+}
+
+.gfx-art[data-motion="turn"] .gfx-art-a,
+.gfx-art[data-motion="turn"] .gfx-art-b {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: 320%;
+    height: 320%;
+    margin: 0;
+    translate: -50% -50%;
+    transform-origin: 50% 50%;
+}
+
+@keyframes gfxPvDrift {
+    0%   { transform: translate3d(-7%, -4%, 0); }
+    50%  { transform: translate3d(7%, 4%, 0); }
+    100% { transform: translate3d(-7%, -4%, 0); }
+}
+
+@keyframes gfxPvSlide {
+    from { transform: translate3d(-12%, 0, 0); }
+    to   { transform: translate3d(12%, 0, 0); }
+}
+
+@keyframes gfxPvSwell {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.35); }
+}
+
+@keyframes gfxPvBreathe {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 1; }
+}
+
+@keyframes gfxPvTurn {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gfx-art[data-motion] .gfx-art-a,
+    .gfx-art[data-motion] .gfx-art-b { animation: none !important; }
+}
+
+/* ── Thumbnails of the interactive presets ───────────────────────── */
+
+.gfx-art[data-bg="lantern"] .gfx-art-a {
+    background:
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.3)) 1px, transparent 1px) 0 0 / 100% 5px,
+        linear-gradient(90deg, rgba(255,255,255,calc(var(--ga-ink) * 0.3)) 1px, transparent 1px) 0 0 / 5px 100%,
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.5)) 1px, transparent 1px) 0 0 / 100% 25px;
+    -webkit-mask-image: radial-gradient(circle 78px at var(--ga-cx, 38%) var(--ga-cy, 34%),
+        #000 0 24%, rgba(0,0,0,0.7) 48%, rgba(0,0,0,0.25) 72%, transparent 100%);
+    mask-image: radial-gradient(circle 78px at var(--ga-cx, 38%) var(--ga-cy, 34%),
+        #000 0 24%, rgba(0,0,0,0.7) 48%, rgba(0,0,0,0.25) 72%, transparent 100%);
+}
+
+.gfx-art[data-bg="lantern"] .gfx-art-b {
+    background:
+        linear-gradient(90deg, transparent 0, rgba(255,54,54,calc(var(--ga-glow) * 0.45)) 50%, transparent 100%) calc(var(--ga-cx, 38%) - 30px) 0 / 60px 100% no-repeat,
+        linear-gradient(180deg, transparent 0, rgba(255,54,54,calc(var(--ga-glow) * 0.45)) 50%, transparent 100%) 0 calc(var(--ga-cy, 34%) - 30px) / 100% 60px no-repeat;
+}
+
+.gfx-art[data-bg="prism"] .gfx-art-a {
+    background: repeating-conic-gradient(from 8deg at var(--ga-cx, 24%) var(--ga-cy, 22%),
+        rgba(255,255,255,calc(var(--ga-ink) * 0.3)) 0 0.8deg,
+        transparent 1.6deg 9deg);
+}
+
+.gfx-art[data-bg="prism"] .gfx-art-b {
+    background: repeating-conic-gradient(from 2deg at var(--ga-cx, 24%) var(--ga-cy, 22%),
+        rgba(255,54,54,calc(var(--ga-glow) * 0.35)) 0 1.6deg,
+        transparent 3deg 34deg);
+}
+
+.gfx-art[data-bg="sonar"] .gfx-art-a {
+    background: repeating-radial-gradient(circle at var(--ga-cx, 50%) var(--ga-cy, 34%),
+        transparent 0 14px,
+        rgba(255,255,255,calc(var(--ga-ink) * 0.4)) 16px,
+        transparent 18px 17px);
+}
+
+.gfx-art[data-bg="sonar"] .gfx-art-b {
+    background: repeating-radial-gradient(circle at var(--ga-cx, 50%) var(--ga-cy, 34%),
+        transparent 0 20px,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.45)) 22px,
+        transparent 24px 23px);
+}
+
+.gfx-art[data-bg="caustic"] .gfx-art-a {
+    background: repeating-radial-gradient(circle at var(--ga-cx, 62%) var(--ga-cy, 32%),
+        transparent 0 10px,
+        rgba(255,255,255,calc(var(--ga-ink) * 0.42)) 11.5px,
+        transparent 13px 13px);
+}
+
+.gfx-art[data-bg="caustic"] .gfx-art-b {
+    background: repeating-radial-gradient(circle at 8% 106%,
+        transparent 0 15px,
+        rgba(255,54,54,calc(var(--ga-glow) * 0.4)) 16.5px,
+        transparent 18px 19px);
+}
+
+.gfx-art[data-bg="spine"] .gfx-art-a {
+    background:
+        linear-gradient(90deg, transparent 0%, rgba(255,255,255,calc(var(--ga-ink) * 0.1)) 22%, rgba(255,255,255,calc(var(--ga-ink) * 0.34)) 50%, rgba(255,255,255,calc(var(--ga-ink) * 0.1)) 78%, transparent 100%) calc(var(--ga-cx, 46%) - 46px) 0 / 92px 100% no-repeat,
+        linear-gradient(90deg, transparent 0, rgba(255,255,255,calc(var(--ga-ink) * 0.5)) 50%, transparent 100%) calc(var(--ga-cx, 46%) - 1px) 0 / 2px 100% no-repeat;
+}
+
+.gfx-art[data-bg="spine"] .gfx-art-b {
+    background:
+        linear-gradient(180deg, transparent 0%, rgba(255,54,54,calc(var(--ga-glow) * 0.3)) 50%, transparent 100%) 0 calc(var(--ga-cy, 34%) - 26px) / 100% 52px no-repeat;
+}
+
+.gfx-art[data-bg="ascent"] .gfx-art-a {
+    /* There is no scrolling inside the card, so the band sits at 46% —
+       roughly where it would be halfway down a page. */
+    background:
+        linear-gradient(180deg, transparent 0%, rgba(255,255,255,calc(var(--ga-ink) * 0.12)) 26%, rgba(255,255,255,calc(var(--ga-ink) * 0.4)) 47%, rgba(255,255,255,calc(var(--ga-ink) * 0.12)) 68%, transparent 100%) 0 22% / 100% 62% no-repeat,
+        linear-gradient(rgba(255,255,255,calc(var(--ga-ink) * 0.12)) 1px, transparent 1px) 0 0 / 100% 15px;
+}
+
+.gfx-art[data-bg="ascent"] .gfx-art-b {
+    background:
+        linear-gradient(180deg, transparent 0, rgba(255,54,54,calc(var(--ga-glow) * 0.55)) 45%, rgba(255,54,54,calc(var(--ga-glow) * 0.55)) 55%, transparent 100%) 0 51% / 100% 3px no-repeat,
+        linear-gradient(180deg, rgba(255,54,54,calc(var(--ga-glow) * 0.22)) 0%, transparent 100%) 0 53% / 100% 22% no-repeat;
+}
+
+/* A locked motion option, for the interactive presets. It is not hidden, so
+   that the choice is visibly there but visibly does not apply. */
+.gfx-motion-opts label.is-locked span {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--admin-soft, #f7f9fb);
+}
+
+.gfx-motion-opts label.is-locked:hover span { background: var(--admin-soft, #f7f9fb); }
+
+/* The "on phones too" switch: a single choice rather than a group, so it is
+   an ordinary toggle and not a row of options. */
+/* ── The global phone switch ─────────────────────────────────────────── */
+.gfx-global-row {
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--admin-line, #e2e8f0);
+    background: var(--admin-soft, #f7f9fb);
+}
+
+/* With the global switch off the per-row settings mean nothing, so they are
+   dimmed rather than left looking as though they still applied. */
+.gfx-mobile-off /* ── The per-row switch ──────────────────────────────────────────────── */
+
+/* ── The phone switches ─────────────────────────────────────────────────
+   They use .email-switch from adminPanel.css — the same control as in Email
+   Notifications and Payment Control. One kind of action should look the same
+   everywhere, or every tab has to be learned again.                      */
+
+.gfx-global-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--admin-line, #e2e8f0);
+    background: var(--admin-soft, #f7f9fb);
+}
+
+.gfx-global-text { flex: 1; min-width: 0; }
+.gfx-global-text b { display: block; font-size: 13px; }
+
+.gfx-global-text i {
+    display: block;
+    margin-top: 3px;
+    font-style: normal;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--admin-muted, #7b8794);
+}
+
+/* The smaller variant for a row: 44×24 stands out between the "Edit" and
+   "Reset" buttons. The proportions are the same, so it stays recognisable. */
+.email-switch--sm .email-switch-track { width: 32px; height: 18px; }
+
+.email-switch--sm .email-switch-thumb {
+    width: 12px;
+    height: 12px;
+    top: 2px;
+    left: 2px;
+}
+
+/* The original: a 44px track, an 18px thumb at left: 2, travelling 20 — the
+   thumb stops 4px from the right edge. Here: 32 - 12 - 2 - 4 = 14. The same
+   inset at a different scale. */
+.email-switch--sm input:checked + .email-switch-track .email-switch-thumb {
+    transform: translateX(14px);
+}
+
+.gfx-row-mobile {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-right: 4px;
+}
+
+.gfx-row-mobile i {
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--admin-muted, #7b8794);
+}
+
+/* Global switch off → the per-row settings mean nothing. */
+.gfx-mobile-off .gfx-row-mobile { opacity: 0.35; pointer-events: none; }

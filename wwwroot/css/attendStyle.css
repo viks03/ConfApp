@@ -1,0 +1,825 @@
+/* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── */
+/* ============================================================
+   attendStyle.css — the "Attend" page.
+   The same visual language as stylesFAQ.css, authStyle.css and
+   travelStyle.css: Oswald, zero corner radius, thin rules, the red accent,
+   black-and-white imagery, registration marks in the corners.
+
+   ONE DELIBERATE DIFFERENCE from the FAQ page: the .attend-page wrapper does
+   NOT paint an opaque background. The opaque `background: var(--bg)` on
+   .faq-page and .auth-page is exactly what blocks the global ambient layer and
+   forces it to sit ABOVE the content. Here the background comes from <body>
+   (mainStyle.css), so the ambient layer can sit BEHIND this page without blend
+   tricks. Whatever has to be opaque is opaque locally — the banner, the red
+   panel, the cards — rather than the whole page.
+   ============================================================ */
+
+.attend-page {
+    background: transparent;
+    color: var(--text, #f4f2ec);
+    font-family: "Oswald", Arial, sans-serif;
+    font-weight: 300;
+}
+
+.attend-page ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.attend-page :focus-visible { outline: 2px solid var(--accent, #ff3636); outline-offset: 2px; }
+
+.at-pad { max-width: 1320px; margin: 0 auto; padding: 0 6vw; }
+.at-sec { padding: 84px 0 96px; border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08)); }
+.at-sec--last { border-bottom: 0; }
+
+/* ── The banner ────────────────────────────────────────────
+   The band is exactly as tall as the photograph — the same mechanism as
+   .fq-banner, so that the two pages cannot drift apart in height or
+   treatment. */
+.at-banner { position: relative; width: 100%; overflow: hidden; }
+
+.at-banner img {
+    display: block;
+    width: 100%;
+    max-height: 460px;
+    object-fit: cover;
+    object-position: 50% 42%;
+    filter: grayscale(1) contrast(1.15) brightness(0.74);
+}
+
+.at-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(var(--ink), 0.035) 0px, rgba(var(--ink), 0.035) 1px, transparent 1px, transparent 4px);
+}
+
+.at-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(115% 95% at 50% 32%, rgba(0, 0, 0, 0) 38%, color-mix(in srgb, var(--bg) 62%, transparent) 100%),
+        linear-gradient(180deg, color-mix(in srgb, var(--bg) 32%, transparent) 0%, rgba(5, 5, 5, 0) 26%, rgba(5, 5, 5, 0) 58%, color-mix(in srgb, var(--bg) 96%, transparent) 100%);
+}
+
+.at-banner-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: var(--blend-soft, soft-light);
+    background:
+        linear-gradient(rgba(var(--ink), 0.05) 1px, transparent 1px) 0 0 / 100% 48px,
+        linear-gradient(90deg, rgba(var(--ink), 0.05) 1px, transparent 1px) 0 0 / 48px 100%;
+}
+
+.at-banner-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: var(--blend-tint, overlay);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 18%, transparent) 0%, rgba(255, 54, 54, 0) 50%);
+}
+
+.at-frame {
+    position: absolute;
+    inset: 16px;
+    border: 1px solid rgba(var(--ink), 0.16);
+    pointer-events: none;
+}
+
+.at-frame span { position: absolute; background: var(--accent, #ff3636); }
+.at-frame .c-tl-h { top: -1px; left: -1px; width: 26px; height: 2px; }
+.at-frame .c-tl-v { top: -1px; left: -1px; width: 2px; height: 26px; }
+.at-frame .c-br-h { bottom: -1px; right: -1px; width: 26px; height: 2px; }
+.at-frame .c-br-v { bottom: -1px; right: -1px; width: 2px; height: 26px; }
+
+/* The "to the tiers" arrow, in place of a centred bouncing chevron: a small
+   technical caption at the bottom left that leads to the section. The movement
+   is 6px and belongs to the icon rather than the whole button, so that the text
+   does not jump. */
+.at-jump {
+    position: absolute;
+    left: 6vw;
+    bottom: 34px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.at-jump span {
+    position: relative;
+    padding-bottom: 4px;
+}
+
+.at-jump span::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.at-jump:hover { color: rgb(var(--ink)); text-decoration: none; }
+.at-jump:hover span::after { transform: scaleX(1); }
+
+.at-jump svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    stroke: var(--accent, #ff3636);
+    animation: atNudge 2.6s ease-in-out infinite;
+}
+
+@keyframes atNudge {
+    0%, 62%, 100% { transform: translateY(0); }
+    76%           { transform: translateY(6px); }
+    88%           { transform: translateY(2px); }
+}
+
+/* ── The heading block under the banner ───────────────────── */
+.at-hero { position: relative; border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08)); }
+
+.at-hero-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 30px 6vw 26px;
+}
+
+.at-topline {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(var(--ink), 0.14);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.at-wordmark {
+    background: linear-gradient(100deg, var(--muted) 0%, var(--text) 42%, rgb(var(--ink)) 50%, var(--text) 58%, var(--muted) 100%) 0 0 / 300% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: atShimmer 14s ease-in-out infinite;
+}
+
+.at-topline b {
+    flex: none;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--accent, #ff3636);
+    text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+@keyframes atShimmer {
+    0%, 100% { background-position: 0% 0; }
+    50%      { background-position: 100% 0; }
+}
+
+.at-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.at-eyebrow::before { content: ""; width: 6px; height: 6px; background: var(--accent, #ff3636); }
+
+.at-title {
+    margin: 0 0 10px;
+    max-width: 16ch;
+    font-weight: 600;
+    font-size: clamp(34px, 5vw, 62px);
+    line-height: 1.06;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+.at-rule { display: block; width: 56px; height: 2px; background: var(--accent, #ff3636); }
+.at-title + .at-rule { margin-bottom: 28px; }
+
+.at-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 760px;
+    border-top: 1px solid rgba(var(--ink), 0.14);
+}
+
+.at-meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.at-meta b {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.at-meta span { font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+/* ── A section heading, with its outlined mark ────────────── */
+.at-sec-head { position: relative; margin-bottom: 40px; }
+
+.at-sec-head h2 {
+    margin: 0 0 10px;
+    max-width: 20ch;
+    font-weight: 600;
+    font-size: clamp(30px, 4vw, 50px);
+    line-height: 1.1;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+}
+
+.at-ghost {
+    position: absolute;
+    top: -18px;
+    right: 0;
+    font-size: 128px;
+    font-weight: 600;
+    line-height: 0.8;
+    letter-spacing: -0.02em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(var(--ink), 0.08);
+    pointer-events: none;
+}
+
+/* ── The tiers ─────────────────────────────────────────────
+   The three tiers are columns of one sheet rather than three floating cards:
+   shared vertical hairlines, aligned rows (code, name, price, description,
+   what is included, action) and a large index at the top.
+   The alignment is the real work here — the prices and the rules of all three
+   columns sit on one line however long the names are, because each column is a
+   subgrid on the shared rows. */
+.at-tiers {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid rgba(var(--ink), 0.14);
+    border-left: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.at-tier {
+    position: relative;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 6;
+    border-right: 1px solid var(--line, rgba(var(--ink), 0.08));
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+    padding: 26px 30px 30px;
+    transition: background 0.3s ease;
+}
+
+/* The red rule along the top — the same gesture as .fq-item::after. */
+.at-tier::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.at-tier:hover { background: rgba(var(--ink), 0.018); }
+.at-tier:hover::after { transform: scaleX(1); }
+
+/* Row 1 — the tier code and the index */
+.at-tier-code {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.at-tier-code i {
+    font-style: normal;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    color: var(--text-faint);
+}
+
+/* Row 2 — the name */
+.at-tier-name {
+    margin: 18px 0 0;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* Row 3 — the price. The promotional price is the primary one; the old one
+   is struck through and deliberately smaller, so that the eye reaches the new
+   one first. */
+.at-tier-price {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0 0;
+    font-weight: 600;
+    font-size: clamp(30px, 3vw, 40px);
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: var(--accent, #ff3636);
+}
+
+.at-tier-price del {
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+    text-decoration-thickness: 1px;
+}
+
+/* Row 4 — the description */
+.at-tier-desc {
+    margin: 16px 0 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--muted, #a7a39b);
+}
+
+/* Row 5 — what is included */
+.at-tier-perks {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 20px 0 0;
+    border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.at-tier-perks li {
+    position: relative;
+    padding: 0 0 0 26px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+}
+
+.at-tier-perks li:last-child { margin-bottom: 0; }
+
+/* The marker is a registration cross of two hairlines — the same mark as the
+   corners of the banner frame. A "✓" in Oswald reads as a different typeface
+   and breaks the vertical rhythm. */
+.at-tier-perks li::before,
+.at-tier-perks li::after {
+    content: "";
+    position: absolute;
+    background: var(--accent, #ff3636);
+}
+
+.at-tier-perks li::before { left: 0; top: 11px; width: 9px; height: 1px; }
+.at-tier-perks li::after { left: 4px; top: 7px; width: 1px; height: 9px; }
+
+/* Row 6 — the action. The empty cell holds the rhythm in the columns that
+   have no button, which is what keeps all three bottom edges on one line. */
+.at-tier-action { display: flex; align-items: flex-end; padding-top: 26px; }
+
+.at-tier-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 58px;
+    padding: 0 20px;
+    background: rgb(var(--ink));
+    border: 1px solid rgb(var(--ink));
+    color: var(--bg);
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.at-tier-btn svg { width: 16px; height: 16px; flex: none; }
+.at-tier-btn:hover { background: var(--text); border-color: var(--text); color: var(--bg); text-decoration: none; }
+.at-tier-btn:active { background: #e6e3dc; border-color: #e6e3dc; }
+
+.at-tier-note {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+
+/* --- The promotional tier ---
+   The one solid panel on the page: the accent becomes the background and the
+   typography turns white. The same gesture as .fq-ask, which is what makes the
+   two pages read as one design. */
+.at-tier--promo {
+    background: var(--accent, #ff3636);
+    color: var(--on-accent);
+}
+
+/* The "LIMITED" ribbon is absolute at top: 0 / right: 0 and used to overlap
+   the tier code in that corner: .at-tier has only 26px of top padding while
+   the ribbon really occupies about 30px (7px + 7px of padding plus the text),
+   so the code started underneath it rather than after it.
+   Shrinking the ribbon would have been a cosmetic fix; instead the space is
+   added on the cards that HAVE a ribbon, leaving the others untouched. */
+.at-tier--promo .at-tier-code {
+    margin-top: 34px;
+}
+
+.at-tier--promo:hover { background: var(--accent-hover); }
+.at-tier--promo::after { background: rgb(var(--ink)); }
+.at-tier--promo .at-tier-code,
+.at-tier--promo .at-tier-code i { color: rgba(var(--ink), 0.72); }
+.at-tier--promo .at-tier-price { color: rgb(var(--ink)); }
+.at-tier--promo .at-tier-price del { color: rgba(var(--ink), 0.6); }
+.at-tier--promo .at-tier-desc { color: rgba(var(--ink), 0.9); }
+.at-tier--promo .at-tier-perks { border-top-color: rgba(var(--ink), 0.3); }
+.at-tier--promo .at-tier-perks li::before,
+.at-tier--promo .at-tier-perks li::after { background: rgb(var(--ink)); }
+.at-tier--promo .at-tier-note { color: rgba(var(--ink), 0.75); }
+
+/* The ribbon is a corner label rather than a stuck-on knob: a rule above it
+   and typography on the same grid as the tier code. */
+.at-ribbon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 7px 12px;
+    background: rgb(var(--ink));
+    color: var(--bg);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+/* ── Other ways in (online viewers, journalists) ───────────
+   Two wide rows rather than cards: index, icon, text, link. */
+.at-rows {
+    display: grid;
+    border-top: 1px solid rgba(var(--ink), 0.14);
+}
+
+.at-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 74px 46px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 28px;
+    padding: 30px 0;
+    border-bottom: 1px solid rgba(var(--ink), 0.1);
+}
+
+.at-row::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+}
+
+.at-row:hover::after { transform: scaleX(1); }
+
+.at-row-idx {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    transition: color 0.25s ease;
+}
+
+.at-row:hover .at-row-idx { color: var(--accent, #ff3636); }
+
+.at-row-icon { width: 46px; height: 46px; flex: none; }
+
+/* The icons are PNGs from elsewhere in the project. The filter brings them to
+   the accent colour — the same approach as the older stylesheet, but with
+   values that actually produce #ff3636 rather than a dark maroon. */
+.at-row-icon img,
+.at-extra-icon img,
+.at-pay-icon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(38%) sepia(72%) saturate(4600%) hue-rotate(343deg) brightness(103%) contrast(103%);
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.at-row:hover .at-row-icon img,
+.at-extra:hover .at-extra-icon img { transform: scale(1.08); }
+
+.at-row-body h3 {
+    margin: 0 0 8px;
+    font-weight: 500;
+    font-size: 19px;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.at-row-body p {
+    margin: 0;
+    max-width: 62ch;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--muted, #a7a39b);
+}
+
+.at-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 4px;
+    color: var(--accent, #ff3636);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.at-link svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.at-link:hover { color: var(--accent-light); text-decoration: none; }
+.at-link:hover svg { transform: translateX(5px); }
+
+/* ── Extras and payment ───────────────────────────────────── */
+.at-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-top: 1px solid rgba(var(--ink), 0.14);
+}
+
+.at-split-col { padding: 30px 40px 34px 0; }
+.at-split-col + .at-split-col {
+    padding: 30px 0 34px 40px;
+    border-left: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.at-col-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 24px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(var(--ink), 0.14);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.at-extra {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: start;
+    gap: 22px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.at-extra:last-child { border-bottom: 0; }
+.at-extra-icon { width: 40px; height: 40px; flex: none; }
+
+.at-extra-body h4 {
+    margin: 0 0 7px;
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.at-extra-body p {
+    margin: 0;
+    max-width: 46ch;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--muted, #a7a39b);
+}
+
+/* --- The payment methods ---
+   Numbered rows. The status is part of the typographic grid rather than a
+   coloured pill: "instant" is in the accent colour and a slow bank transfer is
+   a neutral outline. Green and amber were the only two colours outside the
+   palette, and they are gone. */
+.at-pay-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.at-pay-icon { width: 34px; height: 34px; flex: none; }
+
+.at-pay-head h4 {
+    margin: 0;
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.at-method {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.at-method:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.at-method-no {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+}
+
+.at-method-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.at-method-head svg {
+    width: 21px;
+    height: 21px;
+    flex: none;
+    stroke: var(--accent, #ff3636);
+}
+
+.at-method-head h5 {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    font-weight: 500;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.at-tag {
+    flex: none;
+    padding: 4px 10px;
+    border: 1px solid;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.at-tag--now { border-color: color-mix(in srgb, var(--accent) 50%, transparent); color: var(--accent, #ff3636); }
+.at-tag--wait { border-color: rgba(var(--ink), 0.2); color: var(--text-dim); }
+
+.at-method p {
+    margin: 0;
+    max-width: 50ch;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted, #a7a39b);
+}
+
+/* ── Reveal on scroll ─────────────────────────────────────────
+   The content is visible by default; the script only arms (is-armed) what is
+   below the fold. A script that fails to load cannot leave the page blank —
+   the same rule as on the FAQ page. */
+.at-reveal {
+    transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.at-reveal.is-armed { opacity: 0; transform: translateY(18px); }
+.at-reveal.is-armed.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .at-reveal, .at-reveal.is-armed { opacity: 1; transform: none; transition: none; }
+    .at-wordmark, .at-jump svg { animation: none; }
+}
+
+/* ── Tablet ───────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+    .at-tiers { grid-template-columns: 1fr; border-left: 0; }
+    .at-tier { grid-row: auto; grid-template-rows: none; border-right: 0; padding: 26px 0 30px; }
+    .at-tier--promo { padding: 26px 24px 30px; }
+    .at-tier-action { padding-top: 22px; }
+    .at-ghost { display: none; }
+
+    /* In one column the code row is full width, so the absolutely positioned
+       ribbon would lie on top of it. It joins the flow as the first row
+       instead — the same label, without the overlap. */
+    .at-ribbon {
+        position: static;
+        justify-self: start;
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 980px) {
+    .at-banner img { max-height: 320px; }
+    .at-split { grid-template-columns: 1fr; }
+    .at-split-col { padding: 30px 0 12px; }
+    .at-split-col + .at-split-col {
+        padding: 12px 0 34px;
+        border-left: 0;
+        border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+    }
+}
+
+/* ── Phone ────────────────────────────────────────────────── */
+@media (max-width: 820px) {
+    .at-pad, .at-hero-inner { padding-left: 22px; padding-right: 22px; }
+    .at-jump { left: 22px; bottom: 22px; }
+    .at-banner img { max-height: 230px; }
+    .at-frame { inset: 10px; }
+    .at-meta { grid-template-columns: 1fr; }
+    .at-meta > div { padding: 11px 0; }
+    .at-sec { padding: 52px 0 56px; }
+    .at-row {
+        grid-template-columns: 40px minmax(0, 1fr);
+        gap: 14px 16px;
+        padding: 24px 0;
+    }
+    .at-row-icon { grid-column: 1; grid-row: 2; width: 40px; height: 40px; }
+    .at-row-body { grid-column: 2; grid-row: 2; }
+
+    /* On a phone the link is a row of its own rather than the right-hand end
+       of a wide one, so it needs a real target for a finger: 22px of text
+       height is below what can be hit reliably. */
+    .at-link {
+        grid-column: 2;
+        grid-row: 3;
+        align-self: start;
+        min-height: 44px;
+        padding-top: 0;
+    }
+    .at-method { grid-template-columns: 34px minmax(0, 1fr); gap: 14px; }
+    .at-method-head { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+    .at-method { grid-template-columns: 1fr; gap: 8px; }
+    .at-method-no { letter-spacing: 0.2em; }
+}

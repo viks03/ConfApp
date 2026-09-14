@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <data name="Nav_Schedule" xml:space="preserve"><value>Програма</value></data>
+  <data name="Sched_h1Title" xml:space="preserve"><value>Програма</value></data>
+  <data name="Sched_BtnBg" xml:space="preserve"><value>ПРОГРАМА BG (PDF)</value></data>
+  <data name="Sched_BtnEn" xml:space="preserve"><value>ПРОГРАМА EN (PDF)</value></data>
+  <data name="Sched_Day1_Date" xml:space="preserve"><value>29 октомври 2026 г.</value></data>
+  <data name="Sched_Day2_Date" xml:space="preserve"><value>30 октомври 2026 г.</value></data>
+  <data name="Sched_Day3_Date" xml:space="preserve"><value>31 октомври 2026 г.</value></data>
+  <data name="Sched_NoEvents" xml:space="preserve"><value>Все още няма планирани събития за този ден.</value></data>
+  <data name="Sched_ParallelLabel" xml:space="preserve"><value>ПАРАЛЕЛНИ СЕСИИ</value></data>
+  <data name="Sched_ParallelDisclaimer" xml:space="preserve"><value>Важно: Част от сесиите се провеждат по едно и също време. Моля, обърнете внимание на локацията на избраната от Вас сесия и проверете дали тя е достъпна само на място или и с възможност за livestream.</value></data>
+  <data name="Sched_InVenue" xml:space="preserve"><value>На място</value></data>
+  <data name="Sched_Livestream" xml:space="preserve"><value>На живо</value></data>
+  <data name="Sched_ScrollDown" xml:space="preserve"><value>Скролни надолу</value></data>
+  <data name="Sched_ReadMore" xml:space="preserve"><value>Прочети повече</value></data>
+  <data name="Sched_ShowLess" xml:space="preserve"><value>Скрий</value></data>
+  
+  <data name="Registration" xml:space="preserve"><value>РЕГИСТРАЦИЯ</value></data>
+  <data name="Opening Ceremony" xml:space="preserve"><value>ОТКРИВАНЕ</value></data>
+  <data name="Plenary Session" xml:space="preserve"><value>ПЛЕНАРНА СЕСИЯ</value></data>
+  <data name="Networking" xml:space="preserve"><value>НЕТУЪРКИНГ</value></data>
+  <data name="Panel Discussion" xml:space="preserve"><value>ПАНЕЛНА ДИСКУСИЯ</value></data>
+  <data name="Lunch" xml:space="preserve"><value>ОБЯД</value></data>
+  <data name="Workshop" xml:space="preserve"><value>УЪРКШОП</value></data>
+  <data name="Dinner" xml:space="preserve"><value>ВЕЧЕРЯ</value></data>
+  <data name="Plenary" xml:space="preserve"><value>ПЛЕНАРНА СЕСИЯ</value></data>
+  <data name="Coffee Break" xml:space="preserve"><value>КАФЕ ПАУЗА</value></data>
+  <data name="Refreshment Break" xml:space="preserve"><value>ОСВЕЖАВАЩА ПАУЗА</value></data>
+  <data name="Panel" xml:space="preserve"><value>ПАНЕЛ</value></data>
+  <data name="Roundtable" xml:space="preserve"><value>КРЪГЛА МАСА</value></data>
+  <data name="Closing Session" xml:space="preserve"><value>ЗАКРИВАЩА СЕСИЯ</value></data>
+  <data name="Farewell Lunch" xml:space="preserve"><value>ПРОЩАЛЕН ОБЯД</value></data>
+  <data name="Sched_JumpToProgram" xml:space="preserve"><value>Към програмата</value></data>
+  <data name="Sched_HeroEyebrow" xml:space="preserve"><value>Програма</value></data>
+  <data name="Sched_MetaDates" xml:space="preserve"><value>Дати</value></data>
+  <data name="Sched_MetaDatesValue" xml:space="preserve"><value>29 – 31 октомври</value></data>
+  <data name="Sched_MetaSessions" xml:space="preserve"><value>Сесии</value></data>
+  <data name="Sched_MetaSessionsUnit" xml:space="preserve"><value>в програмата</value></data>
+  <data name="Sched_MetaLang" xml:space="preserve"><value>Език</value></data>
+  <data name="Sched_MetaLangValue" xml:space="preserve"><value>Български и английски</value></data>
+  <data name="Sched_DayWord" xml:space="preserve"><value>Ден</value></data>
+  <data name="Sched_SessionsShort" xml:space="preserve"><value>сесии</value></data>
+  <data name="Sched_TrackWord" xml:space="preserve"><value>Поток</value></data>
+  <data name="Sched_DownloadLabel" xml:space="preserve"><value>Програмата в PDF</value></data>
+  <data name="Sched_DownloadNote" xml:space="preserve"><value>Пълната програма за трите дни, готова за печат</value></data>
+  <data name="Sched_NoEventsTitle" xml:space="preserve"><value>Няма записи</value></data>
+</root>

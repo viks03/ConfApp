@@ -1,0 +1,758 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject ConferenceApp.Data.ApplicationDbContext DbContext
+@inject ConferenceApp.Services.Theming.ThemeProvider Themes
+@using System.Globalization
+@using Microsoft.EntityFrameworkCore
+@using ConferenceApp.Models
+
+
+@* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── *@
+
+@{
+    // The shared layout has no page model of its own, so the few things every
+    // page needs are read here — once per request.
+    //
+    // Social links and the promo slides for the mobile menu. An empty social
+    // field simply means no icon; a slide that is not active never reaches the
+    // carousel.
+    var socialLinks = await DbContext.SocialLinksSettings.FirstOrDefaultAsync() ?? new SocialLinksSetting();
+    var promoSlides = await DbContext.PromoSlides
+        .Where(p => p.IsActive)
+        .OrderBy(p => p.DisplayOrder)
+        .ToListAsync();
+
+    // Footer content (tagline, org note, contacts) and the Quick Links.
+    //
+    // Their order is DELIBERATELY random on every page load, which is why the
+    // model has no DisplayOrder column. FOOTER_QUICKLINKS_CAP shows five of
+    // them; an administrator may store any number, and each load draws a fresh
+    // five at random from ALL the visible ones rather than taking the first
+    // five — so over time a visitor sees the whole set.
+    const int FOOTER_QUICKLINKS_CAP = 5;
+    var footerContent = await DbContext.FooterContents.FirstOrDefaultAsync() ?? new FooterContent();
+    var footerRng = new Random();
+    var footerQuickLinks = (await DbContext.FooterQuickLinks
+            .Where(l => l.IsVisible)
+            .ToListAsync())
+        .OrderBy(_ => footerRng.Next())
+        .Take(FOOTER_QUICKLINKS_CAP)
+        .ToList();
+
+    // The number of open bug reports, for administrators only. It is shown as
+    // a badge next to the "Admin Panel" link, so that it is visible from EVERY
+    // page rather than only after opening /Admin/BugReports.
+    var isAdminUser = User.IsInRole("Admin");
+    int openBugReportCount = isAdminUser
+        ? await DbContext.BugReports.CountAsync(b => b.Status == "Open")
+        : 0;
+
+    // The data for the cookie banner (Pages/Shared/_DataNotice.cshtml), shown
+    // to EVERY visitor of the public site, signed in or not.
+    //
+    // The test is on the AREA, not on the role: an administrator browsing the
+    // home page should see the banner like anybody else. It is only the
+    // /Admin/* pages that are excluded, for two reasons. The panel is an
+    // internal tool rather than a public page, and a consent banner popping up
+    // over a working interface is simply wrong. And the panel uses a different
+    // CSS system (adminPanel.css) — the --panel, --accent and --line tokens the
+    // banner is built on do not exist there, so it would render broken.
+    var isAdminArea = string.Equals(
+        ViewContext.RouteData.Values["area"]?.ToString(), "Admin", StringComparison.OrdinalIgnoreCase);
+
+    ConferenceApp.Models.DataNoticeViewModel? dataNoticeModel = null;
+    if (!isAdminArea)
+    {
+        var isBgCulture = System.Globalization.CultureInfo.CurrentUICulture
+            .TwoLetterISOLanguageName.Equals("bg", StringComparison.OrdinalIgnoreCase);
+        var visibleCookieCategories = await DbContext.CookieCategories
+            .Where(c => c.IsVisible)
+            .OrderBy(c => c.DisplayOrder)
+            .ToListAsync();
+        var cookieNotice = await DbContext.CookieNoticeContents.FirstOrDefaultAsync();
+
+        // Whether consent has already been given is decided here, on the
+        // server, so that the banner and the relaunch button render in their
+        // final state — without the flash of a banner that appears and then
+        // hides itself.
+        //
+        // The version MUST match DN_CONSENT_VERSION in dataNotice.js: raise
+        // both together if the categories change in a way that makes an older
+        // consent meaningless.
+        const int dnConsentVersion = 1;
+        var hasExistingConsent = false;
+        if (Context.Request.Cookies.TryGetValue("dn_prefs", out var dnPrefsRaw) && !string.IsNullOrWhiteSpace(dnPrefsRaw))
+        {
+            try
+            {
+                using var dnPrefsDoc = System.Text.Json.JsonDocument.Parse(dnPrefsRaw);
+                if (dnPrefsDoc.RootElement.TryGetProperty("v", out var dnVersionProp) &&
+                    dnVersionProp.ValueKind == System.Text.Json.JsonValueKind.Number &&
+                    dnVersionProp.GetInt32() == dnConsentVersion)
+                {
+                    hasExistingConsent = true;
+                }
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                // A corrupt or tampered cookie counts as no consent at all: the
+                // banner simply appears again.
+            }
+        }
+
+        dataNoticeModel = new ConferenceApp.Models.DataNoticeViewModel
+        {
+            Categories = visibleCookieCategories,
+            NoticeHtml = cookieNotice == null ? "" : (isBgCulture ? cookieNotice.ContentBg : cookieNotice.ContentEn),
+            IsBg = isBgCulture,
+            HasExistingConsent = hasExistingConsent
+        };
+    }
+
+    // (label, url) for the six platforms, in the order they are shown. The
+    // empty ones are filtered out here, which is what lets the divider logic
+    // below stay simple: a divider only BETWEEN visible icons, never before the
+    // first or after the last.
+    var socialPlatforms = new (string Label, string? Url)[]
+    {
+        ("LinkedIn",  socialLinks.LinkedInUrl),
+        ("Facebook",  socialLinks.FacebookUrl),
+        ("X",         socialLinks.XUrl),
+        ("TikTok",    socialLinks.TikTokUrl),
+        ("YouTube",   socialLinks.YouTubeUrl),
+        ("Instagram", socialLinks.InstagramUrl),
+    }.Where(p => !string.IsNullOrWhiteSpace(p.Url)).ToList();
+}
+
+<!DOCTYPE html>
+@* [T-22] The document language follows the chosen one instead of staying at
+   "en": a screen reader picks its voice by it, and the browser decides whether
+   to offer a translation. A Bulgarian page marked lang="en" is read out by an
+   English speech synthesizer. *@
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="theme-color" content="#050505">
+    <title>@ViewData["Title"] | Blockchain Education 2026</title>
+    <link rel="stylesheet" href="~/css/mainStyle.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/globalEffects.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/dataNotice.css" asp-append-version="true">
+
+    @* The active theme OVERRIDES the tokens from mainStyle.css, which is why
+       it comes AFTER it rather than before. A theme only changes the values of
+       custom properties; with no active theme — the normal state — there is no
+       block at all and the page looks exactly as it does without themes.
+       ThemeProvider caches the CSS and the panel clears that cache on every
+       change, so a switch takes effect without a restart. The values are
+       validated by ThemeTokens.Parse both on import AND on read, so only
+       checked CSS reaches Html.Raw. *@
+    @{
+        var themeCss = Themes.GetCss();
+    }
+    @if (!string.IsNullOrEmpty(themeCss))
+    {
+        <style>@Html.Raw(themeCss)</style>
+    }
+    @if (isAdminUser)
+    {
+        <link rel="stylesheet" href="~/css/bugReport.css" asp-append-version="true">
+    }
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/Index">
+            <img src="~/images/logos/mainLogo.png" alt="logo" class="mainLogo_Img">
+            <span>Blockchain Education 2026</span>
+        </a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav-overlay" aria-label="@Localizer["Nav_OpenMenu"]" data-label-open="@Localizer["Nav_OpenMenu"]" data-label-close="@Localizer["Nav_CloseMenu"]" style="touch-action: manipulation;">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav class="nav" id="site-nav">
+            <a href="/Index" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" ? "active" : "")">@Localizer["Nav_Home"]</a>
+            <a href="/Conference" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Conference" ? "active" : "")">@Localizer["Nav_Conference"]</a>
+            <a href="/ICBI" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/ICBI" ? "active" : "")">@Localizer["Nav_ICBI"]</a>
+            <a href="/Lecturers" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Lecturers" ? "active" : "")">@Localizer["Nav_Lecturers"]</a>
+            <a href="/Schedule" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Schedule" ? "active" : "")">@Localizer["Nav_Schedule"]</a>
+            <a href="/Attend" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Attend" ? "active" : "")">@Localizer["Nav_Attend"]</a>
+            <a href="/FAQ" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/FAQ" ? "active" : "")">@Localizer["Nav_FAQ"]</a>
+            <a href="/Travel" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Travel" ? "active" : "")">@Localizer["Nav_Travel"]</a>
+        </nav>
+        <div class="topbar-actions">
+            @* The buttons submit the hidden #lang-form below through the HTML
+               `form` attribute, so that the order inside .topbar-actions stays
+               as it is — the form itself is not a flex item. The switch goes
+               through LanguageController, which writes a cookie that lasts a
+               year; the inline script that used to be here wrote a session
+               cookie and the choice was lost when the browser closed. *@
+            <button class="lang-switch" type="submit" form="lang-form" name="culture" value="bg">BG</button>
+            <button class="lang-switch" type="submit" form="lang-form" name="culture" value="en">EN</button>
+            
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                @* An administrator sees "Admin Panel" and everyone else "My
+                   Profile" — except inside the panel itself, where such a link
+                   would point at the page you are already on. *@
+                @if (User.IsInRole("Admin"))
+                {
+                    @if (Context.Request.Path.StartsWithSegments("/Admin"))
+                    {
+                        <a class="register-btn" href="/" style="text-decoration: none;">
+                            @Localizer["Nav_BackToSite"]
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="register-btn" href="/Admin" style="text-decoration: none; position: relative;">
+                            @Localizer["Nav_AdminPanel"]
+                            @if (openBugReportCount > 0)
+                            {
+                                <span style="position:absolute; top:-7px; right:-9px; background:#dc2626; color:#fff; font-size:10px; font-weight:800; line-height:1; padding:2px 5px; border-radius:999px; min-width:16px; text-align:center;">@(openBugReportCount > 99 ? "99+" : openBugReportCount.ToString())</span>
+                            }
+                        </a>
+                    }
+                }
+                else
+                {
+                    <a class="register-btn" href="/Profile" style="text-decoration: none;">
+                        @Localizer["Nav_Profile"]</a>
+                }
+                
+                @* Sign-out is a POST form, not a link: see [T-06] in
+                   Logout.cshtml.cs. *@
+                <form method="post" asp-page="/Logout" style="display: inline;">
+                    <button type="submit" class="login-btn" style="background: none; border: none; cursor: pointer; margin-left: 10px;">
+                        @Localizer["Nav_Logout"]
+                    </button>
+                </form>
+            }
+            else
+            {
+                @* Visitors who are not signed in *@
+                <a class="register-btn" href="/Register">@Localizer["Nav_Register"]</a>
+                <a class="login-btn" href="/Login">@Localizer["Nav_Login"]</a>
+            }
+        </div>
+        <form id="lang-form" method="post" asp-controller="Language" asp-action="SetLanguage" hidden>
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+        </form>
+    </header>
+
+    @* ==================== Full-screen mobile nav (≤1240px) ====================
+       A structure of its own, separate from the .nav above, which a desktop
+       never renders: a full-screen overlay that slides in from the left, with a
+       decorative particle strip down its side (mobileNavParticles in
+       scriptMain.js), icon cards for the links, a promo card and a row of
+       social icons. The script drives it through the .is-open class on
+       #mobile-nav-overlay plus body.mobile-nav-open, which locks the scroll. *@
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay" aria-hidden="true" style="touch-action: manipulation;">
+        <div class="mobile-nav-decor" aria-hidden="true">
+            <canvas id="mobile-nav-particles"></canvas>
+        </div>
+
+        <div class="mobile-nav-panel">
+            <div class="mobile-nav-scroll">
+                <nav class="mobile-nav-links">
+                <a href="/Index" class="mobile-nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" ? "active" : "")">
+                    <span class="mobile-nav-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 11l9-8 9 8"></path>
+                            <path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"></path>
+                        </svg>
+                    </span>
+                    <span class="mobile-nav-link-label">@Localizer["Nav_Home"]</span>
+                    <span class="mobile-nav-link-arrow">
+                        <svg class="mobile-nav-arrow-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        <svg class="mobile-nav-arrow-inactive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </a>
+
+                <a href="/Conference" class="mobile-nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Conference" ? "active" : "")">
+                    <span class="mobile-nav-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="8" r="3"></circle>
+                            <path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1"></path>
+                            <circle cx="17" cy="8" r="2.5"></circle>
+                            <path d="M17 13.5c2.5.3 4.5 2.4 4.5 5V21"></path>
+                        </svg>
+                    </span>
+                    <span class="mobile-nav-link-label">@Localizer["Nav_Conference"]</span>
+                    <span class="mobile-nav-link-arrow">
+                        <svg class="mobile-nav-arrow-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        <svg class="mobile-nav-arrow-inactive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </a>
+
+                <a href="/ICBI" class="mobile-nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/ICBI" ? "active" : "")">
+                    <span class="mobile-nav-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="22" x2="21" y2="22"></line>
+                            <line x1="6" y1="18" x2="6" y2="11"></line>
+                            <line x1="10" y1="18" x2="10" y2="11"></line>
+                            <line x1="14" y1="18" x2="14" y2="11"></line>
+                            <line x1="18" y1="18" x2="18" y2="11"></line>
+                            <polygon points="12 2 21 8 3 8"></polygon>
+                        </svg>
+                    </span>
+                    <span class="mobile-nav-link-label">@Localizer["Nav_ICBI"]</span>
+                    <span class="mobile-nav-link-arrow">
+                        <svg class="mobile-nav-arrow-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        <svg class="mobile-nav-arrow-inactive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </a>
+
+                <a href="/Lecturers" class="mobile-nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Lecturers" ? "active" : "")">
+                    <span class="mobile-nav-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path>
+                        </svg>
+                    </span>
+                    <span class="mobile-nav-link-label">@Localizer["Nav_Lecturers"]</span>
+                    <span class="mobile-nav-link-arrow">
+                        <svg class="mobile-nav-arrow-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        <svg class="mobile-nav-arrow-inactive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </a>
+
+                <a href="/Schedule" class="mobile-nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Schedule" ? "active" : "")">
+                    <span class="mobile-nav-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                        </svg>
+                    </span>
+                    <span class="mobile-nav-link-label">@Localizer["Nav_Schedule"]</span>
+                    <span class="mobile-nav-link-arrow">
+                        <svg class="mobile-nav-arrow-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        <svg class="mobile-nav-arrow-inactive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </a>
+
+                <a href="/Attend" class="mobile-nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Attend" ? "active" : "")">
+                    <span class="mobile-nav-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="8" r="4"></circle>
+                            <path d="M2 21c0-4.4 3.1-8 7-8s7 3.6 7 8"></path>
+                            <line x1="18" y1="6" x2="18" y2="12"></line>
+                            <line x1="15" y1="9" x2="21" y2="9"></line>
+                        </svg>
+                    </span>
+                    <span class="mobile-nav-link-label">@Localizer["Nav_Attend"]</span>
+                    <span class="mobile-nav-link-arrow">
+                        <svg class="mobile-nav-arrow-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        <svg class="mobile-nav-arrow-inactive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </a>
+
+                <a href="/FAQ" class="mobile-nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/FAQ" ? "active" : "")">
+                    <span class="mobile-nav-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <path d="M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.9.4-1.4 1-1.4 2"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </span>
+                    <span class="mobile-nav-link-label">@Localizer["Nav_FAQ"]</span>
+                    <span class="mobile-nav-link-arrow">
+                        <svg class="mobile-nav-arrow-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        <svg class="mobile-nav-arrow-inactive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </a>
+
+                <a href="/Travel" class="mobile-nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Travel" ? "active" : "")">
+                    <span class="mobile-nav-link-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </span>
+                    <span class="mobile-nav-link-label">@Localizer["Nav_Travel"]</span>
+                    <span class="mobile-nav-link-arrow">
+                        <svg class="mobile-nav-arrow-active" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        <svg class="mobile-nav-arrow-inactive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                </a>
+                </nav>
+            </div>
+
+            <div class="mobile-nav-footer">
+                @if (promoSlides.Any())
+                {
+                    <div class="mobile-nav-promo-slider" id="mobile-nav-promo-slider">
+                        <div class="mobile-nav-promo-track" id="mobile-nav-promo-track">
+                            @foreach (var promo in promoSlides)
+                            {
+                                var title = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg" ? promo.TitleBg : promo.TitleEn;
+                                var desc  = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg" ? promo.DescriptionBg : promo.DescriptionEn;
+                                <div class="mobile-nav-promo-slide">
+                                    <span class="mobile-nav-promo-art" aria-hidden="true">
+                                        <img src="@promo.ImagePath" alt="">
+                                    </span>
+                                    <span class="mobile-nav-promo-text">
+                                        <span class="mobile-nav-promo-title"><span class="mobile-nav-promo-title-inner">@title</span></span>
+                                        <span class="mobile-nav-promo-desc">@desc</span>
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                        @if (promoSlides.Count > 1)
+                        {
+                            <div class="mobile-nav-promo-dots" id="mobile-nav-promo-dots" aria-hidden="true">
+                                <div class="mobile-nav-promo-progress-track" id="mobile-nav-promo-progress-track">
+                                    <div class="mobile-nav-promo-progress-thumb" id="mobile-nav-promo-progress-thumb"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+            @if (socialPlatforms.Any())
+            {
+                <div class="mobile-nav-social">
+                    @for (var i = 0; i < socialPlatforms.Count; i++)
+                    {
+                        var platform = socialPlatforms[i];
+                        if (i > 0)
+                        {
+                            <span class="mobile-nav-social-divider" aria-hidden="true"></span>
+                        }
+                        <a href="@platform.Url" target="_blank" rel="noopener" aria-label="@platform.Label" class="mobile-nav-social-link">
+                            @if (platform.Label == "LinkedIn")
+                            {
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+                                    <line x1="8" y1="10" x2="8" y2="16"></line>
+                                    <circle cx="8" cy="7" r="0.6" fill="currentColor" stroke="none"></circle>
+                                    <path d="M12 16v-4a2 2 0 0 1 4 0v4"></path>
+                                    <line x1="12" y1="10" x2="12" y2="16"></line>
+                                </svg>
+                            }
+                            else if (platform.Label == "Facebook")
+                            {
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+                                    <path d="M13.2 19v-5.6h1.9l.3-2.2h-2.2V9.8c0-.65.2-1.1 1.15-1.1H15.5V6.7c-.26-.03-1.13-.1-2.15-.1-2.13 0-3.58 1.3-3.58 3.68v2.05H7.9v2.2h1.87V19h3.43z" fill="currentColor" stroke="none"></path>
+                                </svg>
+                            }
+                            else if (platform.Label == "X")
+                            {
+                                <svg viewBox="-3 -3 30 30" fill="currentColor" stroke="none">
+                                    <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"></path>
+                                </svg>
+                            }
+                            else if (platform.Label == "TikTok")
+                            {
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M13 4v10.6a3 3 0 1 1-2.1-2.86"></path>
+                                    <path d="M13 4c.4 2.1 2.1 3.6 4 3.8"></path>
+                                </svg>
+                            }
+                            else if (platform.Label == "YouTube")
+                            {
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+                                    <polygon points="10 9 16 12 10 15" fill="currentColor" stroke="none"></polygon>
+                                </svg>
+                            }
+                            else if (platform.Label == "Instagram")
+                            {
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                                    <circle cx="12" cy="12" r="4"></circle>
+                                    <circle cx="17.5" cy="6.5" r="0.7" fill="currentColor" stroke="none"></circle>
+                                </svg>
+                            }
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+        </div>
+    </div>
+
+    @if (dataNoticeModel != null)
+    {
+        <partial name="_DataNotice" model="dataNoticeModel" />
+    }
+
+    @if (isAdminUser)
+    {
+        <partial name="_BugReportWidget" />
+    }
+
+    @* .site-main is what keeps the footer at the bottom of the viewport even
+       on a short page such as Login — see body { display:flex;
+       flex-direction:column } and .site-main { flex:1 } in mainStyle.css. *@
+    @* The global ambient layer. Rendered BEFORE <main> so that it sits under
+       the content; it disables itself under /Admin. The vars partial comes
+       immediately after it, so that it wins on cascade order. *@
+    <partial name="_GlobalEffects" />
+    <partial name="_GlobalEffectsVars" />
+
+    <main class="site-main">
+        @RenderBody()
+    </main>
+
+    @* ==================== Footer ====================
+       CTA cards at the top, an intro block with the social icons and a
+       decorative "bit rain" canvas, a panel with the Quick Links and the
+       contacts, the legal row and the copyright.
+       The only JavaScript here beyond the existing .reveal scroll fade is the
+       footerBitRain module in scriptMain.js, which draws into the
+       .footer-intro-art canvas; the fade towards the text is pure CSS
+       (mask-image).
+       Every class introduced here is prefixed "footer-" and leaves the older
+       .footer-inner / .footer-brand / .footer-contact / .copyright rules
+       untouched, in case something else still uses them. *@
+    <footer class="footer">
+        <div class="footer-shell">
+
+            @if (ViewContext.RouteData.Values["page"]?.ToString() == "/Index")
+            {
+                <div class="footer-cta-row reveal">
+                    <a href="/Register" class="footer-cta-card footer-cta-card--primary">
+                        <span class="footer-cta-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="9" cy="8" r="4"></circle>
+                                <path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 3.5 1.1"></path>
+                                <line x1="18.5" y1="8" x2="18.5" y2="14"></line>
+                                <line x1="15.5" y1="11" x2="21.5" y2="11"></line>
+                            </svg>
+                        </span>
+                        <span class="footer-cta-label">@Localizer["Global_BtnRegisterAttend"]</span>
+                        <span class="footer-cta-arrow" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </span>
+                    </a>
+                    <a href="/Schedule" class="footer-cta-card footer-cta-card--outline">
+                        <span class="footer-cta-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                            </svg>
+                        </span>
+                        <span class="footer-cta-label">@Localizer["Nav_Schedule"]</span>
+                        <span class="footer-cta-arrow" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </span>
+                    </a>
+                </div>
+            }
+
+            <div class="footer-intro reveal">
+                <span class="footer-intro-art-frame" aria-hidden="true">
+                    <canvas class="footer-intro-art"></canvas>
+                </span>
+                <div class="footer-intro-content">
+                    @{
+                        var footerTagline = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg" ? footerContent.BrandTaglineBg : footerContent.BrandTaglineEn;
+                        var footerHasTagline = !string.IsNullOrWhiteSpace(footerTagline);
+                    }
+                    <div class="footer-brand-row @(footerHasTagline ? "" : "no-tagline")">
+                        <img src="~/images/logos/mainLogo.png" alt="logo" class="@(footerHasTagline ? "footer-brand-logo" : "mainLogo_Img")">
+                        <div class="footer-brand-text">
+                            <span class="footer-brand-title">Blockchain Education 2026</span>
+                            @if (footerHasTagline)
+                            {
+                                <span class="footer-brand-tagline"><span class="footer-brand-tagline-inner">@footerTagline</span></span>
+                            }
+                        </div>
+                    </div>
+                    <p class="footer-desc">@Localizer["Footer_Desc"]</p>
+
+                    @if (socialPlatforms.Any())
+                    {
+                        <div class="footer-social">
+                            @for (var i = 0; i < socialPlatforms.Count; i++)
+                            {
+                                var platform = socialPlatforms[i];
+                                <a href="@platform.Url" target="_blank" rel="noopener" aria-label="@platform.Label" class="footer-social-link">
+                                    @if (platform.Label == "LinkedIn")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+                                            <line x1="8" y1="10" x2="8" y2="16"></line>
+                                            <circle cx="8" cy="7" r="0.6" fill="currentColor" stroke="none"></circle>
+                                            <path d="M12 16v-4a2 2 0 0 1 4 0v4"></path>
+                                            <line x1="12" y1="10" x2="12" y2="16"></line>
+                                        </svg>
+                                    }
+                                    else if (platform.Label == "Facebook")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+                                            <path d="M13.2 19v-5.6h1.9l.3-2.2h-2.2V9.8c0-.65.2-1.1 1.15-1.1H15.5V6.7c-.26-.03-1.13-.1-2.15-.1-2.13 0-3.58 1.3-3.58 3.68v2.05H7.9v2.2h1.87V19h3.43z" fill="currentColor" stroke="none"></path>
+                                        </svg>
+                                    }
+                                    else if (platform.Label == "X")
+                                    {
+                                        <svg viewBox="-3 -3 30 30" fill="currentColor" stroke="none">
+                                            <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"></path>
+                                        </svg>
+                                    }
+                                    else if (platform.Label == "TikTok")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M13 4v10.6a3 3 0 1 1-2.1-2.86"></path>
+                                            <path d="M13 4c.4 2.1 2.1 3.6 4 3.8"></path>
+                                        </svg>
+                                    }
+                                    else if (platform.Label == "YouTube")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+                                            <polygon points="10 9 16 12 10 15" fill="currentColor" stroke="none"></polygon>
+                                        </svg>
+                                    }
+                                    else if (platform.Label == "Instagram")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                                            <circle cx="12" cy="12" r="4"></circle>
+                                            <circle cx="17.5" cy="6.5" r="0.7" fill="currentColor" stroke="none"></circle>
+                                        </svg>
+                                    }
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="footer-panel reveal">
+                <div class="footer-col">
+                    <h3 class="footer-col-title">
+                        <span class="footer-col-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 15l6-6"></path>
+                                <path d="M11 6l1-1a3.5 3.5 0 1 1 5 5l-1 1"></path>
+                                <path d="M13 18l-1 1a3.5 3.5 0 1 1-5-5l1-1"></path>
+                            </svg>
+                        </span>
+                        @Localizer["Footer_QuickLinks"]
+                    </h3>
+                    <ul class="footer-quicklinks">
+                        @foreach (var link in footerQuickLinks)
+                        {
+                            var linkLabel = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg" ? link.LabelBg : link.LabelEn;
+                            <li>
+                                <a href="@link.Url">
+                                    <span class="footer-quicklink-main">
+                                        <span class="footer-quicklink-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(link.IconSvg)</svg>
+                                        </span>
+                                        <span class="footer-quicklink-label">@linkLabel</span>
+                                    </span>
+                                    <svg class="footer-quicklink-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3 class="footer-col-title">
+                        <span class="footer-col-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                                <path d="M3 7l9 6 9-6"></path>
+                            </svg>
+                        </span>
+                        @Localizer["Footer_Contact"]
+                    </h3>
+                    <ul class="footer-contact-list">
+                        <li>
+                            <span class="footer-contact-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"></path>
+                                    <circle cx="12" cy="10" r="2.4"></circle>
+                                </svg>
+                            </span>
+                            <span>@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg" ? footerContent.ContactLocationBg : footerContent.ContactLocationEn)</span>
+                        </li>
+                        <li>
+                            <span class="footer-contact-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                                    <path d="M3 7l9 6 9-6"></path>
+                                </svg>
+                            </span>
+                            <span>@footerContent.ContactEmail</span>
+                        </li>
+                        <li>
+                            <span class="footer-contact-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4.5 4h3.4l1.3 4.3-2 1.4a12.6 12.6 0 0 0 5.6 5.6l1.4-2 4.3 1.3v3.4c0 .9-.7 1.6-1.6 1.6C10.7 19.6 4.4 13.3 4.4 5.9c0-.9.7-1.6 1.6-1.6z"></path>
+                                </svg>
+                            </span>
+                            <span>@footerContent.ContactPhone</span>
+                        </li>
+                    </ul>
+
+                    <div class="footer-org-note">
+                        <span class="footer-org-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 10l9-6 9 6"></path>
+                                <line x1="5" y1="10" x2="5" y2="19"></line>
+                                <line x1="9" y1="10" x2="9" y2="19"></line>
+                                <line x1="15" y1="10" x2="15" y2="19"></line>
+                                <line x1="19" y1="10" x2="19" y2="19"></line>
+                                <line x1="3" y1="19" x2="21" y2="19"></line>
+                            </svg>
+                        </span>
+                        <p>@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "bg" ? footerContent.OrgNoteBg : footerContent.OrgNoteEn)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-legal reveal">
+                <a href="/Privacy" class="footer-legal-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6l7-3z"></path>
+                        <polyline points="9 12 11 14 15 10"></polyline>
+                    </svg>
+                    @Localizer["Footer_Privacy"]
+                </a>
+                <a href="/Terms" class="footer-legal-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 3h8l4 4v14H7z"></path>
+                        <line x1="10" y1="10" x2="16" y2="10"></line>
+                        <line x1="10" y1="14" x2="16" y2="14"></line>
+                        <line x1="10" y1="18" x2="13" y2="18"></line>
+                    </svg>
+                    @Localizer["Footer_Terms"]
+                </a>
+            </div>
+
+            <p class="footer-copyright">@Localizer["Footer_Copyright"]</p>
+        </div>
+    </footer>
+
+    @* common.js comes first: it carries what every other script uses
+       (escapeHtml, revealOnScroll, bindScrollArrow, topbarHeight,
+       syncTopbarVar, lockScroll). See the file itself. *@
+    <script src="~/js/common.js" asp-append-version="true"></script>
+    <script src="~/js/scriptMain.js" asp-append-version="true"></script>
+    <script src="~/js/globalEffects.js" asp-append-version="true"></script>
+    <script src="~/js/dataNotice.js" asp-append-version="true"></script>
+    @* iconTint.js comes last: it works on the finished DOM and replaces the
+       fixed CSS filter on the PNG icons with a mask in var(--accent), so that
+       the icons follow the theme. See the comment in the file itself. *@
+    <script src="~/js/iconTint.js" asp-append-version="true"></script>
+    @if (isAdminUser)
+    {
+        <script src="~/js/bugReport.js" asp-append-version="true"></script>
+    }
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,1028 @@
+/* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════
+   profileStyle.css — the /Profile page. It replaces userPageStyle.css for
+   this page.
+
+   The palette and the typeface come from mainStyle.css through its custom
+   properties (--bg, --panel, --text, --muted, --line, --accent); there is no
+   :root of its own here.
+   The page renders inside <main>, between the sticky top bar and the footer,
+   so there is no bare 100vh anywhere: --pf-top is used instead.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.pf-page {
+    --pf-top: 84px;
+    background: var(--bg, #050505);
+    color: var(--text, #f4f2ec);
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 300;
+}
+
+.pf-page *,
+.pf-page *::before,
+.pf-page *::after { box-sizing: border-box; }
+
+.pf-page ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+
+.pf-page :is(button, a, input, select, summary):focus-visible {
+    outline: 2px solid var(--accent, #ff3636);
+    outline-offset: 2px;
+}
+
+/* Zero corner radius throughout. */
+.pf-page :is(input, select, button, .pf-tile, .pf-drop, .status-panel) { border-radius: 0; }
+
+/* ── The shell ────────────────────────────────────────────────────── */
+.pf-split {
+    display: grid;
+    grid-template-columns: 1fr 0.44fr;
+    grid-template-rows: auto;
+    align-content: start;
+}
+
+.pf-col {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    padding: 64px 5vw 96px;
+}
+
+.pf-form-wrap {
+    width: 100%;
+    max-width: 620px;
+    margin: 0 auto;
+    animation: pfIn 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* The right-hand column is one wrapper around two blocks. On a phone the
+   wrapper becomes display: contents and the two blocks become rows of their own
+   around the form. */
+.pf-aside-col {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: var(--pf-top);
+    align-self: start;
+    min-width: 0;
+    background: var(--panel, #0b0b0b);
+    border-left: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.pf-aside-top    { padding: 64px 36px 28px; min-width: 0; }
+.pf-aside-bottom { padding: 0 36px 48px; min-width: 0; }
+
+.pf-aside-top > *,
+.pf-aside-bottom > * { min-width: 0; }
+
+.pf-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ── The header ───────────────────────────────────────────────────── */
+.pf-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 44px;
+}
+
+.pf-brand img {
+    height: 28px;
+    width: auto;
+    filter: brightness(0) invert(var(--logo-invert, 1));
+    opacity: 0.92;
+}
+
+.pf-brand-rule {
+    width: 1px;
+    height: 22px;
+    background: rgba(var(--ink), 0.14);
+}
+
+.pf-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.pf-title {
+    margin: 0 0 10px;
+    max-width: 18ch;
+    font-family: 'Oswald', Arial, sans-serif;
+    font-weight: 600;
+    font-size: clamp(34px, 4.4vw, 54px);
+    line-height: 1.1;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+.pf-title-rule {
+    display: block;
+    width: 56px;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    margin-bottom: 14px;
+}
+
+.pf-desc {
+    margin: 0 0 32px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--muted, #a7a39b);
+}
+
+/* On a phone the header lives in the block above, which already carries the
+   name and the address. */
+.pf-brand--mobile { display: none; margin-bottom: 0; }
+
+/* ── Messages ─────────────────────────────────────────────────────── */
+.pf-saved,
+.pf-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    margin: 0 0 24px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.pf-saved {
+    border: 1px solid color-mix(in srgb, var(--ok) 30%, transparent);
+    border-left: 3px solid var(--ok);
+    background: color-mix(in srgb, var(--ok) 7%, transparent);
+    color: #8fd3a3;
+}
+
+.pf-alert {
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    border-left: 3px solid var(--accent, #ff3636);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    color: #ff8f8f;
+}
+
+.pf-saved svg,
+.pf-alert svg { flex: none; }
+.pf-alert:empty { display: none; }
+.pf-alert ul { list-style: none; margin: 0; padding: 0; }
+
+/* ── The form ─────────────────────────────────────────────────────── */
+.pf-form {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+}
+
+.pf-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.pf-section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.pf-section-head b {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: var(--accent, #ff3636);
+}
+
+.pf-section-head span {
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.pf-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.pf-field { position: relative; min-width: 0; }
+
+.pf-field > label,
+.pf-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted, #a7a39b);
+}
+
+.pf-field > :is(input[type="text"], input[type="tel"], input[type="number"], input[type="email"], select) {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(var(--ink), 0.12);
+    color: var(--text, #f4f2ec);
+    font-family: inherit;
+    font-weight: 300;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    caret-color: var(--accent, #ff3636);
+    appearance: none;
+    transition: border-color 0.2s ease;
+}
+
+.pf-field input::placeholder { color: var(--text-dim); }
+
+.pf-field :is(input, select):focus {
+    outline: none;
+    border-color: var(--accent, #ff3636);
+}
+
+.pf-field select {
+    padding-right: 40px;
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--muted, #a7a39b) 50%),
+        linear-gradient(135deg, var(--muted, #a7a39b) 50%, transparent 50%);
+    background-position: calc(100% - 20px) 22px, calc(100% - 14px) 22px;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.pf-field select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    color: var(--muted, #a7a39b);
+}
+
+.pf-page select option { background: var(--panel, #0b0b0b); color: var(--text, #f4f2ec); }
+
+/* A focused field draws a red rule along its bottom edge. */
+.pf-field::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--accent, #ff3636);
+    transform: scaleX(0);
+    transform-origin: left;
+    pointer-events: none;
+}
+
+.pf-field:focus-within::after {
+    animation: pfFieldLine 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* With an error message present, that rule would otherwise land below the
+   message rather than under the field. */
+.pf-field:has(.field-error:not(:empty))::after,
+.pf-field:has(.pf-note)::after,
+.pf-field:has(.pf-choice)::after,
+.pf-field:has(.locked-field-note)::after { display: none; }
+
+.field-error {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #ff8f8f;
+}
+
+.pf-note {
+    margin: 10px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-dim);
+}
+
+/* The participation form: tiles rather than a dropdown, in the same visual
+   language as .auth-choice in the registration. */
+.pf-choice {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.pf-choice-item {
+    position: relative;
+    letter-spacing: normal;
+    text-transform: none;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(var(--ink), 0.12);
+    font-size: 15px;
+    line-height: 1.3;
+    color: var(--text, #f4f2ec);
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.pf-choice-item::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    flex: none;
+    background: transparent;
+    border: 1px solid rgba(var(--ink), 0.35);
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.pf-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
+
+.pf-choice-item:hover { border-color: rgba(var(--ink), 0.28); }
+
+.pf-choice-item:has(input:checked),
+.pf-choice-item.is-selected {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border-color: var(--accent, #ff3636);
+}
+
+.pf-choice-item:has(input:checked)::before,
+.pf-choice-item.is-selected::before {
+    background: var(--accent, #ff3636);
+    border-color: var(--accent, #ff3636);
+}
+
+.pf-choice-item:has(input:focus-visible) {
+    outline: 2px solid var(--accent, #ff3636);
+    outline-offset: 2px;
+}
+
+/* Locked: the chosen tile stays readable and the others fade back. */
+/* A locked tile has to say clearly that it cannot be clicked: `default` reads
+   as ordinary non-interactive text, `not-allowed` is unambiguous. */
+.pf-choice.is-locked .pf-choice-item,
+.pf-choice.is-locked .pf-choice-item * {
+    cursor: not-allowed;
+}
+
+/* The radios themselves are disabled, but some browsers still show a
+   pointer cursor over them. */
+.pf-choice-item input[type="radio"]:disabled,
+.pf-choice-item input[type="radio"]:disabled + * {
+    cursor: not-allowed;
+}
+.pf-choice.is-locked .pf-choice-item:hover { border-color: rgba(var(--ink), 0.12); }
+.pf-choice-item.is-off { opacity: 0.4; }
+
+/* The note shown next to a locked participation form */
+.locked-field-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ok);
+}
+
+.locked-field-note svg { width: 13px; height: 13px; flex: none; }
+.locked-field-note.locked-warning { color: var(--warn); }
+
+/* The bordered checkbox row — "international participant" */
+.pf-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 56px;
+    padding: 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(var(--ink), 0.12);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.pf-toggle-row svg { width: 18px; height: 18px; flex: none; stroke: var(--text-dim); transition: stroke 0.2s ease; }
+.pf-toggle-row span { flex: 1; font-size: 15px; line-height: 1.4; }
+
+.pf-toggle-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    flex: none;
+    accent-color: var(--accent, #ff3636);
+    cursor: pointer;
+}
+
+.pf-toggle-row:has(input:checked) { border-color: color-mix(in srgb, var(--accent) 50%, transparent); }
+.pf-toggle-row:has(input:checked) svg { stroke: var(--accent, #ff3636); }
+
+/* An ordinary consent checkbox */
+.pf-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 15px;
+    line-height: 1.45;
+    cursor: pointer;
+}
+
+.pf-consent input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 1px 0 0;
+    flex: none;
+    accent-color: var(--accent, #ff3636);
+}
+
+/* ── The paper ────────────────────────────────────────────────────── */
+.pf-file {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 56px;
+    padding: 0 8px 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px solid rgba(var(--ink), 0.12);
+}
+
+.pf-file > svg { width: 17px; height: 17px; flex: none; stroke: var(--muted, #a7a39b); }
+
+.pf-file-name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pf-file-name b {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.pf-file-name span {
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pf-file-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    flex: none;
+    border: 1px solid rgba(var(--ink), 0.2);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text, #f4f2ec);
+    text-decoration: none;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.pf-file-action svg { width: 14px; height: 14px; }
+.pf-file-action:hover { border-color: var(--accent, #ff3636); color: var(--accent, #ff3636); }
+
+.pf-drop-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.pf-drop-head .pf-label { margin-bottom: 0; }
+.pf-drop-head span { font-size: 12px; color: var(--text-dim); }
+
+.pf-drop {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 0 8px 0 16px;
+    background: var(--panel, #0b0b0b);
+    border: 1px dashed rgba(var(--ink), 0.18);
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.pf-drop > svg { width: 17px; height: 17px; flex: none; stroke: var(--text-dim); transition: stroke 0.18s ease; }
+
+.pf-drop-label {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    line-height: 1.3;
+    color: var(--text-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pf-drop.is-dragging {
+    border-color: var(--accent, #ff3636);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.pf-drop.is-dragging > svg { stroke: #ffb3b3; }
+.pf-drop.is-dragging .pf-drop-label { color: #ffb3b3; }
+.pf-drop.has-file .pf-drop-label { color: var(--text, #f4f2ec); }
+.pf-drop.has-file > svg { stroke: var(--text, #f4f2ec); }
+
+/* The real input is hidden inside the label. Its id and class are untouched,
+   so that validation.js and the page's own script keep finding it. */
+.pf-drop input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ── Save ─────────────────────────────────────────────────────────── */
+.pf-submit {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 56px;
+    padding: 0 20px;
+    background: var(--accent, #ff3636);
+    border: 0;
+    color: var(--on-accent);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.2s ease;
+}
+
+.pf-submit svg { width: 20px; height: 20px; flex: none; }
+.pf-submit:hover { background: var(--accent-hover); }
+.pf-submit:active { background: var(--accent-active); }
+.pf-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Identity ─────────────────────────────────────────────────────── */
+.pf-identity {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid rgba(var(--ink), 0.14);
+    overflow: hidden;
+}
+
+.pf-identity::before {
+    content: "";
+    position: absolute;
+    inset: -20px -20px 0 -20px;
+    background:
+        linear-gradient(rgba(var(--ink), 0.045) 1px, transparent 1px) 0 0 / 100% 28px,
+        linear-gradient(90deg, rgba(var(--ink), 0.045) 1px, transparent 1px) 0 0 / 28px 100%;
+    pointer-events: none;
+}
+
+.pf-avatar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    flex: none;
+    background: var(--bg, #050505);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--accent, #ff3636);
+}
+
+.pf-identity-body {
+    position: relative;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pf-identity-name {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    background: linear-gradient(100deg, var(--muted) 0%, var(--text) 42%, rgb(var(--ink)) 50%, var(--text) 58%, var(--muted) 100%) 0 0 / 300% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: pfSheen 14s ease-in-out infinite;
+}
+
+.pf-identity-mail {
+    font-size: 13px;
+    color: var(--text-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── The status panel ─────────────────────────────────────────────── */
+.status-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid rgba(var(--ink), 0.12);
+    border-left: 3px solid var(--muted, #a7a39b);
+    background: rgba(var(--ink), 0.03);
+}
+
+.status-panel-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.status-panel-icon svg { width: 15px; height: 15px; flex: none; }
+
+.status-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.status-panel-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.status-panel-msg {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-soft);
+}
+
+.status-ref {
+    margin-top: 8px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--muted, #a7a39b);
+}
+
+.status-ref strong { color: var(--text, #f4f2ec); letter-spacing: 0.06em; }
+
+.status-panel-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.status-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 16px;
+    background: var(--accent, #ff3636);
+    color: var(--on-accent);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background 0.2s ease;
+}
+
+.status-action-btn:hover { background: var(--accent-hover); color: var(--on-accent); text-decoration: none; }
+
+.status-action-btn.status-action-secondary {
+    justify-content: center;
+    min-height: 44px;
+    background: transparent;
+    border: 1px solid rgba(var(--ink), 0.2);
+    color: var(--text, #f4f2ec);
+}
+
+.status-action-btn.status-action-secondary:hover {
+    background: transparent;
+    border-color: var(--accent, #ff3636);
+    color: var(--accent, #ff3636);
+}
+
+/* The tones: green for confirmed, amber for waiting, red for something the
+   participant has to do. */
+.status-panel.status-confirmed {
+    border-color: color-mix(in srgb, var(--ok) 30%, transparent);
+    border-left-color: var(--ok);
+    background: color-mix(in srgb, var(--ok) 7%, transparent);
+}
+.status-panel.status-confirmed :is(.status-panel-icon, .status-panel-label) { color: var(--ok); }
+
+.status-panel.status-pending,
+.status-panel.status-info {
+    border-color: color-mix(in srgb, var(--warn) 30%, transparent);
+    border-left-color: var(--warn);
+    background: color-mix(in srgb, var(--warn) 7%, transparent);
+}
+.status-panel.status-pending :is(.status-panel-icon, .status-panel-label) { color: var(--warn); }
+
+.status-panel.status-info {
+    border-color: rgba(var(--ink), 0.12);
+    border-left-color: var(--muted, #a7a39b);
+    background: rgba(var(--ink), 0.03);
+}
+.status-panel.status-info .status-panel-icon { color: var(--muted, #a7a39b); }
+.status-panel.status-info .status-panel-msg { font-size: 13px; line-height: 1.55; color: var(--muted, #a7a39b); }
+
+.status-panel.status-warning,
+.status-panel.status-rejected {
+    border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+    border-left-color: var(--accent, #ff3636);
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.status-panel:is(.status-warning, .status-rejected) :is(.status-panel-icon, .status-panel-label) { color: var(--accent, #ff3636); }
+
+/* A pulsing dot for a state that is still in progress. */
+.status-panel-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    background: currentColor;
+}
+
+.status-panel:is(.status-pending, .status-iban) .status-panel-dot {
+    animation: pfPulse 2.4s ease-in-out infinite;
+}
+
+/* The rejection reason */
+.status-reason > summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent, #ff3636);
+}
+
+.status-reason > summary::-webkit-details-marker { display: none; }
+.status-reason > summary svg { width: 12px; height: 12px; flex: none; transition: transform 0.25s ease; }
+.status-reason[open] > summary svg { transform: rotate(180deg); }
+
+.status-reason p {
+    margin: 10px 0 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-soft);
+}
+
+/* ── The summary ──────────────────────────────────────────────────── */
+.pf-facts {
+    display: flex;
+    flex-direction: column;
+}
+
+.pf-facts div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 0;
+    border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.pf-facts dt,
+.pf-facts b {
+    flex: none;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.pf-facts span {
+    min-width: 0;
+    font-size: 14px;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pf-facts span.is-empty { color: var(--text-dim); }
+.pf-facts span.is-ref { letter-spacing: 0.06em; }
+.pf-facts span.is-ok { color: var(--ok); }
+.pf-facts span.is-wait { color: var(--warn); }
+.pf-facts span.is-alert { color: var(--accent, #ff3636); }
+
+/* ── Sign out ─────────────────────────────────────────────────────── */
+.pf-logout {
+    padding-top: 18px;
+    border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+}
+
+.pf-logout button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    transition: color 0.2s ease;
+}
+
+.pf-logout button svg { width: 15px; height: 15px; flex: none; }
+.pf-logout button:hover { color: var(--accent, #ff3636); }
+
+/* ── Animations ───────────────────────────────────────────────────── */
+@keyframes pfIn        { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes pfFieldLine { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes pfPulse     { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.65); } }
+@keyframes pfSheen     { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .pf-choice-item { transition: none; }
+    .pf-form-wrap,
+    .pf-identity-name,
+    .status-panel-dot { animation: none !important; }
+    .pf-form-wrap { opacity: 1 !important; transform: none !important; }
+    .pf-field:focus-within::after { animation: none; transform: scaleX(1); }
+}
+
+/* ══ Responsive ═════════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+    .pf-split { grid-template-columns: 1fr 0.5fr; }
+    .pf-col { padding: 48px 40px 80px; }
+    .pf-aside-top { padding: 48px 28px 24px; }
+    .pf-aside-bottom { padding: 0 28px 40px; }
+}
+
+/* Phone: identity and status at the top, the form in the middle, the summary
+   and the sign-out at the bottom. */
+@media (max-width: 820px) {
+    .pf-split {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+    }
+
+    /* The wrapper stops being a box: its two blocks become rows of the
+       grid. */
+    .pf-aside-col {
+        display: contents;
+        position: static;
+        background: none;
+        border-left: 0;
+    }
+
+    .pf-aside-top {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 22px 22px 26px;
+        background: var(--panel, #0b0b0b);
+        border-bottom: 1px solid var(--line, rgba(var(--ink), 0.08));
+    }
+
+    .pf-col {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 26px 22px 36px;
+    }
+
+    .pf-aside-bottom {
+        grid-column: 1;
+        grid-row: 3;
+        padding: 26px 22px 34px;
+        background: var(--bg, #050505);
+        border-top: 1px solid var(--line, rgba(var(--ink), 0.08));
+    }
+
+    .pf-form-wrap { max-width: none; }
+
+    /* The logo is in the block above; the heading with the name is not
+       repeated. */
+    .pf-brand--desktop,
+    .pf-head { display: none; }
+    .pf-brand--mobile { display: flex; }
+
+    .pf-grid-2 { grid-template-columns: 1fr; }
+    .pf-choice { grid-template-columns: 1fr; gap: 10px; }
+    .pf-form { gap: 30px; }
+
+    /* On a phone, sign-out is a full-width bordered button at the end of the
+       page. */
+    .pf-logout { padding-top: 0; border-top: 0; }
+    .pf-logout button {
+        justify-content: center;
+        min-height: 52px;
+        padding: 0 16px;
+        border: 1px solid rgba(var(--ink), 0.2);
+        color: var(--muted, #a7a39b);
+    }
+}
+
+@media (max-width: 400px) {
+    .pf-avatar { width: 52px; height: 52px; font-size: 19px; }
+    .pf-file-action span { display: none; }
+}
+
+/* ── Clearing a chosen file, and the inline notes ───────────────────── */
+.pf-drop-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 7px 12px;
+    min-height: 34px;
+    background: transparent;
+    border: 1px solid rgba(var(--ink), 0.14);
+    border-radius: 0;
+    color: var(--muted, #a7a39b);
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.pf-drop-clear svg { width: 13px; height: 13px; flex: none; }
+
+.pf-drop-clear:hover {
+    color: var(--accent, #ff3636);
+    border-color: var(--accent, #ff3636);
+}
+
+/* The note shown when the form is changed to a paying one; it replaced a
+   native confirm dialog. */
+.pf-inline-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin: 12px 0 0;
+    padding: 11px 13px;
+    background: color-mix(in srgb, var(--warn) 7%, transparent);
+    border: 1px solid color-mix(in srgb, var(--warn) 25%, transparent);
+    color: var(--warn);
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1.5;
+}
+
+.pf-inline-note svg { width: 15px; height: 15px; flex: none; margin-top: 2px; }
+
+/* The informational variant, for a student or a journalist who will have to
+   submit a document, so that it does not read as a warning about a fee. */
+.pf-inline-note.is-info {
+    background: rgba(var(--ink), 0.04);
+    border-color: rgba(var(--ink), 0.14);
+    color: var(--muted, #a7a39b);
+}
+
+/* An author-level display declaration beats the user agent's [hidden] rule.
+   Without this, `hidden` has no effect on the flex and grid elements here. */
+[hidden] { display: none !important; }

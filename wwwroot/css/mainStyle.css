@@ -1,0 +1,2185 @@
+/* ─────────────────────────────────────────────────────────────────────
+   ConferenceApp · Blockchain Education 2026
+   Author: Viktor Georgiev
+   ───────────────────────────────────────────────────────────────────── */
+/* Navigation Bar & Body */
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-ExtraLight.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("../fonts/Oswald-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* A native, site-wide transition between whole pages (the View Transitions
+   API for MPA navigation): the browser cross-fades from the old page to the
+   new one instead of a hard, flashing reload. Currently supported in Chromium
+   (Chrome and Edge); in other browsers it simply has no effect and navigation
+   works as usual. Most noticeable on Verification -> Done, but it applies to
+   the whole application for free. */
+@view-transition {
+  navigation: auto;
+}
+:root {
+  --bg: #050505;
+  --panel: #0b0b0b;
+  --panel-soft: rgba(255, 255, 255, 0.04);
+  --text: #f4f2ec;
+  --muted: #a7a39b;
+  --line: rgba(255, 255, 255, 0.08);
+  --accent: #FF3636;
+  --accent-soft: #ff363692;
+
+  /* ── Shades of the accent ─────────────────────────────────────────────
+     The project was full of hand-picked shades of the accent: #e02222 for
+     hover, #ff6b6b for links, #c81c1c for a pressed button. Every one of them
+     was hard-coded and did NOT follow the theme — hence the red hover on a
+     button under a different accent.
+
+     These three are derived FROM --accent. Changing the accent carries all of
+     them along at once. */
+  --accent-hover: color-mix(in srgb, var(--accent) 85%, #000);
+  --accent-active: color-mix(in srgb, var(--accent) 70%, #000);
+  --accent-light: color-mix(in srgb, var(--accent) 72%, #fff);
+
+  /* ── Text ON the accent ───────────────────────────────────────────────
+     This is a token of its own rather than something derived from --ink. The
+     reason: --ink follows whether the THEME is dark, while what matters here is
+     whether the ACCENT ITSELF is dark or light. A dark theme with a light
+     accent — olive yellow on black, say — needs DARK text on the button, the
+     opposite of --ink.
+
+     Each theme therefore sets it for itself, according to its own accent. */
+  --on-accent: #ffffff;
+
+  /* ── Blend modes ──────────────────────────────────────────────────────
+     These are not colours but a WAY of layering, and they depend on whether
+     what lies beneath is dark or light. "screen" and "overlay" lighten: over a
+     white background they do nothing, or make a mess. A light theme needs
+     "multiply". */
+  --blend-tint: overlay;      /* layered over the photographs in the banners */
+  --blend-soft: soft-light;   /* the fine grids over photographs */
+  --blend-ambient: screen;    /* the global background layer */
+
+  /* Inversion for the logos: white (1) in a dark theme, black (0) in a light
+     one. */
+  --logo-invert: 1;
+
+  /* ── The contrast layer ───────────────────────────────────────────────
+     283 places in the project used rgba(255,255,255, X) for borders, faint
+     backgrounds and dividers. That is NOT "white" — it is "a little contrast
+     against the surface". On a dark background the contrast is light; on a
+     light one it is dark.
+
+     Hence a triple of numbers rather than a colour: rgba(var(--ink), 0.14)
+     takes the alpha in place. A light theme changes ONE line here and all 283
+     places turn over at once.
+
+     Black with transparency is deliberately NOT here: it is used almost only
+     for shadows and masks, and a shadow stays black on a light background too.
+     A mask, meanwhile, is a function rather than a style — inverting it would
+     break it. */
+  --ink: 255, 255, 255;
+
+  /* ── Text shades ─────────────────────────────────────────────────────
+     Between --text and --muted there are three more steps, used hard-coded
+     throughout the project. --text-dim appears 83 times across 11 files: it was
+     evidently needed, nobody had just given it a name. */
+  --text-soft: #d8d5cf;
+  --text-dim: #8a8680;
+  --text-faint: #6f6b66;
+
+  /* ── Surfaces ─────────────────────────────────────────────────────────
+     Slightly lighter than --bg, for cards and panels sitting on the
+     background. */
+  --surface: #0a0a0a;
+  --surface-alt: #17181a;
+
+  /* ── States ───────────────────────────────────────────────────────────
+     Unlike the tokens above, these do NOT depend on the theme: green stays
+     green on a light background too. Hence a group of their own.
+
+     Note: --pay-ok (paymentStyle) and --sd-ok (submitStyle) are the SAME
+     colour under two names in two files — exactly the problem these shared
+     names solve. They are left as they are so that nothing changes visually
+     for now. */
+  --ok: #4ea86b;
+  --warn: #d9932b;
+  --danger: #b81c1c;
+  --danger-bright: #e03535;
+  --max-width: 1180px;
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  --mobile-nav-strip-width: clamp(56px, 15vw, 84px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+::-webkit-scrollbar{
+  display: none;
+}
+
+body {
+  margin: 0;
+  /* min-height plus a flex column is the sticky-footer fix: on a page with
+     little content (Login, for instance) .site-main stretches (flex: 1 0 auto)
+     and pushes the footer to the bottom edge of the viewport instead of leaving
+     it clinging to the end of the short content. The sticky .topbar and the
+     fixed mobile navigation overlay are unaffected. */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* [T-33] The background FOLLOWS the theme. It used to be hard-coded — a
+     dark gradient and a red glow at exact values — while six pages
+     (/Conference, /ICBI, /Lecturers, /Schedule, /Attend and the error page)
+     deliberately draw no background of their own and show through to this one.
+     Under a light theme they stayed dark and their text turned dark on dark.
+
+     The glow is derived from --accent (under the default theme that is the same
+     red). The vertical gradient from #080808 to #030303 is dropped: five levels
+     of difference around --bg that the eye cannot tell apart, against a colour
+     every theme overrides. */
+  background:
+    radial-gradient(circle at top left,
+      color-mix(in srgb, var(--accent) 12%, transparent), transparent 24%),
+    var(--bg);
+  color: var(--text);
+  font-family: "Oswald", Arial, sans-serif;
+  font-weight: 300;
+}
+
+.site-main {
+  /* Flex sizing against body only: inside, .site-main stays an ordinary block
+     container, so that it does not disturb the layout of the existing pages —
+     hero, section-inner and the rest keep behaving as before. */
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+.footer {
+  flex: 0 0 auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.9rem 2rem;
+  background: var(--bg);
+  border-bottom: 1px solid rgba(var(--ink), 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.22rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 1px solid rgba(var(--ink), 0.14);
+  background: transparent;
+  cursor: pointer;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 1.05rem;
+  height: 1px;
+  margin: 0 auto;
+  background: rgb(var(--ink));
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.brand,
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.mainLogo_Img {
+  width: 40px;
+  height: auto;
+  display: block;
+  margin-top: 2px;
+  /* The logo is a white PNG. brightness(0) makes it black and invert turns it
+     white again, so --logo-invert: 1 means white and 0 means black. One token,
+     no second file.
+
+     This is the same mechanism already working in five places across the
+     project (authStyle, paymentStyle, profileStyle); the main logo had simply
+     been missed. */
+  filter: brightness(0) invert(var(--logo-invert, 1));
+}
+
+/* ── Лентата, речникът на страниците ─────────────────────────────────
+   Етикетите в лентата следват стълбицата, по която вървят всички
+   редизайнирани страници: колкото по-дребен шрифтът, толкова по-широка
+   разредката. Връзка на 12px там носи 0.16em (.at-link, .sc-dl) — същото
+   тук.
+
+   Няма плътен фон нито при посочване, нито при активно. Маркерът е
+   акцентната черта отдолу, същият жест като .at-jump, .at-tier,
+   .pillar-card и подвижния .day-toggle-indicator: 2px, радиус 0, долепена
+   до долния ръб, разгъва се от левия край.
+
+   Степенуването на цвета е това на .day-btn: --text-dim в покой,
+   --text при посочване, rgb(--ink) при активно.
+
+   Чертата маркира САМО активното. Ако я има и при посочване, двете
+   състояния се сливат — в тъмна тема --text и rgb(--ink) са на косъм
+   един от друг и чертата остава единственото, което ги дели. Точно това
+   прави и програмата: .day-btn:hover сменя само цвета, а подвижният
+   .day-toggle-indicator стои под активния ден. */
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.6rem;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.nav a {
+  position: relative;
+  padding: 6px 0 10px;
+  color: var(--text-dim);
+  word-break: break-word;
+  border-radius: 0;
+  transition: color 0.18s ease;
+}
+
+/* Чертата. Анимира се само transform — ::after е изваден от потока и
+   разгъването му не бута съседните връзки. */
+.nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+.nav a:hover {
+  color: var(--text);
+  background-color: transparent;
+}
+
+.nav a.active {
+  color: rgb(var(--ink));
+  background-color: transparent;
+}
+
+.nav a.active::after { transform: scaleX(1); }
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.lang-switch,
+.register-btn,
+.cta-primary,
+.cta-secondary {
+  transition:
+    transform 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+/* Микро-етикет по стълбицата на страниците: 11px носят 0.18em
+   (.at-meta b, .at-col-label, .info-item strong). */
+.lang-switch {
+  border: 1px solid rgba(var(--ink), 0.16);
+  background: transparent;
+  color: var(--text-dim);
+  padding: 0.45rem 0.65rem;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-radius: 0;
+}
+
+.lang-switch:hover {
+  cursor: pointer;
+  color: rgb(var(--ink));
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background-color: transparent;
+}
+
+/* Мерките на .at-tier-btn: 13px, тегло 500, разредка 0.14em, остри
+   ъгли. Посочването сменя запълването, без повдигане — страниците не
+   вдигат бутони. */
+.register-btn {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.62rem 1.1rem;
+  border: 1px solid var(--accent);
+  border-radius: 0;
+}
+
+.register-btn:hover {
+  cursor: pointer;
+  background-color: transparent;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.login-btn {
+  position: relative;
+  color: var(--text-dim);
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.62rem 0;
+  transition: color 0.18s ease;
+}
+
+.login-btn::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+.login-btn:hover {
+  cursor: pointer;
+  color: rgb(var(--ink));
+}
+
+.login-btn:hover::after { transform: scaleX(1); }
+
+
+.cta-primary:hover{
+  transform: translateY(-2px);
+  background-color: var(--accent);
+  border: 1px solid rgb(var(--ink));
+  color: var(--on-accent);
+}
+
+.cta-secondary:hover{
+  transform: translateY(-2px);
+  background-color: var(--on-accent);
+  border: 1px solid rgb(var(--ink));
+  color: var(--accent);
+}
+
+
+
+/* Footer */
+
+.cta-section {
+  background:
+    radial-gradient(circle at center top, rgba(255, 122, 91, 0.28), transparent 46%),
+    var(--accent);
+  padding: 4rem 0;
+}
+
+.cta-inner {
+  text-align: center;
+}
+
+.cta-inner h2 {
+  font-family: "Oswald", Arial, sans-serif;
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: 0.01em;
+  font-size: clamp(2.5rem, 5vw, 4.2rem);
+  margin-bottom: 1.8rem;
+}
+
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cta-primary,
+.cta-secondary {
+  min-width: 12.5rem;
+  padding: 0.95rem 1.4rem;
+  border: 1px solid rgba(var(--ink), 0.65);
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.cta-primary {
+  background: rgb(var(--ink));
+  color: var(--accent);
+}
+
+.cta-secondary {
+  background: transparent;
+  color: rgb(var(--ink));
+}
+
+/* Global Layout & Hero Base */
+.hero {
+  position: relative;
+  min-height: 72vh;
+  overflow: hidden;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.2) 52%, rgba(0, 0, 0, 0.58) 100%);
+}
+
+.section-inner,
+.cta-inner {
+  width: min(var(--max-width), calc(100% - 3rem));
+  margin: 0 auto;
+}
+
+.eyebrow,
+.section-label {
+  margin: 0 0 0.6rem;
+  color: var(--accent-soft);
+  font-family: "Oswald", Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.footer {
+  padding: 3.5rem 0 1.4rem;
+  background: var(--bg);
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  align-items: start;
+  margin-top: 20px;
+  width: min(var(--max-width), calc(100% - 3rem));
+  margin: 0 auto;
+  padding: 15px;
+}
+
+.footer-copy,
+.footer-contact p,
+.copyright {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.footer-copy {
+  max-width: 21rem;
+  word-break: break-word;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.92rem;
+}
+
+.footer-contact h3 {
+  margin: 0 0 0.8rem;
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.footer-contact p,
+.copyright {
+  margin: 0.15rem 0;
+}
+
+.copyright {
+  text-align: center;
+  margin-top: 2.2rem;
+  font-size: 0.85rem;
+}
+
+/* ==================== Footer v2 (redesign skeleton, Aug 2026) ====================
+   The new layout of the footer (see <footer> in _Layout.cshtml): call-to-action
+   cards, an intro and brand block with a decorative sphere, a panel holding
+   Quick Links and Contact, a legal row and the copyright. A mobile-first base
+   plus a separate @media (min-width: 981px) block for the desktop. The classes
+   are entirely new (footer-shell / footer-cta-* / footer-intro-* /
+   footer-panel / footer-col-* / footer-legal-* / footer-copyright); the older
+   .footer-inner / .footer-brand / .footer-copy / .footer-links /
+   .footer-contact / .copyright rules above are left untouched in case they are
+   used somewhere outside the footer. Structure and styles only at this stage:
+   revealObserver in scriptMain.js already watches .reveal globally, so the new
+   sections join the existing scroll fade with no extra script. */
+
+.footer-shell {
+  width: min(var(--max-width), calc(100% - 3rem));
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.2rem;
+}
+
+/* --- CTA cards --- */
+.footer-cta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.footer-cta-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 4px;
+  border: 1px solid var(--accent);
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow: hidden;
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.footer-cta-card--primary {
+  background:
+    radial-gradient(circle at 85% 0%, rgba(var(--ink), 0.22), transparent 55%),
+    linear-gradient(120deg, var(--accent-light), var(--accent) 65%);
+  color: var(--on-accent);
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.footer-cta-card--outline {
+  background:
+    radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%),
+    color-mix(in srgb, var(--accent) 5%, transparent);
+  color: var(--on-accent);
+}
+
+/* A diagonal glint travelling across the button on hover, on the primary
+   (Register) card only, so that it does not clutter the outline variant.
+   Requires overflow: hidden on .footer-cta-card above. */
+.footer-cta-card--primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(var(--ink), 0.4), transparent);
+  transform: skewX(-18deg);
+  transition: left 550ms ease;
+  pointer-events: none;
+}
+
+.footer-cta-card--primary:hover::after {
+  left: 130%;
+}
+
+.footer-cta-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--on-accent);
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.footer-cta-card:hover .footer-cta-icon {
+  transform: scale(1.06);
+  border-color: rgba(var(--ink), 0.7);
+}
+
+.footer-cta-card:hover .footer-cta-arrow {
+  transform: translateX(3px);
+  border-color: rgba(var(--ink), 0.7);
+}
+
+.footer-cta-icon {
+  /* A plain circle, border only — exactly like .footer-social-link, with no
+     background gradient or fill (as the client asked). */
+  flex: none;
+  width: 2.6rem;
+  height: 2.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(var(--ink), 0.55);
+  transition: transform 220ms ease, border-color 220ms ease;
+}
+
+.footer-cta-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.footer-cta-label {
+  flex: 1;
+}
+
+.footer-cta-arrow {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--ink), 0.35);
+  opacity: 0.95;
+  transition: transform 220ms ease, border-color 220ms ease;
+}
+
+.footer-cta-arrow svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* --- Brand / intro --- */
+/* The whole box — logo, title, tagline, description, social links and the bit
+   rain effect — is now ONE glassy card, with the same look as .footer-panel
+   below it (border: var(--line), background: var(--panel-soft),
+   border-radius: 6px), rather than text scattered without a visible outline. */
+.footer-intro {
+  position: relative;
+  overflow: hidden;
+  padding: 1.6rem;
+  min-height: 10rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-soft);
+}
+
+/* This only positions and clips the bit rain area on the right inside the
+   card. A border or background of its own here would make a box within a box;
+   as it is, the effect simply lives in the right-hand part of the same glassy
+   card and melts into it (see the mask-image below) rather than being framed
+   separately. The area is widened to 62% from 58%, so the effect reaches
+   further to the left. */
+.footer-intro-art-frame {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(24rem, 62%);
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 0 5px 5px 0;
+}
+
+.footer-intro-art {
+  /* A <canvas>, drawn by the footerBitRain module in scriptMain.js: 0/1 bits
+     (and the occasional hex digit) flying from right to left, blurring
+     progressively more towards the left — a real per-band blur in the script,
+     not merely a fade. The mask-image below is the fade itself: opaque only
+     across the right half (0–50%), then a visible, gradual transition to
+     transparent over the whole left half, rather than a short tail right at
+     the end. */
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 100%);
+  mask-image: linear-gradient(to left, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+.footer-intro-content {
+  position: relative;
+  z-index: 1;
+}
+
+.footer-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-brand-logo {
+  /* This applies only to the variant WITH a tagline (a two-line block of
+     text). The variant WITHOUT one no longer passes through here at all: it
+     uses .mainLogo_Img directly (see the comment on it just below), literally
+     the same class as in the top bar, with no clamp or calibration here.
+
+     HOW TO CALIBRATE BY HAND — clamp(MIN, RATE, MAX):
+     - MIN (1.65rem) is how small the logo gets on the narrowest phones. Raise
+       or lower ONLY this number if it looks right on a desktop but too small
+       or too large on a narrow phone.
+     - MAX (2.18rem) is the size on a wide screen or desktop. Raise or lower
+       ONLY this if the desktop version is off, without touching phones.
+     - RATE (6.4vw) is how quickly it grows between MIN and MAX. A larger
+       number reaches MAX on a narrower screen (it grows more sharply); a
+       smaller one gives a gentler transition over a wider range. This rarely
+       needs touching — MIN and MAX are usually enough. */
+  width: auto;
+  height: clamp(1.65rem, 6.4vw, 2.18rem);
+  object-fit: contain;
+  display: block;
+  flex: none;
+  /* The same mechanism as .mainLogo_Img: the logo follows the theme. */
+  filter: brightness(0) invert(var(--logo-invert, 1));
+}
+
+/* _Layout.cshtml applies this only when the tagline really is empty. In that
+   case the <img> does NOT carry the .footer-brand-logo class at all, only
+   .mainLogo_Img (see above in _Layout.cshtml) — literally the same class used
+   in the top bar; no separate clamp or compound-selector rule exists here any
+   more. That makes it physically impossible for the two places to drift apart
+   in value, instead of maintaining two parallel numbers that slowly diverged
+   with every small "nudge it up a bit" correction. */
+
+.footer-brand-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* The distance between the title and the tagline comes from TWO things, not
+     only the gap: this gap value (the space BETWEEN the two lines) and the
+     line-height of each of them (see .footer-brand-title and
+     .footer-brand-tagline below), which adds invisible space above and below
+     the letters of each line on top of the gap. Hence all three were tightened
+     together. */
+  gap: 0.08rem;
+  /* min-width: 0 overrides the flex default of min-width: auto. Without it
+     .footer-brand-title — which now has white-space: nowrap — would refuse to
+     shrink below its own natural width and would overflow the card on narrow
+     phones, instead of letting the clamp above do its job. */
+  min-width: 0;
+}
+
+.footer-brand-title {
+  font-family: "Oswald", Arial, sans-serif;
+  /* Fluid typography instead of a fixed 1.1rem: on narrow phones
+     "Blockchain Education 2026" broke in the middle of the phrase (see the
+     screenshots). clamp() scales the font down smoothly with the width of the
+     viewport rather than at one fixed breakpoint, and white-space: nowrap
+     guarantees it will never wrap again, since the font is by then small
+     enough to fit. The tagline is left free to wrap: it is a longer phrase and
+     that is normal.
+
+     This value applies only when there IS a tagline (a two-line block); see
+     .footer-brand-row.no-tagline .footer-brand-title below for the single-line
+     variant, which overrides exactly this number without touching the nowrap,
+     the line-height or anything else here. */
+  font-size: clamp(0.88rem, 3.8vw, 1.2rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  /* By default the browser uses a line-height of about 1.2, which adds
+     visible air above and below the letters; tightened to 1.1 for a dense but
+     not cramped block. */
+  line-height: 1.1;
+}
+
+/* This too is applied only when the tagline really is empty. In that case the
+   logo beside the title is literally .mainLogo_Img (see above in this
+   file), with the same fixed font-size (1.05rem) that the top bar uses next to
+   it (.brand span) — not a fluid clamp(), because the logo here is no longer
+   fluid either but a fixed 40px. The title therefore has to be fixed rather
+   than clamped so that it matches the logo exactly; that mismatch is precisely
+   what went wrong before (see the screenshot). Scoped to .no-tagline only, so
+   it does NOT affect the variant with a tagline above. */
+.footer-brand-row.no-tagline .footer-brand-title {
+  font-size: 1.05rem;
+}
+
+.footer-brand-tagline {
+  font-size: clamp(0.68rem, 2.6vw, 0.79rem);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--accent);
+  /* A marquee rather than wrapping onto a second line — the mirror of the
+     mechanism on .mobile-nav-promo-title (see below in this file and
+     measureFooterTaglineOverflow() in scriptMain.js). overflow: hidden and
+     nowrap here hide the excess; .is-overflowing and --marquee-distance come
+     from the script only when the text REALLY does not fit on one line. A
+     short tagline simply stands still, with no animation. */
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+  position: relative;
+}
+
+.footer-brand-tagline-inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Reuses the SAME @keyframes promoTitleMarquee defined above for
+   .mobile-nav-promo-title: an identical sliding animation rather than
+   duplicated code. */
+.footer-brand-tagline.is-overflowing .footer-brand-tagline-inner {
+  /* A slightly quicker tempo here only; the promo slider, which shares the
+     @keyframes promoTitleMarquee, keeps its own duration, because the duration
+     is set per rule rather than inside the keyframes. */
+  animation: promoTitleMarquee 7s ease-in-out infinite;
+  animation-delay: 0.1s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-brand-tagline.is-overflowing .footer-brand-tagline-inner {
+    animation: none;
+  }
+}
+
+.footer-desc {
+  max-width: 32rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0 0 1.3rem;
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.footer-social-link {
+  width: 2.6rem;
+  height: 2.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  color: var(--on-accent);
+  transition: transform 220ms ease, background-color 220ms ease;
+}
+
+.footer-social-link:hover {
+  transform: translateY(-2px);
+  background: var(--accent);
+}
+
+.footer-social-link svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* --- Panel: quick links + contact --- */
+.footer-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem 1.2rem;
+  padding: 1.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-soft);
+}
+
+.footer-col-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.9rem;
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.footer-col-icon {
+  display: inline-flex;
+  color: var(--accent);
+}
+
+.footer-col-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.footer-quicklinks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer-quicklinks li {
+  border-bottom: 1px solid var(--line);
+}
+
+.footer-quicklinks li:last-child {
+  border-bottom: 0;
+}
+
+.footer-quicklinks a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.6rem 0.1rem;
+  color: rgba(var(--ink), 0.78);
+  font-size: 0.88rem;
+  transition: color 200ms ease, padding-left 200ms ease;
+}
+
+/* The icon and the label are grouped together on the left; the space-between
+   on .footer-quicklinks a only separates that group from the arrow on the
+   right. The icons are taken from .mobile-nav-link-icon in the hamburger menu,
+   for visual consistency. */
+.footer-quicklink-main {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.footer-quicklink-icon {
+  flex: none;
+  display: inline-flex;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+.footer-quicklink-icon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.footer-quicklink-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.footer-quicklink-arrow {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: none;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+.footer-quicklinks a:hover {
+  color: rgb(var(--ink));
+  padding-left: 0.35rem;
+}
+
+.footer-contact-list {
+  list-style: none;
+  margin: 0 0 1.1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.footer-contact-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.footer-contact-icon {
+  flex: none;
+  display: inline-flex;
+  color: var(--accent);
+}
+
+.footer-contact-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.footer-org-note {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  overflow: hidden;
+}
+
+.footer-org-note::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  height: 2px;
+  background: radial-gradient(ellipse at center, var(--accent), transparent 80%);
+  opacity: 0.7;
+}
+
+.footer-org-icon {
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+}
+
+.footer-org-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.footer-org-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+/* --- Legal row + copyright --- */
+.footer-legal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.4rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+}
+
+.footer-legal-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(var(--ink), 0.78);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  transition: color 200ms ease;
+}
+
+.footer-legal-link svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--accent);
+}
+
+.footer-legal-link:hover {
+  color: rgb(var(--ink));
+}
+
+.footer-copyright {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+/* --- Desktop: the layout unfolds --- */
+@media (min-width: 981px) {
+  .footer-cta-row {
+    flex-direction: row;
+  }
+
+  .footer-cta-card {
+    flex: 1 1 0;
+  }
+
+  .footer-intro-content {
+    max-width: 34rem;
+  }
+
+  .footer-intro {
+    min-height: 13.5rem;
+    padding: 2.2rem 2.4rem;
+  }
+
+  .footer-intro-art-frame {
+    width: 33rem;
+  }
+
+  .footer-panel {
+    padding: 2.2rem 2.4rem;
+    gap: 2rem 3rem;
+  }
+
+  .footer-legal {
+    justify-content: flex-start;
+    gap: 2.8rem;
+  }
+
+  .footer-copyright {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-intro {
+    padding: 1.1rem;
+  }
+
+  .footer-panel {
+    padding: 1.1rem;
+    gap: 1.2rem 0.8rem;
+  }
+
+  .footer-col-title {
+    font-size: 0.8rem;
+  }
+
+  .footer-quicklinks a,
+  .footer-contact-list li {
+    font-size: 0.8rem;
+  }
+
+  .footer-legal {
+    gap: 1.4rem;
+  }
+}
+
+@media (max-width: 640px) {
+  /* The "Organized by ICBI..." box does not fit legibly on a phone (as the
+     client pointed out), so it is removed entirely at mobile widths and the
+     Contact column keeps only the address, the e-mail and the telephone. The
+     same goes for the bit rain frame: at a narrow width there is simply no
+     readable room for it beside the text, so it is hidden altogether rather
+     than shrunk into illegibility. */
+  .footer-org-note {
+    display: none;
+  }
+
+  .footer-intro-art-frame {
+    display: none;
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.hero-ready .hero {
+  animation: heroZoom 14s ease-in-out infinite alternate;
+}
+
+body.nav-open,
+body.mobile-nav-open {
+  overflow: hidden;
+}
+
+/* ====================================================================
+   Full-screen mobile navigation (up to 1240px)
+   ==================================================================== */
+
+/* The overlay stays in the DOM permanently (display: flex) and its visibility
+   is driven by visibility plus transform, so that the slide from left to right
+   can actually animate — display: none cannot. On closing, visibility is held
+   back with a transition-delay so that it disappears only AFTER the transform
+   has finished sliding out; otherwise the content would vanish abruptly in the
+   middle of the animation.
+
+   The z-index is deliberately BELOW the top bar (20): the real top bar — logo,
+   BG/EN, Register and Login — stays visible and clickable ABOVE the panel,
+   merely pushed to the right (see body.mobile-nav-open .topbar below), rather
+   than being duplicated inside the menu. */
+.mobile-nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  visibility: hidden;
+  /* height: 100% with inset: 0 covers most browsers correctly; 100dvh is an
+     additional, more accurate layer specifically for Safari, where the address
+     bar hides and reappears dynamically — dvh tracks the REAL visible viewport
+     in real time instead of a static value that confuses the size with the
+     address-bar-hidden state. The cascade (100% first, then 100dvh) means a
+     browser without dvh support simply uses 100%. */
+  height: 100%;
+  height: 100dvh;
+  background: var(--bg);
+  transform: translateX(-100%);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 420ms;
+}
+
+.mobile-nav-overlay.is-open {
+  visibility: visible;
+  transform: translateX(0);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
+}
+
+/* The decorative vertical strip on the left; the particles (mobileNavParticles
+   in scriptMain.js) live inside it. The width comes from the shared
+   --mobile-nav-strip-width variable (see :root) so that it matches EXACTLY how
+   far the top bar is pushed — otherwise the two drift apart easily. */
+.mobile-nav-decor {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--mobile-nav-strip-width);
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* The edge is no longer a solid border-right but a vertical gradient: a little
+   thicker than before, visible at the top and fading to almost nothing at the
+   bottom instead of being uniformly dense down the whole height. */
+.mobile-nav-decor::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 14%, transparent) 10%,
+    color-mix(in srgb, var(--accent) 50%, transparent) 26%,
+    color-mix(in srgb, var(--accent) 50%, transparent) 33%,
+    color-mix(in srgb, var(--accent) 10%, transparent) 100%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.mobile-nav-decor canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* The script sets padding-top inline, measuring the real height of the top bar
+   at the moment the menu opens (see scriptMain.js), because that height changes
+   between breakpoints: a single row against a grid of two rows below 640px. The
+   value here is only a sensible fallback if the script does not get there in
+   time.
+
+   The panel is a flex column with two regions: .mobile-nav-scroll, which is
+   flexible and scrolls internally if the links do not fit, and
+   .mobile-nav-footer — the promo card and the row of social links — which
+   always stays on screen at the bottom rather than scrolling away with the
+   links. */
+.mobile-nav-panel {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: 5.5rem; /* fallback if the script does not get there in time */
+  background: var(--bg);
+}
+
+.mobile-nav-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem 1.1rem 1rem;
+}
+
+/* margin-top: auto is an extra guarantee that the footer is always at the very
+   bottom: it works regardless of the flex: 1 on .mobile-nav-scroll — the
+   classic way to push the last element to the end. */
+.mobile-nav-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 1.3rem 1.1rem 0;
+}
+
+/* min-height: 100% together with justify-content: space-between: if the links
+   do not fill the whole visible height of .mobile-nav-scroll, the difference is
+   spread EVENLY between them — more generous breathing room between the
+   buttons — instead of being left as one large black void just before the promo
+   element. If the links really do overflow (many more of them added from the
+   admin panel later, say), the overflow-y: auto on the parent still provides
+   normal scrolling; justify-content does not interfere with that. */
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  justify-content: space-between;
+  gap: 0.42rem;
+}
+
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.56rem 0.72rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+  color: rgb(var(--ink));
+  transition: border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.mobile-nav-link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent);
+}
+
+.mobile-nav-link-icon svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.mobile-nav-link-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mobile-nav-link-arrow {
+  flex-shrink: 0;
+  display: flex;
+  color: var(--muted);
+}
+
+.mobile-nav-link-arrow svg {
+  width: 0.92rem;
+  height: 0.92rem;
+}
+
+/* Both arrows, active and inactive, sit in the markup and the CSS decides
+   which one is visible, according to .active on the parent .mobile-nav-link.
+   Simpler than duplicating the Razor condition for each of the eight links. */
+.mobile-nav-arrow-active {
+  display: none;
+  color: var(--accent);
+}
+
+.mobile-nav-arrow-inactive {
+  display: block;
+}
+
+/* The inside of the active button keeps the same dark background as the
+   inactive ones — inherited from .mobile-nav-link rather than set here. The
+   neon feel comes only from the border and the glow around it, not from a
+   tinted background. */
+.mobile-nav-link.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.mobile-nav-link.active .mobile-nav-arrow-active {
+  display: block;
+}
+
+.mobile-nav-link.active .mobile-nav-arrow-inactive {
+  display: none;
+}
+
+/* A slider rather than a static card: the frame-and-glow styling lives here on
+   the container rather than on each slide separately. touch-action: pan-y lets
+   the vertical scroll of the page pass through the finger while the script (see
+   scriptMain.js) takes the horizontal swipe. */
+.mobile-nav-promo-slider {
+  position: relative;
+  margin: 0.6rem 0.3rem 0;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  background:
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%),
+    var(--panel);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 13%, transparent);
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.mobile-nav-promo-track {
+  display: flex;
+}
+
+.mobile-nav-promo-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem 1rem 0.65rem;
+  color: rgb(var(--ink));
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* The image beside the text is smaller than it used to be, leaving more room
+   for the text and a more compact composition on the slide.
+
+   The box is a fixed 3.3×3.3rem, which guarantees a constant size and layout
+   whatever comes from the admin panel later. But there is deliberately no
+   overflow: hidden and no solid background: the pictures there will be
+   transparent PNGs or SVGs rather than full-frame photographs, so the content
+   is simply centred and allowed to fit (max-width and max-height) with nothing
+   cropped. That is also why the glow — the drop-shadow — stays intact: it
+   naturally spills outside the outline of the figure, and overflow: hidden
+   would cut it off exactly at the edge of the box. */
+.mobile-nav-promo-art {
+  flex-shrink: 0;
+  width: 3.3rem;
+  height: 3.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 55%, transparent));
+}
+
+/* max-width and max-height rather than width and height of 100%: the image or
+   SVG fits itself into the box instead of being forced to fill it. A small
+   picture keeps its natural size, up to the ceiling; a large one shrinks to
+   fit. Either way it keeps its proportions and is never distorted. */
+.mobile-nav-promo-art svg,
+.mobile-nav-promo-art img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+}
+
+.mobile-nav-promo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  margin-top: 0.2rem;
+}
+
+/* There is no eyebrow label any more — "ICBI" and "SCHEDULE" were removed — so
+   the title took on a little more weight to use the space that freed up. */
+.mobile-nav-promo-title {
+  font-size: 0.995rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+  position: relative;
+}
+
+.mobile-nav-promo-title-inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* The script adds .is-overflowing only when the title really does not fit on
+   one line (scrollWidth > clientWidth); a short title simply stands still, with
+   no animation. --marquee-distance is worked out individually for each slide —
+   the exact overflow in pixels — rather than being a fixed percentage. */
+.mobile-nav-promo-title.is-overflowing .mobile-nav-promo-title-inner {
+  animation: promoTitleMarquee 14s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+@keyframes promoTitleMarquee {
+  0%, 10%   { transform: translateX(0); }
+  45%, 55%  { transform: translateX(var(--marquee-distance, 0)); }
+  90%, 100% { transform: translateX(0); }
+}
+
+.mobile-nav-promo-desc {
+  font-size: 0.8rem;
+  line-height: 1.42;
+  color: var(--muted);
+}
+
+/* An indicator that survives any number of slides: the track itself has a
+   FIXED width however many there are, and only the thumb — its width and
+   position — is recalculated against their total (see scriptMain.js). With two
+   slides the thumb is half the track; with ten it is a tenth. The track never
+   grows or wraps onto a second line, whatever the admin panel adds later. Far
+   more robust than N separate dots. */
+.mobile-nav-promo-dots {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 0.9rem 0.6rem 0;
+}
+
+.mobile-nav-promo-progress-track {
+  position: relative;
+  width: 4.5rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.mobile-nav-promo-progress-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 60%, transparent);
+  transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1), width 0.35s ease;
+}
+
+/* Each icon is flex: 1, so the four of them always fill the available width
+   evenly, whatever the width of the screen. The dividers are now REAL elements
+   rather than a ::after at a fixed offset, which drifted out of place as soon
+   as the gap became dynamic; they simply sit between the icons in the flex row
+   itself. */
+.mobile-nav-social {
+  display: flex;
+  align-items: center;
+  margin-top: 0.4rem;
+}
+
+.mobile-nav-social-link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0;
+  color: var(--muted);
+  transition: color 200ms ease;
+}
+
+.mobile-nav-social-link:hover {
+  color: var(--accent);
+}
+
+.mobile-nav-social-divider {
+  flex-shrink: 0;
+  width: 2px;
+  height: 1.15rem;
+  background: var(--line);
+}
+
+.mobile-nav-social svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+/* On the middle tier and the desktop (641px and up) the whole overlay
+   mechanism is irrelevant, and this guarantees it can never catch clicks or
+   take up space, even if a script bug puts .is-open on it by mistake. The
+   elaborate overlay — particles and the promo slider — now belongs exclusively
+   to the narrow tier (640px and below); the middle tier uses the simple
+   dropdown instead, see @media (min-width: 641px) and (max-width: 1240px). */
+@media (min-width: 641px) {
+  .mobile-nav-overlay {
+    display: none !important;
+  }
+}
+
+@keyframes heroZoom {
+  from {
+    background-size: 100%;
+  }
+
+  to {
+    background-size: 106%;
+  }
+}
+
+
+/* Mobile Responsive Part */
+
+@media (min-width: 1241px) and (max-width: 1379px) {
+  .nav {
+    font-size: 11px;
+    gap: 1.35rem;
+  }
+}
+
+@media (max-width: 1240px) {
+  .topbar {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0.9rem 1rem;
+    /* Defined here rather than only in the .mobile-nav-open variant below, so
+       that it animates smoothly in BOTH directions — opening, when the
+       margin-left and width are added, and closing, when they are taken away.
+       If the transition sat only on .mobile-nav-open .topbar, closing would
+       snap back abruptly, because the new — base — state would have no
+       transition of its own. */
+    transition: margin-left 420ms cubic-bezier(0.22, 1, 0.36, 1), width 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  .topbar-actions {
+    margin-left: auto;
+  }
+}
+
+/* ====================================================================
+   The middle tier (641px to 1240px): tablets, phones in landscape, narrow
+   desktop windows. The full-screen .mobile-nav-overlay — particles, the promo
+   slider, a vertical stack of cards — is designed specifically for narrow
+   portrait proportions; at this width it looks stretched and ugly, which is
+   where the landscape bug with the particles came from. In its place: a much
+   simpler dropdown reusing the SAME .nav markup the desktop already uses,
+   merely styled as a vertical list when clicked, with no decorative strip and
+   no promo card. It is driven by the SAME body.mobile-nav-open class that
+   already toggles the hamburger, so no new script logic is needed to show or
+   hide it. */
+@media (min-width: 641px) and (max-width: 1240px) {
+  .nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+    background: var(--bg);
+    border-top: 1px solid rgba(var(--ink), 0.08);
+    border-bottom: 1px solid rgba(var(--ink), 0.08);
+    padding: 0.75rem;
+    z-index: 25;
+    /* A phone in landscape can be only 350 to 400px tall, and eight links one
+       below another easily overflow the visible height. A ceiling plus internal
+       scrolling, rather than trusting that it will always fit. */
+    max-height: calc(100vh - 70px);
+    max-height: calc(100dvh - 70px);
+    overflow-y: auto;
+  }
+
+  body.mobile-nav-open .nav {
+    display: flex;
+  }
+
+  .nav a {
+    padding: 0.85rem 1rem;
+    border-radius: 0;
+    text-align: left;
+  }
+
+  /* Лента отляво: същият ::after, преместен на левия ръб. Разгъва се по
+     височина от горния край — вертикалният двойник на жеста в лентата. */
+  .nav a::after {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    width: 2px;
+    height: auto;
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+
+  .nav a.active::after { transform: scaleY(1); }
+}
+
+/* ====================================================================
+   The narrow tier (640px and below): real phones in portrait. The full-screen
+   .mobile-nav-overlay stays here, with its whole design.
+   ==================================================================== */
+@media (max-width: 640px) {
+  /* .nav is not used here at all: .mobile-nav-overlay takes over the
+     navigation instead of the middle tier's dropdown. */
+  .nav {
+    display: none;
+  }
+
+  /* This is the key behaviour: no new logo or buttons are spawned inside the
+     menu — the REAL top bar is literally moved to the right to make room for
+     the strip with the effect on the left. The transition matches the timing of
+     .mobile-nav-overlay above so that the two move in step. Narrow tier only:
+     the middle tier's dropdown has no decorative strip, so the top bar must not
+     move there. */
+  body.mobile-nav-open .topbar {
+    margin-left: var(--mobile-nav-strip-width);
+    width: calc(100% - var(--mobile-nav-strip-width));
+  }
+}
+
+/* ====================================================================
+   Под 641px — връщане към старото
+   ====================================================================
+   .nav е скрит на тази ширина, така че полирането на връзките не стига
+   дотук. Но .topbar, .lang-switch, .register-btn и .login-btn СЕ ВИЖДАТ
+   и на телефон: тясната лента не се строи наново, а истинската лента се
+   избутва настрани (виж body.mobile-nav-open .topbar по-горе).
+
+   Затова тук се възстановяват точно старите стойности. Мобилното меню се
+   гледа отделно и до тогава не се променя нищо под 641px — включително
+   закованото #020202 по-долу, което е записано като находка и се оправя
+   заедно с останалото мобилно.
+
+   Блокът стои ПРЕДИ блоковете за 425px, 375px и 320px, за да продължат те
+   да го надписват, както винаги са правили. */
+@media (max-width: 640px) {
+  .topbar {
+    border-bottom: 1px solid rgba(var(--ink), 0.06);
+  }
+
+  .lang-switch {
+    color: rgb(var(--ink));
+    padding: 0.45rem 0.6rem;
+    font-size: 0.7rem;
+    font-weight: inherit;
+    letter-spacing: 0.08em;
+  }
+
+  .lang-switch:hover {
+    transform: translateY(-2px);
+    color: #020202;
+    background-color: rgb(var(--ink));
+    border-color: rgba(var(--ink), 0.16);
+  }
+
+  .register-btn {
+    font-size: 0.95rem;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    padding: 0.55rem 1rem;
+    border: 1px solid transparent;
+  }
+
+  .register-btn:hover {
+    transform: translateY(-2px);
+    color: var(--accent);
+    background-color: var(--on-accent);
+    border-color: transparent;
+  }
+
+  .login-btn {
+    position: static;
+    color: rgb(var(--ink));
+    font-size: 0.95rem;
+    font-weight: inherit;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    padding: 0;
+  }
+
+  .login-btn::after { display: none; }
+
+  .login-btn:hover {
+    color: var(--accent);
+    transform: translateY(-3px);
+  }
+}
+
+/* --- The hamburger turns into an X ---
+   The script puts .is-open on .menu-toggle itself, not only on .nav as it used
+   to, so the three bars rotate into the classic X instead of standing still
+   while the menu opens. */
+.menu-toggle.is-open span:nth-child(1) {
+  transform: translateY(0.28rem) rotate(45deg);
+}
+
+.menu-toggle.is-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.is-open span:nth-child(3) {
+  transform: translateY(-0.28rem) rotate(-45deg);
+}
+
+@media (max-width: 980px) {
+  .hero {
+    min-height: 52vh;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar,
+  .section-inner,
+  .cta-inner,
+  .footer-inner {
+    width: min(calc(100% - 1.5rem), var(--max-width));
+  }
+
+  .topbar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 0.85rem 0.75rem;
+    border-bottom: 0;
+    backdrop-filter: none;
+    gap: 0.65rem;
+  }
+
+ .brand,
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: "Oswald", Arial, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1; /* makes the line box exactly as tall as the font */
+}
+
+  .brand {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .brand span:last-child {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .menu-toggle {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .topbar-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    gap: 0.45rem;
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .lang-switch {
+    padding: 0.4rem 0.5rem;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .register-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.9rem;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .hero {
+    min-height: 40vh;
+    background-position: center;
+    margin-top: -1px;
+  }
+
+  .cta-section {
+    padding: 3rem 0;
+  }
+
+  .cta-inner h2 {
+    font-size: clamp(2rem, 11vw, 2.6rem);
+    line-height: 1.05;
+  }
+
+  .cta-inner h2 br {
+    display: none;
+  }
+
+  .cta-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .cta-primary,
+  .cta-secondary {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .footer {
+    padding-top: 2.6rem;
+  }
+
+  .footer-copy,
+  .footer-contact p,
+  .footer-links {
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-width: 425px) {
+  .topbar,
+  .section-inner,
+  .cta-inner,
+  .footer-inner {
+    width: calc(100% - 1.1rem);
+  }
+
+  .topbar {
+    width: 100%;
+    padding: 0.7rem 0.55rem;
+  }
+
+  .brand {
+    max-width: 100%;
+  }
+
+  .brand,
+  .footer-brand {
+    font-size: 0.88rem;
+  }
+
+  .menu-toggle {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .topbar-actions {
+    gap: 0.35rem;
+  }
+
+  .lang-switch,
+  .register-btn {
+    min-height: 2.2rem;
+  }
+
+  .register-btn {
+    padding: 0.48rem 0.68rem;
+    font-size: 0.82rem;
+  }
+
+  .hero {
+    min-height: 34vh;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+  }
+
+  .cta-inner h2 {
+    font-size: 1.9rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .topbar {
+    width: 100%;
+    padding: 0.65rem 0.45rem;
+  }
+
+  .brand {
+    max-width: 100%;
+  }
+
+  .brand,
+  .footer-brand {
+    font-size: 0.82rem;
+    gap: 0.45rem;
+  }
+
+  .brand-mark {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  .topbar-actions {
+    gap: 0.28rem;
+  }
+
+  .lang-switch {
+    padding: 0.34rem 0.42rem;
+    font-size: 0.62rem;
+  }
+
+  .register-btn {
+    padding: 0.44rem 0.58rem;
+    font-size: 0.76rem;
+  }
+
+  .hero {
+    min-height: 31vh;
+  }
+
+  .cta-section {
+    padding: 2.4rem 0;
+  }
+
+  .cta-inner h2 {
+    font-size: 1.72rem;
+  }
+
+  .cta-primary,
+  .cta-secondary {
+    padding: 0.82rem 1rem;
+    font-size: 0.98rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .topbar,
+  .section-inner,
+  .cta-inner,
+  .footer-inner {
+    width: calc(100% - 0.8rem);
+  }
+
+  .topbar {
+    width: 100%;
+    padding: 0.55rem 0.35rem;
+    gap: 0.45rem;
+  }
+
+  .brand {
+    max-width: 100%;
+  }
+
+  .brand,
+  .footer-brand {
+    font-size: 0.76rem;
+  }
+
+  .menu-toggle {
+    width: 2.15rem;
+    height: 2.15rem;
+  }
+
+  .menu-toggle span {
+    width: 0.9rem;
+  }
+
+  .lang-switch {
+    padding: 0.3rem 0.34rem;
+    font-size: 0.56rem;
+  }
+
+  .register-btn {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  .hero {
+    min-height: 28vh;
+  }
+
+  .cta-inner h2 {
+    font-size: 1.5rem;
+  }
+
+  .cta-primary,
+  .cta-secondary {
+    padding: 0.76rem 0.9rem;
+    font-size: 0.92rem;
+  }
+
+  .footer-copy,
+  .footer-contact p,
+  .footer-links,
+  .copyright {
+    font-size: 0.84rem;
+  }
+}
