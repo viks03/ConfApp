@@ -27,6 +27,12 @@ var builder = WebApplication.CreateBuilder(args);
 // the request off before the application ever sees it, so a ceiling set too
 // tight would return an empty response instead of the "file is too large"
 // message.
+//
+// Behind IIS this ceiling is not the only one: the request first passes
+// requestLimits/maxAllowedContentLength in web.config, whose default is
+// 30 000 000 bytes — slightly BELOW the value here. The two have to be kept in
+// step, or a large upload is refused by IIS with a 404.13 before the
+// application sees it. See DEPLOYMENT.md.
 const long MaxRequestBodyBytes = 30L * 1024 * 1024;
 
 builder.WebHost.ConfigureKestrel(options =>
@@ -392,14 +398,21 @@ builder.Services.AddRateLimiter(options =>
 // ---------------- 4.5. DATA PROTECTION ----------------
 // Persists the keys on disk — without this every restart invalidates all
 // cookies. The path comes from configuration (DataProtection:KeysPath) so that
-// a different server layout needs no recompilation. A missing value falls back
-// to the paths below.
+// a different server layout needs no recompilation.
+//
+// The fallback is a folder beside the application, which is correct on Linux
+// and on Windows alike. It used to be an absolute Unix path under Production
+// (/var/www/conferenceapp/DataProtection-Keys); on a Windows host that resolves
+// to C:\var\www\conferenceapp\..., where the account the site runs under has no
+// business writing — and the probe below then refuses to start the site at all.
+//
+// A server that keeps its keys somewhere else says so in the environment:
+//     DataProtection__KeysPath=/var/www/conferenceapp/DataProtection-Keys
+// Changing this path rotates the keys, which signs everybody out once.
 var configuredKeysPath = builder.Configuration["DataProtection:KeysPath"];
 var keysPath = !string.IsNullOrWhiteSpace(configuredKeysPath)
     ? configuredKeysPath
-    : builder.Environment.IsProduction()
-        ? "/var/www/conferenceapp/DataProtection-Keys"
-        : Path.Combine(builder.Environment.ContentRootPath, "DataProtection-Keys");
+    : Path.Combine(builder.Environment.ContentRootPath, "DataProtection-Keys");
 
 // The directory is created and probed for write access here rather than on the
 // first request. Otherwise, with permissions missing, the application starts
@@ -445,12 +458,21 @@ builder.Services.ConfigureApplicationCookie(options =>
 var app = builder.Build();
 
 // ── Secrets check at startup ──────────────────────────────────────────
-// These six keys are not stored in appsettings.json (empty strings there).
+// These keys are not stored in appsettings.json (empty strings there).
 // Locally they come from user-secrets, on the server from environment
 // variables (Stripe__SecretKey and so on); see README, "Configuration &
 // secrets". Without this check a missing key surfaces much later and in a
 // different way each time: the admin is not created, the payment page throws,
 // mail throws on send.
+//
+// In Production a missing key STOPS the start. That is the behaviour README and
+// DEPLOYMENT.md have always described, and the reason for it is that the three
+// failures above are all silent from the outside: the site looks healthy while
+// no payment can complete. Better a service that refuses to come up, with the
+// reason on the first line of the log, than one that runs and loses money.
+//
+// In Development it stays a warning — a half-configured working copy has to be
+// runnable.
 {
     string[] requiredSecrets =
     [
@@ -462,17 +484,35 @@ var app = builder.Build();
         "AdminSettings:SystemAdminPassword"
     ];
 
+    // The seventh is only needed when the switch is actually configured — an
+    // installation that does not use the control server must not be blocked by
+    // a key it has no use for.
+    if (remoteControl.Enabled)
+        requiredSecrets = [.. requiredSecrets, "RemoteControl:Key"];
+
     var missingSecrets = requiredSecrets
         .Where(key => string.IsNullOrWhiteSpace(app.Configuration[key]))
         .ToArray();
 
     if (missingSecrets.Length > 0)
     {
+        var detail = string.Join(", ", missingSecrets);
+
+        if (app.Environment.IsProduction())
+        {
+            // Remove this branch to go back to a warning only.
+            throw new InvalidOperationException(
+                $"Липсващи настройки ({missingSecrets.Length}): {detail}. Задай ги като " +
+                "променливи на средата — двойна долна черта вместо двоеточие, например " +
+                "Stripe__SecretKey. При IIS това става на ниво application pool. " +
+                "Виж DEPLOYMENT.md, раздел 5.");
+        }
+
         app.Logger.LogWarning(
             "Липсващи настройки ({Count}): {Keys}. Задай ги с `dotnet user-secrets set` " +
             "локално или като променливи на средата на сървъра (двойна долна черта " +
             "вместо двоеточие). Виж README, раздел \"Configuration & secrets\".",
-            missingSecrets.Length, string.Join(", ", missingSecrets));
+            missingSecrets.Length, detail);
     }
 }
 
@@ -503,48 +543,54 @@ var app = builder.Build();
             "Uploads:PrivateRoot.", ex);
     }
 
-    foreach (var relativeFolder in new[] { "uploads/papers26", "uploads/submitted-documents" })
+    // WebRootPath is null when wwwroot is missing from the publish output —
+    // Path.Combine would throw and take the start down over a folder that, by
+    // definition, holds nothing left to move.
+    if (!string.IsNullOrEmpty(app.Environment.WebRootPath))
     {
-        var legacyFolder = Path.Combine(app.Environment.WebRootPath,
-            relativeFolder.Replace('/', Path.DirectorySeparatorChar));
-
-        if (!Directory.Exists(legacyFolder)) continue;
-
-        var target = uploadPaths.EnsureDirectory(relativeFolder);
-        var moved  = 0;
-
-        foreach (var source in Directory.EnumerateFiles(legacyFolder, "*", SearchOption.AllDirectories))
+        foreach (var relativeFolder in new[] { "uploads/papers26", "uploads/submitted-documents" })
         {
-            var name = Path.GetFileName(source);
-            if (name == ".gitkeep") continue;
+            var legacyFolder = Path.Combine(app.Environment.WebRootPath,
+                relativeFolder.Replace('/', Path.DirectorySeparatorChar));
 
-            var destination = Path.Combine(target,
-                Path.GetRelativePath(legacyFolder, source));
+            if (!Directory.Exists(legacyFolder)) continue;
 
-            try
+            var target = uploadPaths.EnsureDirectory(relativeFolder);
+            var moved  = 0;
+
+            foreach (var source in Directory.EnumerateFiles(legacyFolder, "*", SearchOption.AllDirectories))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+                var name = Path.GetFileName(source);
+                if (name == ".gitkeep") continue;
 
-                // A file already at the destination means an earlier startup
-                // moved it; the one in wwwroot is then a leftover, not the
-                // current copy, so it is deleted rather than overwriting.
-                if (File.Exists(destination)) File.Delete(source);
-                else File.Move(source, destination);
+                var destination = Path.Combine(target,
+                    Path.GetRelativePath(legacyFolder, source));
 
-                moved++;
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+
+                    // A file already at the destination means an earlier startup
+                    // moved it; the one in wwwroot is then a leftover, not the
+                    // current copy, so it is deleted rather than overwriting.
+                    if (File.Exists(destination)) File.Delete(source);
+                    else File.Move(source, destination);
+
+                    moved++;
+                }
+                catch (Exception ex)
+                {
+                    app.Logger.LogError(ex,
+                        "Не можах да преместя {Source} в частния корен. Файлът остава в wwwroot " +
+                        "и се раздава анонимно — премести го на ръка.", source);
+                }
             }
-            catch (Exception ex)
-            {
-                app.Logger.LogError(ex,
-                    "Не можах да преместя {Source} в частния корен. Файлът остава в wwwroot " +
-                    "и се раздава анонимно — премести го на ръка.", source);
-            }
+
+            if (moved > 0)
+                app.Logger.LogInformation(
+                    "Преместени {Count} файла от wwwroot/{Folder} в {Target}.",
+                    moved, relativeFolder, target);
         }
-
-        if (moved > 0)
-            app.Logger.LogInformation(
-                "Преместени {Count} файла от wwwroot/{Folder} в {Target}.",
-                moved, relativeFolder, target);
     }
 }
 
@@ -617,6 +663,26 @@ foreach (var cidr in app.Configuration.GetSection("ForwardedHeaders:KnownNetwork
     }
 }
 
+static bool IsInNetwork(System.Net.IPAddress address, System.Net.IPAddress prefix, int prefixLength)
+{
+    if (address.AddressFamily != prefix.AddressFamily) return false;
+
+    var addressBytes = address.GetAddressBytes();
+    var prefixBytes  = prefix.GetAddressBytes();
+    if (prefixLength < 0 || prefixLength > addressBytes.Length * 8) return false;
+
+    var fullBytes = prefixLength / 8;
+    var remainingBits = prefixLength % 8;
+
+    for (var i = 0; i < fullBytes; i++)
+        if (addressBytes[i] != prefixBytes[i]) return false;
+
+    if (remainingBits == 0) return true;
+
+    var mask = (byte)(0xFF << (8 - remainingBits));
+    return (addressBytes[fullBytes] & mask) == (prefixBytes[fullBytes] & mask);
+}
+
 // A request from an untrusted neighbour has no business carrying address and
 // scheme headers. They are stripped BEFORE UseForwardedHeaders, so that
 // neither it, nor the Cloudflare layer below, nor BugReportController — which
@@ -658,26 +724,6 @@ app.Use(async (context, next) =>
     await next();
 });
 // --------------------------------------------------------------------
-
-static bool IsInNetwork(System.Net.IPAddress address, System.Net.IPAddress prefix, int prefixLength)
-{
-    if (address.AddressFamily != prefix.AddressFamily) return false;
-
-    var addressBytes = address.GetAddressBytes();
-    var prefixBytes  = prefix.GetAddressBytes();
-    if (prefixLength < 0 || prefixLength > addressBytes.Length * 8) return false;
-
-    var fullBytes = prefixLength / 8;
-    var remainingBits = prefixLength % 8;
-
-    for (var i = 0; i < fullBytes; i++)
-        if (addressBytes[i] != prefixBytes[i]) return false;
-
-    if (remainingBits == 0) return true;
-
-    var mask = (byte)(0xFF << (8 - remainingBits));
-    return (addressBytes[fullBytes] & mask) == (prefixBytes[fullBytes] & mask);
-}
 
 // [C-17] Development has no branch of its own: UseMigrationsEndPoint was
 // dropped because context.Database.Migrate() below runs on every start — an
